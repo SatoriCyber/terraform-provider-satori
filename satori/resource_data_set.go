@@ -143,24 +143,13 @@ func resourceDataSetCreate(ctx context.Context, d *schema.ResourceData, m interf
 		return diag.FromErr(err)
 	}
 
+	d.SetId(result.Id)
+
 	if err := d.Set("datapolicy_id", result.DataPolicyId); err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(result.Id)
-
-	_, err = c.UpdateCustomPolicy(result.DataPolicyId, resourceToCustomPolicy(d))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	_, err = c.UpdateSecurityPolicies(result.DataPolicyId, resourceToSecurityPolicies(d))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	_, err = c.UpdateAccessControl(result.DataPolicyId, resourceToAccessControl(d))
-	if err != nil {
+	if err = updateDataPolicy(err, c, result.DataPolicyId, d); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -232,7 +221,6 @@ func resourceToSecurityPolicies(d *schema.ResourceData) *api.SecurityPolicies {
 }
 
 func resourceDataSetRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
 	c := m.(*api.Client)
@@ -342,26 +330,30 @@ func resourceDataSetUpdate(ctx context.Context, d *schema.ResourceData, m interf
 		return diag.FromErr(err)
 	}
 
-	_, err = c.UpdateCustomPolicy(result.DataPolicyId, resourceToCustomPolicy(d))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	_, err = c.UpdateAccessControl(result.DataPolicyId, resourceToAccessControl(d))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	_, err = c.UpdateSecurityPolicies(result.DataPolicyId, resourceToSecurityPolicies(d))
-	if err != nil {
+	if err = updateDataPolicy(err, c, result.DataPolicyId, d); err != nil {
 		return diag.FromErr(err)
 	}
 
 	return diags
 }
 
+func updateDataPolicy(err error, c *api.Client, id string, d *schema.ResourceData) error {
+	if _, err = c.UpdateCustomPolicy(id, resourceToCustomPolicy(d)); err != nil {
+		return err
+	}
+
+	if _, err = c.UpdateAccessControl(id, resourceToAccessControl(d)); err != nil {
+		return err
+	}
+
+	if _, err = c.UpdateSecurityPolicies(id, resourceToSecurityPolicies(d)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func resourceDataSetDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
 	c := m.(*api.Client)

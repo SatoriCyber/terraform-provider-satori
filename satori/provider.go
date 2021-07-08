@@ -50,7 +50,6 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	url := d.Get("url").(string)
 	accountId := d.Get("account_id").(string)
 
-	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
 	c, err := api.NewClient(&url, &accountId, &username, &password, verifyTls)
