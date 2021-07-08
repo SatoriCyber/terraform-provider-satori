@@ -26,6 +26,7 @@ bin
 # vendor/
 
 ### Go Patch ###
+/.bin/
 /vendor/
 /Godeps/
 

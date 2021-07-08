@@ -1,8 +1,8 @@
 terraform {
   required_providers {
     satori = {
-      version = "1.0.0"
-      source  = "satoricyber.com/edu/satori"
+      version = "~>1.0.0"
+      source  = "satoricyber.com/terraform/satori"
     }
   }
 }
@@ -22,7 +22,7 @@ provider "satori" {
 
 resource "satori_dataset" "test1" {
   definition {
-    name = "terraform test 5"
+    name = "terraform test"
     description = "from satori terraform provider"
     owners_ids = [ "522fb8ab-8d7b-4498-b39d-6911e2839253" ]
 
