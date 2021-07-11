@@ -2,28 +2,54 @@ package satori
 
 import (
 	"context"
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
+	"strings"
 )
 
-func Provider() *schema.Provider {
-	return &schema.Provider{
+func init() {
+	// Set descriptions to support markdown syntax, this will be used in document generation
+	// and the language server.
+	schema.DescriptionKind = schema.StringMarkdown
+
+	// Customize the content of descriptions when output. For example you can add defaults on
+	// to the exported descriptions if present.
+	schema.SchemaDescriptionBuilder = func(s *schema.Schema) string {
+		desc := s.Description
+		if s.Default != nil {
+			desc += fmt.Sprintf(" Defaults to `%v`.", s.Default)
+		}
+		if s.Deprecated != "" {
+			desc += " " + s.Deprecated
+		}
+		return strings.TrimSpace(desc)
+	}
+}
+
+func NewProvider(version string) *schema.Provider {
+	p := &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"account_id": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Your Satori account ID.",
 			},
 			"service_account_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("SATORI_SA_ID", nil),
+				Description: "Service account ID with administrative privileges." +
+					" Can be specified with the `SATORI_SA_ID` environment variable.",
 			},
 			"service_account_key": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
 				Sensitive:   true,
 				DefaultFunc: schema.EnvDefaultFunc("SATORI_SA_KEY", nil),
+				Description: "Service account key." +
+					" Can be specified with the `SATORI_SA_KEY` environment variable.",
 			},
 			"verify_tls": &schema.Schema{
 				Type:     schema.TypeBool,
@@ -39,28 +65,35 @@ func Provider() *schema.Provider {
 		ResourcesMap: map[string]*schema.Resource{
 			"satori_dataset": resourceDataSet(),
 		},
-		ConfigureContextFunc: providerConfigure,
 	}
+
+	p.ConfigureContextFunc = providerConfigure(version, p)
+
+	return p
 }
 
-func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-	username := d.Get("service_account_id").(string)
-	password := d.Get("service_account_key").(string)
-	verifyTls := d.Get("verify_tls").(bool)
-	url := d.Get("url").(string)
-	accountId := d.Get("account_id").(string)
+func providerConfigure(version string, p *schema.Provider) func(context.Context, *schema.ResourceData) (interface{}, diag.Diagnostics) {
+	return func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+		username := d.Get("service_account_id").(string)
+		password := d.Get("service_account_key").(string)
+		verifyTls := d.Get("verify_tls").(bool)
+		url := d.Get("url").(string)
+		accountId := d.Get("account_id").(string)
 
-	var diags diag.Diagnostics
+		userAgent := p.UserAgent("terraform-provider-satori", version)
 
-	c, err := api.NewClient(&url, &accountId, &username, &password, verifyTls)
-	if err != nil {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Error,
-			Summary:  "Unable to create Satori client",
-			Detail:   "Unable to auth user for authenticated client",
-		})
-		return nil, diag.FromErr(err)
+		var diags diag.Diagnostics
+
+		c, err := api.NewClient(&url, &userAgent, &accountId, &username, &password, verifyTls)
+		if err != nil {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  "Unable to create Satori client",
+				Detail:   "Unable to auth user for authenticated client",
+			})
+			return nil, diag.FromErr(err)
+		}
+
+		return c, diags
 	}
-
-	return c, diags
 }

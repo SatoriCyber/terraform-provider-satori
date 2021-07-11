@@ -9,10 +9,24 @@
 
 # Terraform Provider for Satori
 
-Run the following command to build the provider
+#### First time setup:
+```shell
+go mod vendor
+```
+
+#### Run the following command to build the provider
 
 ```shell
 go build
+```
+
+#### Generate/update documentation
+
+Do not edit files under `docs`, they are generated from `templates` and the source code.
+To preview how the docs will look in the terraform registry, paste them here https://registry.terraform.io/tools/doc-preview
+
+```shell
+go generate
 ```
 
 ## Test sample configuration

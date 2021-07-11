@@ -4,9 +4,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"github.com/facette/logger"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -15,40 +13,25 @@ import (
 // HostURL - Default Satori URL
 const HostURL string = "https://app.satoricyber.com"
 
-// Client -
 type Client struct {
 	HostURL    string
 	HTTPClient *http.Client
 	Token      string
 	AccountId  string
-	Logger     *logger.Logger
+	UserAgent  string
 }
 
-// AuthStruct -
 type AuthStruct struct {
 	Username string `json:"serviceAccountId"`
 	Password string `json:"serviceAccountKey"`
 }
 
-// AuthResponse -
 type AuthResponse struct {
 	Token string `json:"token"`
 }
 
-// NewClient -
-func NewClient(host, accountId, username, password *string, verifyTls bool) (*Client, error) {
+func NewClient(host, userAgent, accountId, username, password *string, verifyTls bool) (*Client, error) {
 
-	newLogger, err := logger.NewLogger(
-		logger.FileConfig{
-			Level: "debug",
-			//Path:  "/Users/alex/workspace/terraform-provider-satoricyber/examples/log.log",
-		},
-	)
-	if err != nil {
-		log.Fatalf("failed to initialize logger: %s", err)
-	}
-
-	newLogger.Info("test test test")
 	if !verifyTls {
 		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	}
@@ -57,7 +40,7 @@ func NewClient(host, accountId, username, password *string, verifyTls bool) (*Cl
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 		HostURL:    HostURL,
 		AccountId:  *accountId,
-		Logger:     newLogger,
+		UserAgent:  *userAgent,
 	}
 
 	if host != nil {
@@ -103,6 +86,8 @@ func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 	if len(c.Token) > 0 {
 		req.Header.Set("Authorization", "Bearer "+c.Token)
 	}
+
+	req.Header.Set("User-Agent", c.UserAgent)
 
 	res, err := c.HTTPClient.Do(req)
 	if err != nil {
