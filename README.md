@@ -11,13 +11,13 @@
 
 #### First time setup:
 ```shell
-go mod vendor
+make init
 ```
 
 #### Run the following command to build the provider
 
 ```shell
-go build
+make build
 ```
 
 #### Generate/update documentation
@@ -26,7 +26,7 @@ Do not edit files under `docs`, they are generated from `templates` and the sour
 To preview how the docs will look in the terraform registry, paste them here https://registry.terraform.io/tools/doc-preview
 
 ```shell
-go generate
+make docs
 ```
 
 ## Test sample configuration
