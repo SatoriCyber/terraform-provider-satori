@@ -1,5 +1,10 @@
 NAME=satori
+HOSTNAME=satoricyber.com
+NAMESPACE=terraform
+VERSION=1.0.0
 BINARY=terraform-provider-${NAME}
+OS_ARCH=darwin_amd64
+LOCAL_INSTALL_DIR=~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
 
 default: testacc
 
@@ -18,8 +23,8 @@ build:
 
 .PHONY: install
 install: build
-	mkdir -p ~/.terraform.d/plugins
-	mv ${BINARY} ~/.terraform.d/plugins/
+	mkdir -p ${LOCAL_INSTALL_DIR}
+	mv ${BINARY} ${LOCAL_INSTALL_DIR}
 
 .PHONY: test
 test:

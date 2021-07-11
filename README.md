@@ -42,3 +42,15 @@ Then, run the following command to initialize the workspace and apply the sample
 ```shell
 terraform init && terraform apply
 ```
+
+For local binary, configure terraform as:
+```terraform
+terraform {
+  required_providers {
+    satori = {
+      version = "~>1.0.0"
+      source  = "satoricyber.com/terraform/satori"
+    }
+  }
+}
+```
