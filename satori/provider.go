@@ -63,7 +63,8 @@ func NewProvider(version string) *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"satori_dataset": resourceDataSet(),
+			"satori_dataset":            resourceDataSet(),
+			"satori_dataset_definition": resourceDataSetDefinition(),
 		},
 	}
 

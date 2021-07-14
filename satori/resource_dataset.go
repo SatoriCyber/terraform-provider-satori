@@ -16,6 +16,7 @@ func resourceDataSet() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Description: "Full dataset configuration.",
 		Schema: map[string]*schema.Schema{
 			"data_policy_id": getDatasetDataPolicyIdSchema(),
 			"definition":     getDatasetDefinitionSchema(),

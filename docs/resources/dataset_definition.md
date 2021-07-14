@@ -1,21 +1,21 @@
 ---
 layout: ""
-page_title: "satori_dataset (Resource)"
+page_title: "satori_dataset_definition (Resource)"
 description: |-
-satori_dataset resource allows to set up datasets.
+satori_dataset_definition resource allows to set up datasets (definition only).
 ---
 
-# satori_dataset (Resource)
+# satori_dataset_definition (Resource)
 
 Datasets are collections of data store locations that are meant to be governed as a single unit.
-The **satori_dataset** resource allows to set up datasets.
+The **satori_dataset_definition** resource allows to set up datasets with control only over the definition tab.
 
 ## Example Usage
 
 ```terraform
-resource "satori_dataset" "dataset1" {
+resource "satori_dataset_definition" "dataset_definition1" {
   definition {
-    name = "satori_dataset terraform test"
+    name = "satori_dataset_definition terraform test"
     description = "from satori terraform provider"
     owners = [ "522fb8ab-8d7b-4498-b39d-6911e2839253" ]
 
@@ -56,21 +56,6 @@ resource "satori_dataset" "dataset1" {
       }
     }
   }
-
-  access_control_settings {
-    enable_access_control = false
-    enable_user_requests = false
-    enable_self_service = false
-  }
-
-  custom_policy {
-    #default priority is 100
-    #priority = 100
-    rules_yaml = file("${path.module}/rules.yaml")
-    tags_yaml = file("${path.module}/tags.yaml")
-  }
-
-  security_policies = [ "56412aff-6ecf-4eff-9b96-2e0f6ec36c42" ]
 }
 ```
 
@@ -79,38 +64,15 @@ resource "satori_dataset" "dataset1" {
 
 ### Required
 
-- **access_control_settings** (Block List, Min: 1, Max: 1) Dataset access controls. (see [below for nested schema](#nestedblock--access_control_settings))
-- **custom_policy** (Block List, Min: 1, Max: 1) Dataset custom policy. (see [below for nested schema](#nestedblock--custom_policy))
 - **definition** (Block List, Min: 1, Max: 1) Parameters for dataset definition. (see [below for nested schema](#nestedblock--definition))
 
 ### Optional
 
 - **id** (String) The ID of this resource.
-- **security_policies** (List of String) IDs of security policies to apply to this dataset.
 
 ### Read-Only
 
 - **data_policy_id** (String) Parent ID for dataset permissions.
-
-<a id="nestedblock--access_control_settings"></a>
-### Nested Schema for `access_control_settings`
-
-Optional:
-
-- **enable_access_control** (Boolean) Enforce access control to this dataset. Defaults to `false`.
-- **enable_self_service** (Boolean) Allow users to grant themselves access to this dataset. Defaults to `false`.
-- **enable_user_requests** (Boolean) Allow users to request access to this dataset. Defaults to `false`.
-
-
-<a id="nestedblock--custom_policy"></a>
-### Nested Schema for `custom_policy`
-
-Optional:
-
-- **priority** (Number) Dataset custom policy priority. Defaults to `100`.
-- **rules_yaml** (String) Custom policy rules YAML.
-- **tags_yaml** (String) Custom policy tags YAML.
-
 
 <a id="nestedblock--definition"></a>
 ### Nested Schema for `definition`

@@ -25,6 +25,8 @@ make build
 Do not edit files under `docs`, they are generated from `templates` and the source code.
 To preview how the docs will look in the terraform registry, paste them here https://registry.terraform.io/tools/doc-preview
 
+***Important:*** Run this command before commiting changes to git, to update the docs for recent changes.
+
 ```shell
 make docs
 ```
