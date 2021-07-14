@@ -13,6 +13,9 @@ func resourceDataSet() *schema.Resource {
 		ReadContext:   resourceDataSetRead,
 		UpdateContext: resourceDataSetUpdate,
 		DeleteContext: resourceDataSetDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Schema: map[string]*schema.Schema{
 			"data_policy_id": getDatasetDataPolicyIdSchema(),
 			"definition":     getDatasetDefinitionSchema(),
