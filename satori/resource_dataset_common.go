@@ -5,7 +5,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
-	"strings"
 )
 
 func getDatasetLocationResource(locationOptional bool) *schema.Resource {
@@ -98,9 +97,9 @@ func getDatasetDefinitionSchema() *schema.Schema {
 }
 
 func createDataSet(d *schema.ResourceData, c *api.Client) (*api.DataSetOutput, error) {
-	dataSet := resourceToDataset(d)
+	input := resourceToDataset(d)
 
-	result, err := c.CreateDataSet(dataSet)
+	result, err := c.CreateDataSet(input)
 	if err != nil {
 		return nil, err
 	}
@@ -134,34 +133,39 @@ func resourceToDataset(d *schema.ResourceData) *api.DataSet {
 	return &out
 }
 
-func resourceToLocations(d *schema.ResourceData, mainParamName string) *[]api.DataStoreLocation {
+func resourceToLocations(d *schema.ResourceData, mainParamName string) *[]api.DataSetLocation {
 	if v, ok := d.GetOk(mainParamName); ok {
-		out := make([]api.DataStoreLocation, len(v.([]interface{})))
+		out := make([]api.DataSetLocation, len(v.([]interface{})))
 		for i, raw := range v.([]interface{}) {
 			inElement := raw.(map[string]interface{})
-			outElement := api.DataStoreLocation{}
+			outElement := api.DataSetLocation{}
 			outElement.DataStoreId = inElement["datastore"].(string)
 			if inElement["relational_location"] != nil {
 				inLocations := inElement["relational_location"].([]interface{})
 				if len(inLocations) > 0 {
+					var location api.DataSetGenericLocation
+					location.Type = "RELATIONAL_LOCATION"
 					inLocation := inLocations[0].(map[string]interface{})
 					if len(inLocation["db"].(string)) > 0 {
-						outLocation := inLocation["db"].(string)
+						db := inLocation["db"].(string)
+						location.Db = &db
 						if len(inLocation["schema"].(string)) > 0 {
-							outLocation += "." + inLocation["schema"].(string)
+							schema := inLocation["schema"].(string)
+							location.Schema = &schema
 							if len(inLocation["table"].(string)) > 0 {
-								outLocation += "." + inLocation["table"].(string)
+								table := inLocation["table"].(string)
+								location.Table = &table
 							}
 						}
-						outElement.Location = &outLocation
 					}
+					outElement.Location = &location
 				}
 			}
 			out[i] = outElement
 		}
 		return &out
 	}
-	out := make([]api.DataStoreLocation, 0)
+	out := make([]api.DataSetLocation, 0)
 	return &out
 }
 
@@ -190,19 +194,20 @@ func getDataSet(c *api.Client, d *schema.ResourceData) (*api.DataSetOutput, erro
 	return result, err
 }
 
-func locationsToResource(in *[]api.DataStoreLocation) *[]map[string]interface{} {
+func locationsToResource(in *[]api.DataSetLocation) *[]map[string]interface{} {
 	out := make([]map[string]interface{}, len(*in))
 	for i, v := range *in {
 		outElement := make(map[string]interface{}, 2)
 		outElement["datastore"] = v.DataStoreId
-		if v.Location != nil {
-			parts := strings.Split(*v.Location, ".")
+		if v.Location != nil && v.Location.Type == "RELATIONAL_LOCATION" {
 			location := make(map[string]string, 3)
-			location["db"] = parts[0]
-			if len(parts) > 1 {
-				location["schema"] = parts[1]
-				if len(parts) > 2 {
-					location["table"] = parts[2]
+			if v.Location.Db != nil {
+				location["db"] = *v.Location.Db
+				if v.Location.Schema != nil {
+					location["schema"] = *v.Location.Schema
+					if v.Location.Table != nil {
+						location["table"] = *v.Location.Table
+					}
 				}
 			}
 			outElement["relational_location"] = []map[string]string{location}
@@ -213,8 +218,8 @@ func locationsToResource(in *[]api.DataStoreLocation) *[]map[string]interface{} 
 }
 
 func updateDataSet(d *schema.ResourceData, c *api.Client) (*api.DataSetOutput, error) {
-	dataSet := resourceToDataset(d)
-	result, err := c.UpdateDataSet(d.Id(), dataSet)
+	input := resourceToDataset(d)
+	result, err := c.UpdateDataSet(d.Id(), input)
 	return result, err
 }
 

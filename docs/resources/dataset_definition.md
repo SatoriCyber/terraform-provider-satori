@@ -2,13 +2,13 @@
 layout: ""
 page_title: "satori_dataset_definition (Resource)"
 description: |-
-satori_dataset_definition resource allows to set up datasets (definition only).
+satori_dataset_definition resource allows defining datasets (definition tab only).
 ---
 
 # satori_dataset_definition (Resource)
 
 Datasets are collections of data store locations that are meant to be governed as a single unit.
-The **satori_dataset_definition** resource allows to set up datasets with control only over the definition tab.
+The **satori_dataset_definition** resource allows defining only the definition tab of datasets.
 
 ## Example Usage
 
@@ -17,7 +17,7 @@ resource "satori_dataset_definition" "dataset_definition1" {
   definition {
     name = "satori_dataset_definition terraform test"
     description = "from satori terraform provider"
-    owners = [ "522fb8ab-8d7b-4498-b39d-6911e2839253" ]
+    owners = [ "12345678-8d7b-4498-b39d-6911e2839253" ]
 
     include_location {
       datastore = "12345678-95cf-474f-a1d6-d5084810dd95"
