@@ -1,8 +1,8 @@
 package api
 
 type DataStoreLocation struct {
-	DataStoreId string `json:"dataStoreId"`
-	Location    string `json:"location"`
+	DataStoreId string  `json:"dataStoreId"`
+	Location    *string `json:"location"`
 }
 
 type DataSet struct {

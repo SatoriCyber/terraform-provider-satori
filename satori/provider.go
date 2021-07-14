@@ -31,17 +31,17 @@ func init() {
 func NewProvider(version string) *schema.Provider {
 	p := &schema.Provider{
 		Schema: map[string]*schema.Schema{
-			"account_id": &schema.Schema{
+			"satori_account": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Your Satori account ID.",
 			},
-			"service_account_id": &schema.Schema{
+			"service_account": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("SATORI_SA_ID", nil),
+				DefaultFunc: schema.EnvDefaultFunc("SATORI_SA", nil),
 				Description: "Service account ID with administrative privileges." +
-					" Can be specified with the `SATORI_SA_ID` environment variable.",
+					" Can be specified with the `SATORI_SA` environment variable.",
 			},
 			"service_account_key": &schema.Schema{
 				Type:        schema.TypeString,
@@ -74,11 +74,11 @@ func NewProvider(version string) *schema.Provider {
 
 func providerConfigure(version string, p *schema.Provider) func(context.Context, *schema.ResourceData) (interface{}, diag.Diagnostics) {
 	return func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-		username := d.Get("service_account_id").(string)
+		username := d.Get("service_account").(string)
 		password := d.Get("service_account_key").(string)
 		verifyTls := d.Get("verify_tls").(bool)
 		url := d.Get("url").(string)
-		accountId := d.Get("account_id").(string)
+		accountId := d.Get("satori_account").(string)
 
 		userAgent := p.UserAgent("terraform-provider-satori", version)
 

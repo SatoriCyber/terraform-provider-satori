@@ -14,77 +14,8 @@ func resourceDataSet() *schema.Resource {
 		UpdateContext: resourceDataSetUpdate,
 		DeleteContext: resourceDataSetDelete,
 		Schema: map[string]*schema.Schema{
-			"datapolicy_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Parent ID for dataset permissions.",
-			},
-			"definition": {
-				Type:        schema.TypeList,
-				Required:    true,
-				MaxItems:    1,
-				Description: "Parameters for dataset definition.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"name": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Dataset name.",
-						},
-						"description": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Dataset description.",
-						},
-						"owners_ids": &schema.Schema{
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "IDs of Satori users that will be set as dataset owners.",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-						"include_location": &schema.Schema{
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "Location to include in dataset.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"datastore_id": &schema.Schema{
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "Data store ID.",
-									},
-									"location": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Location path.",
-									},
-								},
-							},
-						},
-						"exclude_location": &schema.Schema{
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "Location to exclude from dataset.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"datastore_id": &schema.Schema{
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "Data store ID.",
-									},
-									"location": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Location path.",
-									},
-								},
-							},
-						},
-					},
-				},
-			},
+			"data_policy_id": getDatasetDataPolicyIdSchema(),
+			"definition":     getDatasetDefinitionSchema(),
 			"access_control_settings": {
 				Type:        schema.TypeList,
 				Required:    true,
@@ -156,16 +87,8 @@ func resourceDataSetCreate(ctx context.Context, d *schema.ResourceData, m interf
 
 	c := m.(*api.Client)
 
-	dataSet := resourceToDataset(d)
-
-	result, err := c.CreateDataSet(dataSet)
+	result, err := createDataSet(d, c)
 	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId(result.Id)
-
-	if err := d.Set("datapolicy_id", result.DataPolicyId); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -174,42 +97,6 @@ func resourceDataSetCreate(ctx context.Context, d *schema.ResourceData, m interf
 	}
 
 	return diags
-}
-
-func resourceToDataset(d *schema.ResourceData) *api.DataSet {
-	out := api.DataSet{}
-	out.Name = d.Get("definition.0.name").(string)
-	out.Description = d.Get("definition.0.description").(string)
-	if v, ok := d.GetOk("definition.0.owners_ids"); ok {
-		owners := v.([]interface{})
-		outOwners := make([]string, len(owners))
-		for i, owner := range owners {
-			outOwners[i] = owner.(string)
-		}
-		out.OwnersIds = outOwners
-	} else {
-		out.OwnersIds = []string{}
-	}
-
-	out.IncludeLocations = *resourceToLocations(d, "definition.0.include_location")
-	out.ExcludeLocations = *resourceToLocations(d, "definition.0.exclude_location")
-	return &out
-}
-
-func resourceToLocations(d *schema.ResourceData, mainParamName string) *[]api.DataStoreLocation {
-	if v, ok := d.GetOk(mainParamName); ok {
-		out := make([]api.DataStoreLocation, len(v.([]interface{})))
-		for i, raw := range v.([]interface{}) {
-			inElement := raw.(map[string]interface{})
-			outElement := api.DataStoreLocation{}
-			outElement.DataStoreId = inElement["datastore_id"].(string)
-			outElement.Location = inElement["location"].(string)
-			out[i] = outElement
-		}
-		return &out
-	}
-	out := make([]api.DataStoreLocation, 0)
-	return &out
 }
 
 func resourceToCustomPolicy(d *schema.ResourceData) *api.CustomPolicy {
@@ -245,24 +132,8 @@ func resourceDataSetRead(ctx context.Context, d *schema.ResourceData, m interfac
 
 	c := m.(*api.Client)
 
-	result, err := c.GetDataSet(d.Id())
+	result, err := getDataSet(c, d)
 	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	definition := make(map[string]interface{})
-	definition["name"] = result.Name
-	definition["description"] = result.Description
-	definition["owners_ids"] = result.OwnersIds
-
-	definition["include_location"] = locationsToResource(&result.IncludeLocations)
-	definition["exclude_location"] = locationsToResource(&result.ExcludeLocations)
-
-	if err := d.Set("definition", []map[string]interface{}{definition}); err != nil {
-		return diag.FromErr(err)
-	}
-
-	if err := d.Set("datapolicy_id", result.DataPolicyId); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -327,25 +198,12 @@ func securityPoliciesToResource(in *api.SecurityPolicies) *[]string {
 	return &out
 }
 
-func locationsToResource(in *[]api.DataStoreLocation) *[]map[string]string {
-	out := make([]map[string]string, len(*in))
-	for i, v := range *in {
-		outElement := make(map[string]string, 2)
-		outElement["datastore_id"] = v.DataStoreId
-		outElement["location"] = v.Location
-		out[i] = outElement
-	}
-	return &out
-}
-
 func resourceDataSetUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	c := m.(*api.Client)
 
-	dataSet := resourceToDataset(d)
-
-	result, err := c.UpdateDataSet(d.Id(), dataSet)
+	result, err := updateDataSet(d, c)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -371,17 +229,4 @@ func updateDataPolicy(err error, c *api.Client, id string, d *schema.ResourceDat
 	}
 
 	return nil
-}
-
-func resourceDataSetDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
-
-	c := m.(*api.Client)
-
-	err := c.DeleteDataSet(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return diags
 }
