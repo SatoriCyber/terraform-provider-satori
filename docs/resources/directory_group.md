@@ -7,7 +7,7 @@ satori_directory_group resource allows defining directory groups.
 
 # satori_directory_group (Resource)
 
-The **satori_dataset** resource allows defining directory groups.
+The **satori_directory_group** resource allows defining directory groups.
 
 ## Example Usage
 
@@ -36,8 +36,8 @@ resource "satori_directory_group" "group1" {
   }
 }
 
-resource "satori_directory_group" "group2" {
-  name = "group2"
+resource "satori_directory_group" "group_in_group" {
+  name = "group_in_group"
   description = "group with group from terraform"
 
   member {

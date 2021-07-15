@@ -66,6 +66,7 @@ func NewProvider(version string) *schema.Provider {
 			"satori_dataset":            resourceDataSet(),
 			"satori_dataset_definition": resourceDataSetDefinition(),
 			"satori_directory_group":    resourceDirectoryGroup(),
+			"satori_access_rule":        resourceDataAccessPermission(),
 		},
 	}
 
