@@ -8,6 +8,9 @@ resource "satori_access_rule" "perm1_dataset1" {
     type = "USER"
     name = "test-user"
   }
+  //expire on must be in UTC
+  expire_on = "2021-09-01T23:00:00Z"
+  revoke_if_not_used_in_days = 90
 }
 
 resource "satori_access_rule" "perm2_dataset1" {
@@ -17,6 +20,7 @@ resource "satori_access_rule" "perm2_dataset1" {
     type = "GROUP"
     group_id = satori_directory_group.group1.id
   }
+  revoke_if_not_used_in_days = 90
 }
 
 resource "satori_access_rule" "perm3_dataset1" {
@@ -26,6 +30,7 @@ resource "satori_access_rule" "perm3_dataset1" {
     type = "IDP_GROUP"
     name = "groupName"
   }
+  expire_on = "2021-09-01T23:00:00Z"
 }
 
 resource "satori_access_rule" "perm1_dataset_definition1" {

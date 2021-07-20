@@ -5,6 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
+	"time"
 )
 
 func resourceDataAccessPermission() *schema.Resource {
@@ -34,6 +35,18 @@ func resourceDataAccessPermission() *schema.Resource {
 				Default:     true,
 				Description: "Enable the rule.",
 			},
+			"expire_on": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "",
+				Description: "Expire the rule on the given date and time. RFC3339 date format is expected. Time must be in UTC (i.e. YYYY-MM-DD***T***HH:MM:SS***Z***). Empty value = never expire.",
+			},
+			"revoke_if_not_used_in_days": &schema.Schema{
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     0,
+				Description: "Revoke access if rule not used in the last given days. Zero = do not revoke.",
+			},
 			"identity": &schema.Schema{
 				Type:        schema.TypeList,
 				Required:    true,
@@ -51,11 +64,17 @@ func resourceDataAccessPermission() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "User/group name for identity types of USER and IDP_GROUP.\nCan not be changed after creation.",
+							ConflictsWith: []string{
+								"identity.0.group_id",
+							},
 						},
 						"group_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "Directory group ID for identity of type GROUP.\nCan not be changed after creation.",
+							ConflictsWith: []string{
+								"identity.0.name",
+							},
 						},
 					},
 				},
@@ -89,8 +108,21 @@ func resourceDataAccessPermissionCreate(ctx context.Context, d *schema.ResourceD
 
 func resourceToDataAccessPermission(d *schema.ResourceData) (*api.DataAccessPermission, bool) {
 	out := api.DataAccessPermission{}
+
 	out.AccessLevel = d.Get("access_level").(string)
 	suspended := !d.Get("enabled").(bool)
+
+	if v, ok := d.GetOk("expire_on"); ok {
+		out.TimeLimit.Expiration = &v //on input it is RFC3339 string
+		out.TimeLimit.ShouldExpire = true
+	}
+
+	revokeUnusedIn := d.Get("revoke_if_not_used_in_days").(int)
+	if revokeUnusedIn > 0 {
+		out.UnusedTimeLimit.ShouldRevoke = true
+		out.UnusedTimeLimit.UnusedDaysUntilRevocation = revokeUnusedIn
+	}
+
 	var identity api.DataAccessIdentity
 	identity.IdentityType = d.Get("identity.0.type").(string)
 	if v, ok := d.GetOk("identity.0.name"); ok {
@@ -102,6 +134,7 @@ func resourceToDataAccessPermission(d *schema.ResourceData) (*api.DataAccessPerm
 		identity.Identity = identity.IdentityType
 	}
 	out.Identity = &identity
+
 	return &out, suspended
 }
 
@@ -126,6 +159,17 @@ func resourceDataAccessPermissionRead(ctx context.Context, d *schema.ResourceDat
 	}
 	if err := d.Set("identity", []map[string]interface{}{*dataAccessIdentityToResource(result.Identity)}); err != nil {
 		return diag.FromErr(err)
+	}
+	if result.TimeLimit.ShouldExpire && result.TimeLimit.Expiration != nil {
+		n := int64((*result.TimeLimit.Expiration).(float64)) //on output it is epoch millis in JS numeric format
+		if err := d.Set("expire_on", time.Unix(n/1000, 0).UTC().Format(time.RFC3339)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	if result.UnusedTimeLimit.ShouldRevoke {
+		if err := d.Set("revoke_if_not_used_in_days", result.UnusedTimeLimit.UnusedDaysUntilRevocation); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return diags
