@@ -38,7 +38,6 @@ func resourceDataAccessPermission() *schema.Resource {
 			"expire_on": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "",
 				Description: "Expire the rule on the given date and time. RFC3339 date format is expected. Time must be in UTC (i.e. YYYY-MM-DD***T***HH:MM:SS***Z***). Empty value = never expire.",
 			},
 			"revoke_if_not_used_in_days": &schema.Schema{
@@ -77,6 +76,14 @@ func resourceDataAccessPermission() *schema.Resource {
 							},
 						},
 					},
+				},
+			},
+			"security_policies": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "IDs of security policies to apply to this rule. Empty list for default dataset security policies. [ \"none\" ] list for no policies.",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
 				},
 			},
 		},
@@ -135,6 +142,22 @@ func resourceToDataAccessPermission(d *schema.ResourceData) (*api.DataAccessPerm
 	}
 	out.Identity = &identity
 
+	if raw, ok := d.GetOk("security_policies"); ok {
+		in := raw.([]interface{})
+		if len(in) > 0 {
+			if in[0].(string) == "none" {
+				sp := make([]string, 0)
+				out.SecurityPolicies = &sp
+			} else {
+				sp := make([]string, len(in))
+				for i, v := range in {
+					sp[i] = v.(string)
+				}
+				out.SecurityPolicies = &sp
+			}
+		}
+	}
+
 	return &out, suspended
 }
 
@@ -160,14 +183,41 @@ func resourceDataAccessPermissionRead(ctx context.Context, d *schema.ResourceDat
 	if err := d.Set("identity", []map[string]interface{}{*dataAccessIdentityToResource(result.Identity)}); err != nil {
 		return diag.FromErr(err)
 	}
+
 	if result.TimeLimit.ShouldExpire && result.TimeLimit.Expiration != nil {
 		n := int64((*result.TimeLimit.Expiration).(float64)) //on output it is epoch millis in JS numeric format
 		if err := d.Set("expire_on", time.Unix(n/1000, 0).UTC().Format(time.RFC3339)); err != nil {
 			return diag.FromErr(err)
 		}
+	} else if v, ok := d.GetOk("expire_on"); ok && len(v.(string)) > 0 {
+		if err := d.Set("expire_on", nil); err != nil {
+			return diag.FromErr(err)
+		}
 	}
+
 	if result.UnusedTimeLimit.ShouldRevoke {
 		if err := d.Set("revoke_if_not_used_in_days", result.UnusedTimeLimit.UnusedDaysUntilRevocation); err != nil {
+			return diag.FromErr(err)
+		}
+	} else {
+		if err := d.Set("revoke_if_not_used_in_days", 0); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if result.SecurityPolicies != nil {
+		if len(*result.SecurityPolicies) == 0 {
+			sp := []string{"none"}
+			if err := d.Set("security_policies", sp); err != nil {
+				return diag.FromErr(err)
+			}
+		} else {
+			if err := d.Set("security_policies", *result.SecurityPolicies); err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	} else if _, ok := d.GetOk("security_policies.0"); ok {
+		if err := d.Set("security_policies", []interface{}{}); err != nil {
 			return diag.FromErr(err)
 		}
 	}

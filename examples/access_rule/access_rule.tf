@@ -20,7 +20,11 @@ resource "satori_access_rule" "perm2_dataset1" {
     type = "GROUP"
     group_id = satori_directory_group.group1.id
   }
+  //must be in UTC
+  expire_on = "2021-09-01T23:00:00Z"
   revoke_if_not_used_in_days = 90
+  //dataset default security policies
+  security_policies = [ ]
 }
 
 resource "satori_access_rule" "perm3_dataset1" {
@@ -30,7 +34,8 @@ resource "satori_access_rule" "perm3_dataset1" {
     type = "IDP_GROUP"
     name = "groupName"
   }
-  expire_on = "2021-09-01T23:00:00Z"
+  //no security policies
+  security_policies = [ "none" ]
 }
 
 resource "satori_access_rule" "perm1_dataset_definition1" {
@@ -39,4 +44,6 @@ resource "satori_access_rule" "perm1_dataset_definition1" {
   identity {
     type = "EVERYONE"
   }
+  //specific security policies
+  security_policies = [ "8c4745f5-a21e-4b7a-bb21-83c54351539f" ]
 }
