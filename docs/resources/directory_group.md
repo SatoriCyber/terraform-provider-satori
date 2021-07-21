@@ -47,7 +47,6 @@ resource "satori_directory_group" "group_in_group" {
 
   member {
     type = "DIRECTORY_GROUP"
-    name = satori_directory_group.group1.name
     group_id = satori_directory_group.group1.id
   }
 
@@ -72,7 +71,6 @@ resource "satori_directory_group" "group_in_group" {
 
 Required:
 
-- **name** (String) Member name.
 - **type** (String) Member type, valid types are: USERNAME, IDP_GROUP, DB_ROLE, DIRECTORY_GROUP.
 
 Optional:
@@ -80,3 +78,4 @@ Optional:
 - **data_store_type** (String) Data store type for member of type DB_ROLE, valid types are: SNOWFLAKE, REDSHIFT, BIGQUERY, POSTGRESQL, ATHENA, MSSQL, SYNAPSE
 - **group_id** (String) Directory group ID for member of type DIRECTORY_GROUP.
 - **identity_provider** (String) Identity provider type for member of type IDP_GROUP, valid identity providers are: OKTA, AZURE, ONELOGIN
+- **name** (String) Member name for types: USERNAME, IDP_GROUP and DB_ROLE.

@@ -11,7 +11,7 @@ type DirectoryGroup struct {
 
 type DirectoryGroupMember struct {
 	Type     string  `json:"type"`
-	Name     string  `json:"name"`
+	Name     *string `json:"name,omitempty"`
 	DsType   *string `json:"dsType,omitempty"`
 	Provider *string `json:"provider,omitempty"`
 	GroupId  *string `json:"id,omitempty"`

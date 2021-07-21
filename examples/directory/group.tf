@@ -33,7 +33,6 @@ resource "satori_directory_group" "group_in_group" {
 
   member {
     type = "DIRECTORY_GROUP"
-    name = satori_directory_group.group1.name
     group_id = satori_directory_group.group1.id
   }
 
