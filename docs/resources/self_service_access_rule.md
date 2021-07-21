@@ -1,18 +1,18 @@
 ---
 layout: ""
-page_title: "satori_access_rule (Resource)"
+page_title: "satori_self_service_access_rule (Resource)"
 description: |-
-satori_access_rule resource allows defining dataset access rules.
+satori_self_service_access_rule resource allows defining dataset self service access rules.
 ---
 
-# satori_access_rule (Resource)
+# satori_self_service_access_rule (Resource)
 
-The **satori_access_rule** resource allows defining dataset access rules.
+The **satori_self_service_access_rule** resource allows defining dataset self service access rules.
 
 ## Example Usage
 
 ```terraform
-resource "satori_access_rule" "perm1_dataset1" {
+resource "satori_self_service_access_rule" "perm1_dataset1" {
   //reference to owning dataset
   parent_data_policy = satori_dataset.dataset1.data_policy_id
   //granted access level, OWNER, READ_WRITE, READ_ONLY
@@ -22,26 +22,30 @@ resource "satori_access_rule" "perm1_dataset1" {
     type = "USER"
     name = "test-user"
   }
-  //expire on must be in UTC
-  expire_on = "2021-09-01T23:00:00Z"
+  expire_in {
+    unit_type = "MONTHS" //MINUTES, HOURS, DAYS, WEEKS, MONTHS, YEARS
+    units = 3
+  }
   revoke_if_not_used_in_days = 90
 }
 
-resource "satori_access_rule" "perm2_dataset1" {
+resource "satori_self_service_access_rule" "perm2_dataset1" {
   parent_data_policy = satori_dataset.dataset1.data_policy_id
   access_level = "READ_ONLY"
   identity {
     type = "GROUP"
     group_id = satori_directory_group.group1.id
   }
-  //must be in UTC
-  expire_on = "2021-09-01T23:00:00Z"
+  expire_in {
+    unit_type = "DAYS" //MINUTES, HOURS, DAYS, WEEKS, MONTHS, YEARS
+    units = 5
+  }
   revoke_if_not_used_in_days = 90
   //dataset default security policies
   security_policies = [ ]
 }
 
-resource "satori_access_rule" "perm3_dataset1" {
+resource "satori_self_service_access_rule" "perm3_dataset1" {
   parent_data_policy = satori_dataset.dataset1.data_policy_id
   access_level = "READ_WRITE"
   identity {
@@ -52,7 +56,7 @@ resource "satori_access_rule" "perm3_dataset1" {
   security_policies = [ "none" ]
 }
 
-resource "satori_access_rule" "perm1_dataset_definition1" {
+resource "satori_self_service_access_rule" "perm1_dataset_definition1" {
   parent_data_policy = satori_dataset.dataset_definition1.data_policy_id
   access_level = "READ_ONLY"
   identity {
@@ -74,8 +78,7 @@ resource "satori_access_rule" "perm1_dataset_definition1" {
 
 ### Optional
 
-- **enabled** (Boolean) Enable the rule. Defaults to `true`.
-- **expire_on** (String) Expire the rule on the given date and time. RFC3339 date format is expected. Time must be in UTC (i.e. YYYY-MM-DD***T***HH:MM:SS***Z***). Empty value = never expire.
+- **expire_in** (Block List, Max: 1) Rule expiration settings. (see [below for nested schema](#nestedblock--expire_in))
 - **id** (String) The ID of this resource.
 - **revoke_if_not_used_in_days** (Number) Revoke access if rule not used in the last given days. Zero = do not revoke. Max value is 180. Defaults to `0`.
 - **security_policies** (List of String) IDs of security policies to apply to this rule. Empty list for default dataset security policies. [ "none" ] list for no policies.
@@ -94,3 +97,12 @@ Optional:
 Can not be changed after creation.
 - **name** (String) User/group name for identity types of USER and IDP_GROUP.
 Can not be changed after creation.
+
+
+<a id="nestedblock--expire_in"></a>
+### Nested Schema for `expire_in`
+
+Required:
+
+- **unit_type** (String) Unit type for units field, possible values are: MINUTES, HOURS, DAYS, WEEKS, MONTHS, YEARS.
+- **units** (Number) Number of units of unit_type.

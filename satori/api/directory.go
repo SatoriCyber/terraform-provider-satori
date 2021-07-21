@@ -27,9 +27,10 @@ func (c *Client) UpdateDirectoryGroup(id string, input *DirectoryGroup) (*Direct
 	return &output, c.putJson(DirectoryGroupApiPrefix, id, input, &output)
 }
 
-func (c *Client) GetDirectoryGroup(id string) (*DirectoryGroup, error) {
+func (c *Client) GetDirectoryGroup(id string) (*DirectoryGroup, error, int) {
 	output := DirectoryGroup{}
-	return &output, c.getJson(DirectoryGroupApiPrefix, id, &output)
+	err, statusCode := c.getJsonById(DirectoryGroupApiPrefix, id, &output)
+	return &output, err, statusCode
 }
 
 func (c *Client) DeleteDirectoryGroup(id string) error {

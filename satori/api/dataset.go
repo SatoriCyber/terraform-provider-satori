@@ -51,9 +51,10 @@ func (c *Client) UpdateDataSet(id string, input *DataSet) (*DataSetOutput, error
 	return &output, c.putJson(DataSetApiPrefix, id, input, &output)
 }
 
-func (c *Client) GetDataSet(id string) (*DataSetOutput, error) {
+func (c *Client) GetDataSet(id string) (*DataSetOutput, error, int) {
 	output := DataSetOutput{}
-	return &output, c.getJson(DataSetApiPrefix, id, &output)
+	err, statusCode := c.getJsonById(DataSetApiPrefix, id, &output)
+	return &output, err, statusCode
 }
 
 func (c *Client) DeleteDataSet(id string) error {

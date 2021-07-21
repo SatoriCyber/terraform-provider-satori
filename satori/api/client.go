@@ -64,7 +64,7 @@ func NewClient(host, userAgent, accountId, username, password *string, verifyTls
 		}
 		req.Header.Set("Content-Type", "application/json")
 
-		body, err := c.doRequest(req)
+		body, err, _ := c.doRequest(req)
 		if err != nil {
 			return nil, err
 		}
@@ -82,7 +82,7 @@ func NewClient(host, userAgent, accountId, username, password *string, verifyTls
 	return &c, nil
 }
 
-func (c *Client) doRequest(req *http.Request) ([]byte, error) {
+func (c *Client) doRequest(req *http.Request) ([]byte, error, int) {
 	if len(c.Token) > 0 {
 		req.Header.Set("Authorization", "Bearer "+c.Token)
 	}
@@ -91,39 +91,39 @@ func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 
 	res, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, err, 0
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return nil, err
+		return nil, err, 0
 	}
 
 	if res.StatusCode < 200 || res.StatusCode > 299 {
-		return nil, fmt.Errorf("status: %d, body: %s", res.StatusCode, body)
+		return nil, fmt.Errorf("status: %d, body: %s", res.StatusCode, body), res.StatusCode
 	}
 
-	return body, err
+	return body, err, res.StatusCode
 }
 
-func (c *Client) getJson(path string, id string, output interface{}) error {
+func (c *Client) getJsonById(path string, id string, output interface{}) (error, int) {
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s%s/%s", c.HostURL, path, id), nil)
 	if err != nil {
-		return err
+		return err, 0
 	}
 
-	body, err := c.doRequest(req)
+	body, err, statusCode := c.doRequest(req)
 	if err != nil {
-		return err
+		return err, statusCode
 	}
 
 	err = json.Unmarshal(body, output)
 	if err != nil {
-		return err
+		return err, statusCode
 	}
 
-	return nil
+	return nil, statusCode
 }
 
 func (c *Client) getJsonForAccount(path string, output interface{}) error {
@@ -138,7 +138,7 @@ func (c *Client) getJsonForAccount(path string, output interface{}) error {
 	q.Add("pageSize", "200")
 	req.URL.RawQuery = q.Encode()
 
-	body, err := c.doRequest(req)
+	body, err, _ := c.doRequest(req)
 	if err != nil {
 		return err
 	}
@@ -176,7 +176,7 @@ func (c *Client) postJsonWithParams(path string, params *map[string]string, inpu
 	}
 	req.URL.RawQuery = q.Encode()
 
-	body, err := c.doRequest(req)
+	body, err, _ := c.doRequest(req)
 	if err != nil {
 		return err
 	}
@@ -202,7 +202,7 @@ func (c *Client) putJson(path string, id string, input interface{}, output inter
 
 	req.Header.Set("Content-Type", "application/json")
 
-	body, err := c.doRequest(req)
+	body, err, _ := c.doRequest(req)
 	if err != nil {
 		return err
 	}
@@ -227,7 +227,7 @@ func (c *Client) putWithParams(path string, id string, params *map[string]string
 	}
 	req.URL.RawQuery = q.Encode()
 
-	body, err := c.doRequest(req)
+	body, err, _ := c.doRequest(req)
 	if err != nil {
 		return err
 	}
@@ -259,7 +259,7 @@ func (c *Client) putJsonWithParams(path string, id string, params *map[string]st
 
 	req.Header.Set("Content-Type", "application/json")
 
-	body, err := c.doRequest(req)
+	body, err, _ := c.doRequest(req)
 	if err != nil {
 		return err
 	}
@@ -278,7 +278,7 @@ func (c *Client) delete(path string, id string) error {
 		return err
 	}
 
-	_, err = c.doRequest(req)
+	_, err, _ = c.doRequest(req)
 	if err != nil {
 		return err
 	}

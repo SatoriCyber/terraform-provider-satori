@@ -33,9 +33,10 @@ func (c *Client) UpdateDataAccessPermissionSuspendedStatus(id string, suspend bo
 	return &output, c.putWithParams(DataAccessPermissionApiPrefix+"/suspend", id, &params, &output)
 }
 
-func (c *Client) GetDataAccessPermission(id string) (*DataAccessPermission, error) {
+func (c *Client) GetDataAccessPermission(id string) (*DataAccessPermission, error, int) {
 	output := DataAccessPermission{}
-	return &output, c.getJson(DataAccessPermissionApiPrefix, id, &output)
+	err, statusCode := c.getJsonById(DataAccessPermissionApiPrefix, id, &output)
+	return &output, err, statusCode
 }
 
 func (c *Client) DeleteDataAccessPermission(id string) error {

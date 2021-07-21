@@ -170,7 +170,11 @@ func resourceToLocations(d *schema.ResourceData, mainParamName string) *[]api.Da
 }
 
 func getDataSet(c *api.Client, d *schema.ResourceData) (*api.DataSetOutput, error) {
-	result, err := c.GetDataSet(d.Id())
+	result, err, statusCode := c.GetDataSet(d.Id())
+	if statusCode == 404 {
+		d.SetId("")
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}

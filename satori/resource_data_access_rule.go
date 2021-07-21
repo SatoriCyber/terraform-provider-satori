@@ -19,16 +19,8 @@ func resourceDataAccessPermission() *schema.Resource {
 		},
 		Description: "Access rules configuration.",
 		Schema: map[string]*schema.Schema{
-			"parent_data_policy": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Parent data policy ID, the data_policy_id field of a dataset.",
-			},
-			"access_level": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Access level to grant, valid values are: READ_ONLY, READ_WRITE, OWNER.",
-			},
+			"parent_data_policy": resourceDataAccessParent(),
+			"access_level":       resourceDataAccessLevel(),
 			"enabled": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -40,52 +32,9 @@ func resourceDataAccessPermission() *schema.Resource {
 				Optional:    true,
 				Description: "Expire the rule on the given date and time. RFC3339 date format is expected. Time must be in UTC (i.e. YYYY-MM-DD***T***HH:MM:SS***Z***). Empty value = never expire.",
 			},
-			"revoke_if_not_used_in_days": &schema.Schema{
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Default:     0,
-				Description: "Revoke access if rule not used in the last given days. Zero = do not revoke.",
-			},
-			"identity": &schema.Schema{
-				Type:        schema.TypeList,
-				Required:    true,
-				MinItems:    1,
-				MaxItems:    1,
-				Description: "Identity to apply the rule for.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"type": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Identity type, valid types are: USER, IDP_GROUP, GROUP, EVERYONE.\nCan not be changed after creation.",
-						},
-						"name": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "User/group name for identity types of USER and IDP_GROUP.\nCan not be changed after creation.",
-							ConflictsWith: []string{
-								"identity.0.group_id",
-							},
-						},
-						"group_id": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Directory group ID for identity of type GROUP.\nCan not be changed after creation.",
-							ConflictsWith: []string{
-								"identity.0.name",
-							},
-						},
-					},
-				},
-			},
-			"security_policies": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "IDs of security policies to apply to this rule. Empty list for default dataset security policies. [ \"none\" ] list for no policies.",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
+			"revoke_if_not_used_in_days": resourceDataAccessRevokeIfNotUsed(),
+			"identity":                   resourceDataAccessIdentity(),
+			"security_policies":          resourceDataAccessSecurityPolicies(),
 		},
 	}
 }
@@ -130,33 +79,9 @@ func resourceToDataAccessPermission(d *schema.ResourceData) (*api.DataAccessPerm
 		out.UnusedTimeLimit.UnusedDaysUntilRevocation = revokeUnusedIn
 	}
 
-	var identity api.DataAccessIdentity
-	identity.IdentityType = d.Get("identity.0.type").(string)
-	if v, ok := d.GetOk("identity.0.name"); ok {
-		identity.Identity = v.(string)
-	} else if v, ok := d.GetOk("identity.0.group_id"); ok {
-		identity.Identity = v.(string)
-	} else {
-		//for everyone
-		identity.Identity = identity.IdentityType
-	}
-	out.Identity = &identity
+	out.Identity = resourceToDataAccessIdentity(d)
 
-	if raw, ok := d.GetOk("security_policies"); ok {
-		in := raw.([]interface{})
-		if len(in) > 0 {
-			if in[0].(string) == "none" {
-				sp := make([]string, 0)
-				out.SecurityPolicies = &sp
-			} else {
-				sp := make([]string, len(in))
-				for i, v := range in {
-					sp[i] = v.(string)
-				}
-				out.SecurityPolicies = &sp
-			}
-		}
-	}
+	out.SecurityPolicies = resourceToDataAccessSecurityPolicies(d)
 
 	return &out, suspended
 }
@@ -166,7 +91,11 @@ func resourceDataAccessPermissionRead(ctx context.Context, d *schema.ResourceDat
 
 	c := m.(*api.Client)
 
-	result, err := c.GetDataAccessPermission(d.Id())
+	result, err, statusCode := c.GetDataAccessPermission(d.Id())
+	if statusCode == 404 {
+		d.SetId("")
+		return diags
+	}
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -195,47 +124,15 @@ func resourceDataAccessPermissionRead(ctx context.Context, d *schema.ResourceDat
 		}
 	}
 
-	if result.UnusedTimeLimit.ShouldRevoke {
-		if err := d.Set("revoke_if_not_used_in_days", result.UnusedTimeLimit.UnusedDaysUntilRevocation); err != nil {
-			return diag.FromErr(err)
-		}
-	} else {
-		if err := d.Set("revoke_if_not_used_in_days", 0); err != nil {
-			return diag.FromErr(err)
-		}
+	if err := dataAccessUnusedTimeLimitToResource(&result.UnusedTimeLimit, d); err != nil {
+		diag.FromErr(err)
 	}
 
-	if result.SecurityPolicies != nil {
-		if len(*result.SecurityPolicies) == 0 {
-			sp := []string{"none"}
-			if err := d.Set("security_policies", sp); err != nil {
-				return diag.FromErr(err)
-			}
-		} else {
-			if err := d.Set("security_policies", *result.SecurityPolicies); err != nil {
-				return diag.FromErr(err)
-			}
-		}
-	} else if _, ok := d.GetOk("security_policies.0"); ok {
-		if err := d.Set("security_policies", []interface{}{}); err != nil {
-			return diag.FromErr(err)
-		}
+	if err := dataAccessSecurityPoliciesToResource(result.SecurityPolicies, d); err != nil {
+		diag.FromErr(err)
 	}
 
 	return diags
-}
-
-func dataAccessIdentityToResource(in *api.DataAccessIdentity) *map[string]interface{} {
-	out := make(map[string]interface{})
-	out["type"] = in.IdentityType
-	switch in.IdentityType {
-	case "IDP_GROUP", "USER":
-		out["name"] = in.Identity
-	case "GROUP":
-		out["group_id"] = in.Identity
-	default:
-	}
-	return &out
 }
 
 func resourceDataAccessPermissionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {

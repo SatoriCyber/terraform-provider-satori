@@ -137,6 +137,9 @@ func resourceDataSetRead(ctx context.Context, d *schema.ResourceData, m interfac
 	c := m.(*api.Client)
 
 	result, err := getDataSet(c, d)
+	if result == nil && err == nil {
+		return diags
+	}
 	if err != nil {
 		return diag.FromErr(err)
 	}

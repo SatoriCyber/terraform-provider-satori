@@ -63,10 +63,11 @@ func NewProvider(version string) *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"satori_dataset":            resourceDataSet(),
-			"satori_dataset_definition": resourceDataSetDefinition(),
-			"satori_directory_group":    resourceDirectoryGroup(),
-			"satori_access_rule":        resourceDataAccessPermission(),
+			"satori_dataset":                  resourceDataSet(),
+			"satori_dataset_definition":       resourceDataSetDefinition(),
+			"satori_directory_group":          resourceDirectoryGroup(),
+			"satori_access_rule":              resourceDataAccessPermission(),
+			"satori_self_service_access_rule": resourceDataAccessSelfServiceRule(),
 		},
 	}
 

@@ -124,7 +124,11 @@ func resourceDirectoryGroupRead(ctx context.Context, d *schema.ResourceData, m i
 
 	c := m.(*api.Client)
 
-	result, err := c.GetDirectoryGroup(d.Id())
+	result, err, statusCode := c.GetDirectoryGroup(d.Id())
+	if statusCode == 404 {
+		d.SetId("")
+		return diags
+	}
 	if err != nil {
 		return diag.FromErr(err)
 	}
