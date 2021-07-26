@@ -1,6 +1,6 @@
 package api
 
-const DataSetApiPrefix = "/api/dataset"
+const DataSetApiPrefix = "/api/v1/dataset"
 
 type DataSetLocation struct {
 	DataStoreId string                  `json:"dataStoreId"`
@@ -32,15 +32,6 @@ type DataSetOutput struct {
 	DataPolicyId     string            `json:"dataPolicyId"`
 }
 
-// GetDataSets - Returns list of data sets
-func (c *Client) GetDataSets() (*[]DataSetOutput, error) {
-	var output struct {
-		Count   int             `json:"count"`
-		Records []DataSetOutput `json:"records"`
-	}
-	return &output.Records, c.getJsonForAccount(DataSetApiPrefix, nil, &output)
-}
-
 func (c *Client) CreateDataSet(input *DataSet) (*DataSetOutput, error) {
 	output := DataSetOutput{}
 	return &output, c.postJsonForAccount(DataSetApiPrefix, input, &output)
@@ -48,12 +39,12 @@ func (c *Client) CreateDataSet(input *DataSet) (*DataSetOutput, error) {
 
 func (c *Client) UpdateDataSet(id string, input *DataSet) (*DataSetOutput, error) {
 	output := DataSetOutput{}
-	return &output, c.putJson(DataSetApiPrefix, id, input, &output)
+	return &output, c.putJson(DataSetApiPrefix, "", id, input, &output)
 }
 
 func (c *Client) GetDataSet(id string) (*DataSetOutput, error, int) {
 	output := DataSetOutput{}
-	err, statusCode := c.getJsonById(DataSetApiPrefix, id, &output)
+	err, statusCode := c.getJsonById(DataSetApiPrefix, "", id, &output)
 	return &output, err, statusCode
 }
 

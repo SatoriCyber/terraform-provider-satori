@@ -1,6 +1,6 @@
 package api
 
-const DataAccessSelfServiceApiPrefix = "/api/data-access-self-service"
+const DataAccessSelfServiceApiPrefix = "/api/v1/data-access-self-service"
 
 type DataAccessSelfServiceRule struct {
 	Id               *string                        `json:"id,omitempty"`
@@ -27,12 +27,12 @@ func (c *Client) CreateDataAccessSelfServiceRule(parentId string, input *DataAcc
 
 func (c *Client) UpdateDataAccessSelfServiceRule(id string, input *DataAccessSelfServiceRule) (*DataAccessSelfServiceRule, error) {
 	output := DataAccessSelfServiceRule{}
-	return &output, c.putJson(DataAccessSelfServiceApiPrefix, id, input, &output)
+	return &output, c.putJson(DataAccessSelfServiceApiPrefix, "", id, input, &output)
 }
 
 func (c *Client) GetDataAccessSelfServiceRule(id string) (*DataAccessSelfServiceRule, error, int) {
 	output := DataAccessSelfServiceRule{}
-	err, statusCode := c.getJsonById(DataAccessSelfServiceApiPrefix, id, &output)
+	err, statusCode := c.getJsonById(DataAccessSelfServiceApiPrefix, "", id, &output)
 	return &output, err, statusCode
 }
 

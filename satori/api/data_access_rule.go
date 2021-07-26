@@ -2,7 +2,7 @@ package api
 
 import "strconv"
 
-const DataAccessPermissionApiPrefix = "/api/data-access-permission"
+const DataAccessPermissionApiPrefix = "/api/v1/data-access-permission"
 
 type DataAccessPermission struct {
 	Id               *string                   `json:"id,omitempty"`
@@ -24,18 +24,18 @@ func (c *Client) CreateDataAccessPermission(parentId string, input *DataAccessPe
 
 func (c *Client) UpdateDataAccessPermission(id string, input *DataAccessPermission) (*DataAccessPermission, error) {
 	output := DataAccessPermission{}
-	return &output, c.putJson(DataAccessPermissionApiPrefix, id, input, &output)
+	return &output, c.putJson(DataAccessPermissionApiPrefix, "", id, input, &output)
 }
 
 func (c *Client) UpdateDataAccessPermissionSuspendedStatus(id string, suspend bool) (*DataAccessPermission, error) {
 	output := DataAccessPermission{}
 	params := map[string]string{"shouldSuspend": strconv.FormatBool(suspend)}
-	return &output, c.putWithParams(DataAccessPermissionApiPrefix+"/suspend", id, &params, &output)
+	return &output, c.putWithParams(DataAccessPermissionApiPrefix, "suspend", id, &params, &output)
 }
 
 func (c *Client) GetDataAccessPermission(id string) (*DataAccessPermission, error, int) {
 	output := DataAccessPermission{}
-	err, statusCode := c.getJsonById(DataAccessPermissionApiPrefix, id, &output)
+	err, statusCode := c.getJsonById(DataAccessPermissionApiPrefix, "", id, &output)
 	return &output, err, statusCode
 }
 

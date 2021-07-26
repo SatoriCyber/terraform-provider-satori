@@ -107,8 +107,14 @@ func (c *Client) doRequest(req *http.Request) ([]byte, error, int) {
 	return body, err, res.StatusCode
 }
 
-func (c *Client) getJsonById(path string, id string, output interface{}) (error, int) {
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s%s/%s", c.HostURL, path, id), nil)
+func (c *Client) getJsonById(path string, suffix string, id string, output interface{}) (error, int) {
+
+	url := fmt.Sprintf("%s%s/%s", c.HostURL, path, id)
+	if len(suffix) > 0 {
+		url += "/" + suffix
+	}
+
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return err, 0
 	}
@@ -192,13 +198,18 @@ func (c *Client) postJsonWithParams(path string, params *map[string]string, inpu
 	return nil
 }
 
-func (c *Client) putJson(path string, id string, input interface{}, output interface{}) error {
+func (c *Client) putJson(path string, suffix string, id string, input interface{}, output interface{}) error {
 	rb, err := json.Marshal(input)
 	if err != nil {
 		return err
 	}
 
-	req, err := http.NewRequest("PUT", fmt.Sprintf("%s%s/%s", c.HostURL, path, id), strings.NewReader(string(rb)))
+	url := fmt.Sprintf("%s%s/%s", c.HostURL, path, id)
+	if len(suffix) > 0 {
+		url += "/" + suffix
+	}
+
+	req, err := http.NewRequest("PUT", url, strings.NewReader(string(rb)))
 	if err != nil {
 		return err
 	}
@@ -218,8 +229,14 @@ func (c *Client) putJson(path string, id string, input interface{}, output inter
 	return nil
 }
 
-func (c *Client) putWithParams(path string, id string, params *map[string]string, output interface{}) error {
-	req, err := http.NewRequest("PUT", fmt.Sprintf("%s%s/%s", c.HostURL, path, id), nil)
+func (c *Client) putWithParams(path string, suffix string, id string, params *map[string]string, output interface{}) error {
+
+	url := fmt.Sprintf("%s%s/%s", c.HostURL, path, id)
+	if len(suffix) > 0 {
+		url += "/" + suffix
+	}
+
+	req, err := http.NewRequest("PUT", url, nil)
 	if err != nil {
 		return err
 	}

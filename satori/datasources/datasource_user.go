@@ -33,7 +33,7 @@ func datasourceUserRead(ctx context.Context, d *schema.ResourceData, m interface
 
 	email := d.Get("email").(string)
 
-	users, err := c.GetUsers(&email)
+	users, err := c.QueryUsers(&email)
 	if err != nil {
 		return diag.FromErr(err)
 	}
