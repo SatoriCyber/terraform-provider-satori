@@ -13,12 +13,17 @@ The **satori_dataset** resource allows defining datasets.
 ## Example Usage
 
 ```terraform
+//get ID of user by email
+data "satori_user" "data_steward1" {
+  email = "data-steward@acme.organization"
+}
+
 resource "satori_dataset" "dataset1" {
   definition {
     name = "satori_dataset terraform test"
     description = "from satori terraform provider"
     #the service account must also be an owner to be able to modify settings beyond definition
-    owners = [ "522fb8ab-8d7b-4498-b39d-6911e2839253" ]
+    owners = [ "522fb8ab-8d7b-4498-b39d-6911e2839253", data.satori_user.data_steward1.id ]
 
     include_location {
       datastore = "12345678-95cf-474f-a1d6-d5084810dd95"

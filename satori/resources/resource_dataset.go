@@ -1,4 +1,4 @@
-package satori
+package resources
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
 )
 
-func resourceDataSet() *schema.Resource {
+func ResourceDataSet() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceDataSetCreate,
 		ReadContext:   resourceDataSetRead,

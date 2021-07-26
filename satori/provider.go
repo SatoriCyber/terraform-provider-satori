@@ -6,6 +6,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
+	"github.com/satoricyber/terraform-provider-satori/satori/datasources"
+	"github.com/satoricyber/terraform-provider-satori/satori/resources"
 	"strings"
 )
 
@@ -63,11 +65,14 @@ func NewProvider(version string) *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"satori_dataset":                  resourceDataSet(),
-			"satori_dataset_definition":       resourceDataSetDefinition(),
-			"satori_directory_group":          resourceDirectoryGroup(),
-			"satori_access_rule":              resourceDataAccessPermission(),
-			"satori_self_service_access_rule": resourceDataAccessSelfServiceRule(),
+			"satori_dataset":                  resources.ResourceDataSet(),
+			"satori_dataset_definition":       resources.ResourceDataSetDefinition(),
+			"satori_directory_group":          resources.ResourceDirectoryGroup(),
+			"satori_access_rule":              resources.ResourceDataAccessPermission(),
+			"satori_self_service_access_rule": resources.ResourceDataAccessSelfServiceRule(),
+		},
+		DataSourcesMap: map[string]*schema.Resource{
+			"satori_user": datasources.DatasourceUser(),
 		},
 	}
 
@@ -93,7 +98,7 @@ func providerConfigure(version string, p *schema.Provider) func(context.Context,
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Error,
 				Summary:  "Unable to create Satori client",
-				Detail:   "Unable to auth user for authenticated client",
+				Detail:   "Unable to authenticate user",
 			})
 			return nil, diag.FromErr(err)
 		}

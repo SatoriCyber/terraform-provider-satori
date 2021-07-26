@@ -1,4 +1,4 @@
-package satori
+package resources
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
 )
 
-func resourceDirectoryGroup() *schema.Resource {
+func ResourceDirectoryGroup() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceDirectoryGroupCreate,
 		ReadContext:   resourceDirectoryGroupRead,

@@ -38,7 +38,7 @@ func (c *Client) GetDataSets() (*[]DataSetOutput, error) {
 		Count   int             `json:"count"`
 		Records []DataSetOutput `json:"records"`
 	}
-	return &output.Records, c.getJsonForAccount(DataSetApiPrefix, &output)
+	return &output.Records, c.getJsonForAccount(DataSetApiPrefix, nil, &output)
 }
 
 func (c *Client) CreateDataSet(input *DataSet) (*DataSetOutput, error) {

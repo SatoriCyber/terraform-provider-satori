@@ -1,4 +1,4 @@
-package satori
+package resources
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
 )
 
-func resourceDataAccessSelfServiceRule() *schema.Resource {
+func ResourceDataAccessSelfServiceRule() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceDataAccessSelfServiceRuleCreate,
 		ReadContext:   resourceDataAccessSelfServiceRuleRead,

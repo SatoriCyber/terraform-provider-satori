@@ -126,7 +126,7 @@ func (c *Client) getJsonById(path string, id string, output interface{}) (error,
 	return nil, statusCode
 }
 
-func (c *Client) getJsonForAccount(path string, output interface{}) error {
+func (c *Client) getJsonForAccount(path string, search *string, output interface{}) error {
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s%s", c.HostURL, path), nil)
 	if err != nil {
 		return err
@@ -136,6 +136,9 @@ func (c *Client) getJsonForAccount(path string, output interface{}) error {
 	q.Add("accountId", c.AccountId)
 	q.Add("page", "0")
 	q.Add("pageSize", "200")
+	if search != nil {
+		q.Add("search", *search)
+	}
 	req.URL.RawQuery = q.Encode()
 
 	body, err, _ := c.doRequest(req)

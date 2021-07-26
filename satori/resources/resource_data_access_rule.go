@@ -1,4 +1,4 @@
-package satori
+package resources
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func resourceDataAccessPermission() *schema.Resource {
+func ResourceDataAccessPermission() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceDataAccessPermissionCreate,
 		ReadContext:   resourceDataAccessPermissionRead,

@@ -1,4 +1,4 @@
-package satori
+package resources
 
 import (
 	"context"
