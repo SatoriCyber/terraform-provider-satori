@@ -232,8 +232,7 @@ func resourceDataSetDelete(ctx context.Context, d *schema.ResourceData, m interf
 
 	c := m.(*api.Client)
 
-	err := c.DeleteDataSet(d.Id())
-	if err != nil {
+	if err := c.DeleteDataSet(d.Id()); err != nil {
 		return diag.FromErr(err)
 	}
 
