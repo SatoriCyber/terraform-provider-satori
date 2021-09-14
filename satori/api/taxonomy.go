@@ -12,8 +12,8 @@ type TaxonomyCategory struct {
 }
 
 type TaxonomyClassifierScope struct {
-	DatasetIds       *[]string          `json:"datasetIds,omitempty"`
-	IncludeLocations *[]DataSetLocation `json:"includeLocations,omitempty"`
+	DatasetIds       []string          `json:"datasetIds"`
+	IncludeLocations []DataSetLocation `json:"includeLocations"`
 }
 
 type TaxonomyClassifierValues struct {
@@ -24,38 +24,38 @@ type TaxonomyClassifierValues struct {
 
 type TaxonomyClassifierConfig struct {
 	Type                   string                    `json:"type"`
-	FieldNamePattern       string                    `json:"fieldNamePattern"`
-	SatoriBaseClassifierId string                    `json:"satoriBaseClassifierId"`
-	FieldType              string                    `json:"fieldType"`
+	FieldNamePattern       *string                   `json:"fieldNamePattern,omitempty"`
+	SatoriBaseClassifierId *string                   `json:"satoriBaseClassifierId,omitempty"`
+	FieldType              *string                   `json:"fieldType,omitempty"`
 	Values                 *TaxonomyClassifierValues `json:"values,omitempty"`
-	AdditionalCategories   *[]string                 `json:"additionalSatoriCategoriesToTag,omitempty"`
+	AdditionalCategories   []string                  `json:"additionalSatoriCategoriesToTag"`
 }
 
 type TaxonomyClassifier struct {
-	Name        string                    `json:"name"`
-	Description *string                   `json:"description"`
-	ParentNode  *string                   `json:"parentNode"`
-	Scope       *TaxonomyClassifierScope  `json:"scope,omitempty"`
-	Config      *TaxonomyClassifierConfig `json:"config,omitempty"`
+	Name        string                   `json:"name"`
+	Description *string                  `json:"description"`
+	ParentNode  string                   `json:"parentNode"`
+	Scope       TaxonomyClassifierScope  `json:"scope"`
+	Config      TaxonomyClassifierConfig `json:"config"`
 }
 
 type TaxonomyCategoryOutput struct {
 	Id          string  `json:"id"`
 	Name        string  `json:"name"`
 	Tag         string  `json:"tag"`
-	Description *string `json:"description"`
-	ParentNode  *string `json:"parentNode"`
+	Description *string `json:"description,omitempty"`
+	ParentNode  *string `json:"parentNode,omitempty"`
 	Color       string  `json:"color"`
 }
 
 type TaxonomyClassifierOutput struct {
-	Id          string                    `json:"id"`
-	Name        string                    `json:"name"`
-	Tag         string                    `json:"tag"`
-	Description *string                   `json:"description"`
-	ParentNode  *string                   `json:"parentNode"`
-	Scope       *TaxonomyClassifierScope  `json:"scope,omitempty"`
-	Config      *TaxonomyClassifierConfig `json:"config,omitempty"`
+	Id          string                   `json:"id"`
+	Name        string                   `json:"name"`
+	Tag         string                   `json:"tag"`
+	Description *string                  `json:"description"`
+	ParentNode  string                   `json:"parentNode"`
+	Scope       TaxonomyClassifierScope  `json:"scope"`
+	Config      TaxonomyClassifierConfig `json:"config"`
 }
 
 func (c *Client) CreateTaxonomyCategory(input *TaxonomyCategory) (*TaxonomyCategoryOutput, error) {

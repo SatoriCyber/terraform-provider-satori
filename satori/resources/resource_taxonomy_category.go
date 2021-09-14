@@ -42,7 +42,7 @@ func ResourceTaxonomyCategory() *schema.Resource {
 				Optional:    true,
 				Description: "Category description.",
 			},
-			"parent_category_id": &schema.Schema{
+			"parent_category": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Parent category ID.",
@@ -64,7 +64,7 @@ func resourceToCategory(d *schema.ResourceData) *api.TaxonomyCategory {
 		description := v.(string)
 		out.Description = &description
 	}
-	if v, ok := d.GetOk("parent_category_id"); ok {
+	if v, ok := d.GetOk("parent_category"); ok {
 		parentNode := v.(string)
 		out.ParentNode = &parentNode
 	}
@@ -108,10 +108,10 @@ func resourceCategoryRead(ctx context.Context, d *schema.ResourceData, m interfa
 	if err := d.Set("name", result.Name); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := SetNullableStringProp(result.Description, "description", d); err != nil {
+	if err := setNullableStringProp(result.Description, "description", d); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := SetNullableStringProp(result.ParentNode, "parent_category_id", d); err != nil {
+	if err := setNullableStringProp(result.ParentNode, "parent_category", d); err != nil {
 		return diag.FromErr(err)
 	}
 	if err := d.Set("color", result.Color); err != nil {

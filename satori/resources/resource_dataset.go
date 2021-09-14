@@ -121,13 +121,7 @@ func resourceToAccessControl(d *schema.ResourceData) *api.AccessControl {
 
 func resourceToSecurityPolicies(d *schema.ResourceData) *api.SecurityPolicies {
 	out := api.SecurityPolicies{}
-	if raw, ok := d.GetOk("security_policies"); ok {
-		in := raw.([]interface{})
-		out.Ids = make([]string, len(in))
-		for i, v := range in {
-			out.Ids[i] = v.(string)
-		}
-	}
+	out.Ids = *getStringListProp("security_policies", d)
 	return &out
 }
 
@@ -167,15 +161,8 @@ func resourceDataSetRead(ctx context.Context, d *schema.ResourceData, m interfac
 		return diag.FromErr(err)
 	}
 
-	securityPolicies := securityPoliciesToResource(resultSecurityPolicies)
-	var currentSecurityPoliciesLen = 0
-	if v, ok := d.GetOk("security_policies"); ok {
-		currentSecurityPoliciesLen = len(v.([]interface{}))
-	}
-	if !(currentSecurityPoliciesLen == 0 && len(*securityPolicies) == 0) {
-		if err := d.Set("security_policies", securityPolicies); err != nil {
-			return diag.FromErr(err)
-		}
+	if err := setStringListProp(&resultSecurityPolicies.Ids, "security_policies", d); err != nil {
+		return diag.FromErr(err)
 	}
 
 	return diags
@@ -194,14 +181,6 @@ func accessControlToResource(in *api.AccessControl) *map[string]interface{} {
 	out["enable_access_control"] = in.AccessControlEnabled
 	out["enable_user_requests"] = in.UserRequestsEnabled
 	out["enable_self_service"] = in.SelfServiceEnabled
-	return &out
-}
-
-func securityPoliciesToResource(in *api.SecurityPolicies) *[]string {
-	out := make([]string, len(in.Ids))
-	for i, v := range in.Ids {
-		out[i] = v
-	}
 	return &out
 }
 

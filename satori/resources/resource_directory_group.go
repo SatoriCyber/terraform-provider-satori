@@ -137,7 +137,7 @@ func resourceDirectoryGroupRead(ctx context.Context, d *schema.ResourceData, m i
 	if err := d.Set("name", result.Name); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := SetNullableStringProp(result.Description, "description", d); err != nil {
+	if err := setNullableStringProp(result.Description, "description", d); err != nil {
 		return diag.FromErr(err)
 	}
 	if err := d.Set("member", directoryGroupMembersToResource(result.Members)); err != nil {
