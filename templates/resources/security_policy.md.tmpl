@@ -1,0 +1,19 @@
+---
+layout: ""
+page_title: "security_policy (Resource)"
+description: |-
+security_policy resource allows defining security policies.
+---
+
+# security_policy (Resource)
+
+The Satori Security Policy is a re-usable object that can be configured to contain multiple sets of dynamic masking configurations and data filtering configurations.
+A Security Policy can be applied to on one or more datasets.
+
+The **security_policy** resource allows defining security policies.
+
+## Example Usage
+
+{{tffile "examples/security_policy/security_policy.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}

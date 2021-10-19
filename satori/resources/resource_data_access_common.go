@@ -48,17 +48,17 @@ func resourceDataAccessIdentity() *schema.Schema {
 					Type:        schema.TypeString,
 					Optional:    true,
 					Description: "User/group name for identity types of USER and IDP_GROUP.\nCan not be changed after creation.",
-					ConflictsWith: []string{
-						"identity.0.group_id",
-					},
+					//ConflictsWith: []string{
+					//	"identity.0.group_id",
+					//},
 				},
 				"group_id": &schema.Schema{
 					Type:        schema.TypeString,
 					Optional:    true,
 					Description: "Directory group ID for identity of type GROUP.\nCan not be changed after creation.",
-					ConflictsWith: []string{
-						"identity.0.name",
-					},
+					//ConflictsWith: []string{
+					//	"identity.0.name",
+					//},
 				},
 			},
 		},
@@ -76,15 +76,19 @@ func resourceDataAccessSecurityPolicies() *schema.Schema {
 	}
 }
 
-func resourceToDataAccessIdentity(d *schema.ResourceData) *api.DataAccessIdentity {
+func resourceToIdentity(resourceIdentity map[string]interface{}) *api.DataAccessIdentity {
 	var identity api.DataAccessIdentity
-	identity.IdentityType = d.Get("identity.0.type").(string)
-	if v, ok := d.GetOk("identity.0.name"); ok {
-		identity.Identity = v.(string)
-	} else if v, ok := d.GetOk("identity.0.group_id"); ok {
-		identity.Identity = v.(string)
+
+	identity.IdentityType = resourceIdentity["type"].(string)
+	identity.IdentityType = resourceIdentity["type"].(string)
+	identityName := resourceIdentity["name"].(string)
+	identityGroupId := resourceIdentity["group_id"].(string)
+
+	if len(identityName) > 0 {
+		identity.Identity = identityName
+	} else if len(identityGroupId) > 0 {
+		identity.Identity = identityGroupId
 	} else {
-		//for everyone
 		identity.Identity = identity.IdentityType
 	}
 	return &identity

@@ -82,8 +82,9 @@ func resourceToDataAccessSelfServiceRule(d *schema.ResourceData) *api.DataAccess
 		out.UnusedTimeLimit.ShouldRevoke = true
 		out.UnusedTimeLimit.UnusedDaysUntilRevocation = revokeUnusedIn
 	}
+	resourceIdentity := d.Get("identity.0").(map[string]interface{})
+	out.Identity = resourceToIdentity(resourceIdentity)
 
-	out.Identity = resourceToDataAccessIdentity(d)
 	out.SecurityPolicies = resourceToDataAccessSecurityPolicies(d)
 
 	return &out

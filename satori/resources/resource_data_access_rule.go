@@ -79,7 +79,8 @@ func resourceToDataAccessPermission(d *schema.ResourceData) (*api.DataAccessPerm
 		out.UnusedTimeLimit.UnusedDaysUntilRevocation = revokeUnusedIn
 	}
 
-	out.Identity = resourceToDataAccessIdentity(d)
+	resourceIdentity := d.Get("identity.0").(map[string]interface{})
+	out.Identity = resourceToIdentity(resourceIdentity)
 
 	out.SecurityPolicies = resourceToDataAccessSecurityPolicies(d)
 
