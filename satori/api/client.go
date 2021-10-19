@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -186,12 +187,15 @@ func (c *Client) postJsonWithParams(path string, params *map[string]string, inpu
 	req.URL.RawQuery = q.Encode()
 
 	body, err, _ := c.doRequest(req)
+
 	if err != nil {
+		log.Printf("Recieved error: %s", err)
 		return err
 	}
 
 	err = json.Unmarshal(body, output)
 	if err != nil {
+		log.Printf("Recieved unmarshal error: %s", err)
 		return err
 	}
 

@@ -72,6 +72,8 @@ func NewProvider(version string) *schema.Provider {
 			"satori_self_service_access_rule":   resources.ResourceDataAccessSelfServiceRule(),
 			"satori_custom_taxonomy_category":   resources.ResourceTaxonomyCategory(),
 			"satori_custom_taxonomy_classifier": resources.ResourceTaxonomyClassifier(),
+			"satori_masking_profile":            resources.ResourceMaskingProfile(),
+			"satori_security_policy":            resources.ResourceSecurityPolicy(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"satori_user": datasources.DatasourceUser(),
