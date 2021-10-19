@@ -1,6 +1,6 @@
 <br>
 <a href="https://terraform.io">
-    <img src="https://cdn.rawgit.com/hashicorp/terraform-website/master/content/source/assets/images/logo-hashicorp.svg" alt="Terraform logo" title="Terraform" height="50" />
+    <img src=".github/tf.png" alt="Terraform logo" title="Terraform" height="50" />
 </a>
 &nbsp;&nbsp;
 <a href="https://www.satoricyber.com/">
