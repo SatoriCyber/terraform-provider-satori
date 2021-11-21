@@ -5,45 +5,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
+	"log"
 )
-
-func getDatasetLocationResource(locationOptional bool) *schema.Resource {
-	return &schema.Resource{
-		Schema: map[string]*schema.Schema{
-			"datastore": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Data store ID.",
-			},
-			"relational_location": &schema.Schema{
-				Type:        schema.TypeList,
-				Optional:    locationOptional,
-				Required:    !locationOptional,
-				MaxItems:    1,
-				Description: "Location for a relational data store.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"db": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Database name.",
-						},
-						"schema": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Schema name.",
-						},
-						"table": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Table name.",
-						},
-					},
-				},
-			},
-		},
-	}
-}
 
 func getDatasetDataPolicyIdSchema() *schema.Schema {
 	return &schema.Schema{
@@ -138,35 +101,47 @@ func resourceToLocations(d *schema.ResourceData, mainParamName string) *[]api.Da
 		out := make([]api.DataSetLocation, len(v.([]interface{})))
 		for i, raw := range v.([]interface{}) {
 			inElement := raw.(map[string]interface{})
-			outElement := api.DataSetLocation{}
-			outElement.DataStoreId = inElement["datastore"].(string)
-			if inElement["relational_location"] != nil {
-				inLocations := inElement["relational_location"].([]interface{})
-				if len(inLocations) > 0 {
-					var location api.DataSetGenericLocation
-					location.Type = "RELATIONAL_LOCATION"
-					inLocation := inLocations[0].(map[string]interface{})
-					if len(inLocation["db"].(string)) > 0 {
-						db := inLocation["db"].(string)
-						location.Db = &db
-						if len(inLocation["schema"].(string)) > 0 {
-							schema := inLocation["schema"].(string)
-							location.Schema = &schema
-							if len(inLocation["table"].(string)) > 0 {
-								table := inLocation["table"].(string)
-								location.Table = &table
-							}
-						}
-					}
-					outElement.Location = &location
-				}
-			}
+			outElement := resourceToDatasetLocation(inElement)
 			out[i] = outElement
 		}
 		return &out
 	}
 	out := make([]api.DataSetLocation, 0)
 	return &out
+}
+
+func resourceToDatasetLocation(inElement map[string]interface{}) api.DataSetLocation {
+	outElement := api.DataSetLocation{}
+	outElement.DataStoreId = inElement["datastore"].(string)
+	if inElement["relational_location"] != nil {
+		inLocations := inElement["relational_location"].([]interface{})
+		if len(inLocations) > 0 {
+			var location api.DataSetGenericLocation
+			resourceToGenericLocation(&location, inLocations, "RELATIONAL_LOCATION")
+			outElement.Location = &location
+		}
+	}
+	return outElement
+}
+
+func resourceToGenericLocation(location *api.DataSetGenericLocation, inLocations []interface{}, locationType string) {
+	location.Type = locationType
+	inLocation := inLocations[0].(map[string]interface{})
+	log.Printf("In location: %s", inLocation)
+
+	if len(inLocation["db"].(string)) > 0 {
+		db := inLocation["db"].(string)
+		location.Db = &db
+		if len(inLocation["schema"].(string)) > 0 {
+			schema := inLocation["schema"].(string)
+			location.Schema = &schema
+			if len(inLocation["table"].(string)) > 0 {
+				table := inLocation["table"].(string)
+				location.Table = &table
+			}
+		}
+	}
+	log.Printf("Out location: %s", location)
 }
 
 func getDataSet(c *api.Client, d *schema.ResourceData) (*api.DataSetOutput, error) {

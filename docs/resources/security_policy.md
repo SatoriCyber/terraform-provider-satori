@@ -21,9 +21,9 @@ resource "satori_security_policy" "security_policy" {
     masking {
       active = true
       rule {
-        id = "3"
+        id          = "3"
         description = "rule 1"
-        active = true
+        active      = true
         criteria {
           condition = "IS"
           identity {
@@ -37,9 +37,9 @@ resource "satori_security_policy" "security_policy" {
         }
       }
       rule {
-        id = "1"
+        id          = "1"
         description = "rule 2"
-        active = true
+        active      = true
         criteria {
           condition = "IS_NOT"
           identity {
@@ -48,39 +48,167 @@ resource "satori_security_policy" "security_policy" {
           }
         }
         action {
-          type = "APPLY_MASKING_PROFILE"
-          masking_profile_id = satori_masking_profile.masking_profile.id
+          type               = "APPLY_MASKING_PROFILE"
+          masking_profile_id = satori_masking_profile.masking_profile.id # as reference of previously created masking profile
         }
       }
       rule {
-        id = "2"
+        id          = "2"
         description = "rule 3"
-        active = true
+        active      = true
         criteria {
           condition = "IS_NOT"
           identity {
-            type = "GROUP"
+            type     = "GROUP"
             group_id = satori_directory_group.group2.id
           }
         }
         action {
-          type = "APPLY_MASKING_PROFILE"
+          type               = "APPLY_MASKING_PROFILE"
           masking_profile_id = satori_masking_profile.masking_profile.id
         }
       }
       rule {
-        id = "4"
+        id          = "4"
         description = "rule 4"
-        active = true
+        active      = true
         criteria {
           condition = "IS_NOT"
           identity {
-            type = "GROUP"
+            type     = "GROUP"
             group_id = satori_directory_group.group3.id
           }
         }
         action {
+          # type = "APPLY_MASKING_PROFILE"
           masking_profile_id = satori_masking_profile.masking_profile.id
+        }
+      }
+    }
+    row_level_security {
+      active = false
+      rule {
+        id          = "rls1"
+        description = "rls 1 description"
+        active      = true
+        filter {
+          datastore_id = local.datastore_id
+          advanced     = false
+          logic_yaml   = <<EOT
+                          field:
+                            name: '33'
+                          filterName: Filter 1
+                        EOT
+          location_prefix {
+            db     = "db2"
+            schema = "schema2"
+            table  = "table"
+          }
+        }
+      }
+      rule {
+        id          = "rls2"
+        description = "rls 1 description"
+        active      = true
+        filter {
+          datastore_id = local.datastore_id
+          logic_yaml   = <<EOT
+and:
+  - or:
+    - and:
+      - field:
+          name: c1
+          path: $.a['b']
+        filterName: Filter 1
+      - field:
+          name: c2
+        filterName: with space
+    - and:
+      - field:
+          name: c3
+        filterName: Filter 1
+      - field:
+          name: c4
+          path: $.a.b
+        filterName: Filter 2
+  - or:
+    - field:
+        name: lala
+      filterName: Filter 1
+    - field:
+        name: lala
+        path: $.a.b
+      filterName: Filter 1
+    - field:
+        name: d3
+        path: $.a['b']
+      filterName: Filter 1
+  EOT
+          location_prefix {
+            db     = "db2"
+            schema = "schema2"
+            table  = "table1"
+          }
+        }
+      }
+      mapping {
+        name = "Filter 1"
+        filter {
+          criteria {
+            condition = "IS_NOT"
+            identity {
+              type     = "GROUP"
+              group_id = satori_directory_group.group3.id
+            }
+          }
+          values {
+            type  = "STRING"
+            value = ["a", "b"]
+          }
+        }
+        defaults {
+          type  = "ALL_OTHER_VALUES"
+          value = []
+        }
+      }
+      mapping {
+        name = "Filter 2"
+        filter {
+          criteria {
+            condition = "IS_NOT"
+            identity {
+              type     = "GROUP"
+              group_id = satori_directory_group.group3.id
+            }
+          }
+          values {
+            type  = "STRING"
+            value = ["a", "b"]
+          }
+        }
+        defaults {
+          type  = "NO_VALUE"
+          value = []
+        }
+      }
+      mapping {
+        name = "with space"
+        filter {
+          criteria {
+            condition = "IS_NOT"
+            identity {
+              type     = "GROUP"
+              group_id = satori_directory_group.group3.id
+            }
+          }
+          values {
+            type  = "STRING"
+            value = ["a", "b"]
+          }
+        }
+        defaults {
+          type  = "NUMERIC"
+          value = ["1", "2.4", "1.343434"]
         }
       }
     }
@@ -103,9 +231,10 @@ resource "satori_security_policy" "security_policy" {
 <a id="nestedblock--profile"></a>
 ### Nested Schema for `profile`
 
-Optional:
+Required:
 
-- **masking** (Block List, Max: 1) Masking profile. (see [below for nested schema](#nestedblock--profile--masking))
+- **masking** (Block List, Min: 1, Max: 1) Masking profile. (see [below for nested schema](#nestedblock--profile--masking))
+- **row_level_security** (Block List, Min: 1, Max: 1) Row level security profile (see [below for nested schema](#nestedblock--profile--row_level_security))
 
 <a id="nestedblock--profile--masking"></a>
 ### Nested Schema for `profile.masking`
@@ -113,7 +242,10 @@ Optional:
 Required:
 
 - **active** (Boolean) Is active.
-- **rule** (Block List, Min: 1) Masking Rule. (see [below for nested schema](#nestedblock--profile--masking--rule))
+
+Optional:
+
+- **rule** (Block List) Masking Rule. (see [below for nested schema](#nestedblock--profile--masking--rule))
 
 <a id="nestedblock--profile--masking--rule"></a>
 ### Nested Schema for `profile.masking.rule`
@@ -160,3 +292,116 @@ Optional:
 Can not be changed after creation.
 - **name** (String) User/group name for identity types of USER and IDP_GROUP.
 Can not be changed after creation.
+
+
+
+
+
+<a id="nestedblock--profile--row_level_security"></a>
+### Nested Schema for `profile.row_level_security`
+
+Required:
+
+- **active** (Boolean) Row level security activation.
+
+Optional:
+
+- **mapping** (Block List) Row Level Security Mapping. (see [below for nested schema](#nestedblock--profile--row_level_security--mapping))
+- **rule** (Block List) Row Level Security Rule definition. (see [below for nested schema](#nestedblock--profile--row_level_security--rule))
+
+<a id="nestedblock--profile--row_level_security--mapping"></a>
+### Nested Schema for `profile.row_level_security.mapping`
+
+Required:
+
+- **defaults** (Block List, Min: 1, Max: 1) A list of default values to be applied in this filter if there was no match. Values are dependent on their type and has to be homogeneous (see [below for nested schema](#nestedblock--profile--row_level_security--mapping--defaults))
+- **filter** (Block List, Min: 1, Max: 1) Filter definition. (see [below for nested schema](#nestedblock--profile--row_level_security--mapping--filter))
+- **name** (String) Filter name, has to be unique in this policy.
+
+<a id="nestedblock--profile--row_level_security--mapping--defaults"></a>
+### Nested Schema for `profile.row_level_security.mapping.name`
+
+Required:
+
+- **type** (String) Default values type
+- **value** (List of String) List of values, when NO_VALUE or ALL_OTHER_VALUES are defined, the list has to be empty
+
+
+<a id="nestedblock--profile--row_level_security--mapping--filter"></a>
+### Nested Schema for `profile.row_level_security.mapping.name`
+
+Required:
+
+- **criteria** (Block List, Min: 1, Max: 1) Filter criteria. (see [below for nested schema](#nestedblock--profile--row_level_security--mapping--name--criteria))
+- **values** (Block List, Min: 1, Max: 1) A list of values to be applied in this filter. Values are dependent on their type and has to be homogeneous (see [below for nested schema](#nestedblock--profile--row_level_security--mapping--name--values))
+
+<a id="nestedblock--profile--row_level_security--mapping--name--criteria"></a>
+### Nested Schema for `profile.row_level_security.mapping.name.criteria`
+
+Required:
+
+- **condition** (String) Identity condition, for example IS_NOT, IS, etc.
+- **identity** (Block List, Min: 1, Max: 1) Identity to apply the rule for. (see [below for nested schema](#nestedblock--profile--row_level_security--mapping--name--criteria--identity))
+
+<a id="nestedblock--profile--row_level_security--mapping--name--criteria--identity"></a>
+### Nested Schema for `profile.row_level_security.mapping.name.criteria.identity`
+
+Required:
+
+- **type** (String) Identity type, valid types are: USER, IDP_GROUP, GROUP, EVERYONE.
+Can not be changed after creation.
+
+Optional:
+
+- **group_id** (String) Directory group ID for identity of type GROUP.
+Can not be changed after creation.
+- **name** (String) User/group name for identity types of USER and IDP_GROUP.
+Can not be changed after creation.
+
+
+
+<a id="nestedblock--profile--row_level_security--mapping--name--values"></a>
+### Nested Schema for `profile.row_level_security.mapping.name.values`
+
+Required:
+
+- **type** (String) Values type.
+- **value** (List of String) List of values, when ANY_VALUE or ALL_OTHER_VALUES are defined, the list has to be empty
+
+
+
+
+<a id="nestedblock--profile--row_level_security--rule"></a>
+### Nested Schema for `profile.row_level_security.rule`
+
+Required:
+
+- **active** (Boolean) Is active rule.
+- **description** (String) Rule description.
+- **filter** (Block List, Min: 1, Max: 1) Rule filter. (see [below for nested schema](#nestedblock--profile--row_level_security--rule--filter))
+- **id** (String) Rule id, has to be unique.
+
+<a id="nestedblock--profile--row_level_security--rule--filter"></a>
+### Nested Schema for `profile.row_level_security.rule.id`
+
+Required:
+
+- **datastore_id** (String) Datastore ID.
+- **logic_yaml** (String) Conditional rule, for more info see https://satoricyber.com/docs/security-policies/#setting-up-data-filtering.
+
+Optional:
+
+- **advanced** (Boolean) Describes if logic yaml contains complex configuration. Defaults to `true`.
+- **location_prefix** (Block List) Location to to be included in the rule. (see [below for nested schema](#nestedblock--profile--row_level_security--rule--id--location_prefix))
+
+<a id="nestedblock--profile--row_level_security--rule--id--location_prefix"></a>
+### Nested Schema for `profile.row_level_security.rule.id.location_prefix`
+
+Required:
+
+- **db** (String) Database name.
+
+Optional:
+
+- **schema** (String) Schema name.
+- **table** (String) Table name.
