@@ -12,11 +12,19 @@ type SecurityPolicy struct {
 	SecurityProfiles SecurityProfiles `json:"profiles"`
 }
 
+type SecurityProfiles struct {
+	Masking          *MaskingSecurityProfile  `json:"masking,omitempty"`
+	RowLevelSecurity *RowLevelSecurityProfile `json:"rowLevelSecurity,omitempty"`
+}
+
 type SecurityPolicyOutput struct {
 	SecurityPolicy
 	Id string `json:"id"`
 }
 
+/////////////////////
+// Masking
+/////////////////////
 type MaskingSecurityProfile struct {
 	Active bool          `json:"active"`
 	Rules  []MaskingRule `json:"rules"`
@@ -40,14 +48,48 @@ type MaskingRule struct {
 	MaskingAction      MaskingAction      `json:"maskingAction"`
 }
 
-type RowLevelSecurityProfile struct {
-	Active bool `json:"active"`
-	//Maps
+/////////////////////
+// Row Level Security
+/////////////////////
+type RowLevelSecurityRuleFilter struct {
+	DataStoreId    string                  `json:"dataStoreId"`
+	LocationPrefix *DataSetGenericLocation `json:"locationPrefix"`
+	LogicYaml      string                  `json:"logicYaml"`
+	Advanced       bool                    `json:"advanced"`
 }
 
-type SecurityProfiles struct {
-	Masking          MaskingSecurityProfile  `json:"masking"`
-	RowLevelSecurity RowLevelSecurityProfile `json:"rowLevelSecurity"`
+type RowLevelSecurityRule struct {
+	Id          string                     `json:"id"`
+	Active      bool                       `json:"active"`
+	Description string                     `json:"description"`
+	RuleFilter  RowLevelSecurityRuleFilter `json:"filter"`
+}
+
+type RowLevelSecurityMapDataFilter struct {
+	Criteria DataFilterCriteria `json:"criteria"`
+	Values   DataFilterValues   `json:"values"`
+}
+
+type DataFilterValues struct {
+	Type   string    `json:"type"` //   STRING, NUMERIC, ANY_VALUE, ALL_OTHER_VALUES
+	Values *[]string `json:"values"`
+}
+
+type DataFilterDefaultValues struct {
+	Type   string    `json:"type"` //   STRING, NUMERIC, NO_VALUE, ALL_OTHER_VALUES
+	Values *[]string `json:"values,omitempty"`
+}
+
+type RowLevelSecurityFilter struct {
+	Name     string                          `json:"name"`
+	Filters  []RowLevelSecurityMapDataFilter `json:"filters"`
+	Defaults DataFilterDefaultValues         `json:"defaults"`
+}
+
+type RowLevelSecurityProfile struct {
+	Active bool                     `json:"active"`
+	Rules  []RowLevelSecurityRule   `json:"rules"`
+	Maps   []RowLevelSecurityFilter `json:"maps"`
 }
 
 func (c *Client) CreateSecurityPolicy(input *SecurityPolicy) (*SecurityPolicyOutput, error) {

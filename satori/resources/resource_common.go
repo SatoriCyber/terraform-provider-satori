@@ -61,3 +61,63 @@ func getStringListProp(prop string, d *schema.ResourceData) *[]string {
 	list := make([]string, 0)
 	return &list
 }
+
+func getDatasetLocationResource(locationOptional bool) *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"datastore": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Data store ID.",
+			},
+			"relational_location": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    locationOptional,
+				Required:    !locationOptional,
+				MaxItems:    1,
+				Description: "Location for a relational data store.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"db": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Database name.",
+						},
+						"schema": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Schema name.",
+						},
+						"table": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Table name.",
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func getRelationalLocationResource() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"db": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Database name.",
+			},
+			"schema": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Schema name.",
+			},
+			"table": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Table name.",
+			},
+		},
+	}
+}

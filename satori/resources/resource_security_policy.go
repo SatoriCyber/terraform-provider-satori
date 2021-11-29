@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
@@ -9,22 +10,35 @@ import (
 )
 
 var (
-	MaskingActive                      = "active"
+	Active                             = "active"
 	SecurityPolicyName                 = "name"
 	SecurityPolicyProfile              = "profile"
 	MaskingProfile                     = "masking"
 	MaskingRule                        = "rule"
-	MaskingRuleId                      = "id"
-	MaskingRuleDescription             = "description"
-	MaskingRuleActive                  = "active"
+	RuleId                             = "id"
+	RuleDescription                    = "description"
 	MaskingRuleAction                  = "action"
 	MaskingRuleActionType              = "type"
 	MaskingRuleActionProfileId         = "masking_profile_id"
-	MaskingRuleCriteria                = "criteria"
-	MaskingRuleCriteriaCondition       = "condition"
-	MaskingRuleCriteriaIdentity        = "identity"
+	RuleCriteria                       = "criteria"
+	CriteriaCondition                  = "condition"
+	CriteriaIdentity                   = "identity"
 	MaskingRuleActionDefaultActionType = "APPLY_MASKING_PROFILE"
 	RowLevelSecurity                   = "row_level_security"
+	RLSActive                          = "active"
+	RLSRule                            = "rule"
+	RLSRuleFilter                      = "filter"
+	RLSRuleFilterDatastoreId           = "datastore_id"
+	RLSRuleFilterLocationPrefix        = "location_prefix"
+	RLSRuleFilterAdvanced              = "advanced"
+	RLSRuleFilterLogicYaml             = "logic_yaml"
+	RLSMapping                         = "mapping"
+	FilterName                         = "name"
+	RLSMappingFilter                   = "filter"
+	RLSMappingValue                    = "value"
+	RLSMappingValues                   = "values"
+	RLSMappingDefaultValues            = "defaults"
+	RLSMappingValuesType               = "type"
 )
 
 func ResourceSecurityPolicy() *schema.Resource {
@@ -39,20 +53,20 @@ func ResourceSecurityPolicy() *schema.Resource {
 		},
 		Description: "Security Policy.",
 		Schema: map[string]*schema.Schema{
-			SecurityPolicyName: &schema.Schema{
+			SecurityPolicyName: {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Security policy name.",
 			},
-			SecurityPolicyProfile: &schema.Schema{
+			SecurityPolicyProfile: {
 				Type:        schema.TypeList,
 				Required:    true,
 				MaxItems:    1,
 				Description: "Security policy profile.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						MaskingProfile: resourceMaskingProfile(),
-						//RowLevelSecurity: resourceRowLevelSecurity(),
+						MaskingProfile:   resourceMaskingProfile(),
+						RowLevelSecurity: resourceRowLevelSecurity(),
 					},
 				},
 			},
@@ -62,60 +76,237 @@ func ResourceSecurityPolicy() *schema.Resource {
 
 func resourceRowLevelSecurity() *schema.Schema {
 	return &schema.Schema{
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
+		Required:    true,
+		MaxItems:    1,
+		Description: "Row level security profile",
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				RLSActive: {
+					Type:        schema.TypeBool,
+					Required:    true,
+					Description: "Row level security activation.",
+				},
+				RLSRule:    resourceRowLevelSecurityRule(),
+				RLSMapping: resourceRowLevelSecurityMappingFilter(),
+			},
+		},
+	}
+}
+
+func resourceRowLevelSecurityMappingFilter() *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeList,
 		Optional:    true,
-		Description: "Row level security, TBD",
+		Description: "Row Level Security Mapping.",
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				FilterName: {
+					Type:        schema.TypeString,
+					Required:    true,
+					Description: "Filter name, has to be unique in this policy.",
+				},
+				RLSMappingFilter: {
+					Type:        schema.TypeList,
+					Required:    true,
+					MaxItems:    1,
+					Description: "Filter definition.",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							RuleCriteria: {
+								Type:        schema.TypeList,
+								Required:    true,
+								MinItems:    1,
+								MaxItems:    1,
+								Description: "Filter criteria.",
+								Elem: &schema.Resource{
+									Schema: map[string]*schema.Schema{
+										CriteriaCondition: {
+											Type:        schema.TypeString,
+											Required:    true,
+											Description: "Identity condition, for example IS_NOT, IS, etc.",
+										},
+										CriteriaIdentity: resourceDataAccessIdentity(),
+									},
+								},
+							},
+							RLSMappingValues: {
+								Type:        schema.TypeList,
+								Required:    true,
+								MaxItems:    1,
+								Description: "A list of values to be applied in this filter. Values are dependent on their type and has to be homogeneous",
+								Elem: &schema.Resource{
+									Schema: map[string]*schema.Schema{
+										RLSMappingValue: {
+											Type:        schema.TypeList,
+											Required:    true,
+											MinItems:    1,
+											Description: "List of values, when ANY_VALUE or ALL_OTHER_VALUES are defined, the list has to be empty",
+											Elem: &schema.Schema{
+												Type: schema.TypeString,
+											},
+										},
+										RLSMappingValuesType: {
+											Type:        schema.TypeString,
+											Required:    true,
+											Description: "Values type.",
+											ValidateFunc: func(v interface{}, key string) (warns []string, errs []error) {
+												value := v.(string)
+												if value != "STRING" && value != "NUMERIC" && value != "ANY_VALUE" && value != "ALL_OTHER_VALUES" {
+													errs = append(errs, fmt.Errorf("%q must be one of 'STRING, NUMERIC, ANY_VALUE or ALL_OTHER_VALUES' but got: %q", key, value))
+												}
+												return
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				RLSMappingDefaultValues: {
+					Type:        schema.TypeList,
+					Required:    true,
+					MaxItems:    1,
+					MinItems:    1,
+					Description: "A list of default values to be applied in this filter if there was no match. Values are dependent on their type and has to be homogeneous",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							RLSMappingValue: {
+								Type:        schema.TypeList,
+								Required:    true,
+								Description: "List of values, when NO_VALUE or ALL_OTHER_VALUES are defined, the list has to be empty",
+								Elem: &schema.Schema{
+									Type: schema.TypeString,
+								},
+							},
+							RLSMappingValuesType: {
+								Type:        schema.TypeString,
+								Required:    true,
+								Description: "Default values type",
+								ValidateFunc: func(v interface{}, key string) (warns []string, errs []error) {
+									value := v.(string)
+									if value != "STRING" && value != "NUMERIC" && value != "NO_VALUE" && value != "ALL_OTHER_VALUES" {
+										errs = append(errs, fmt.Errorf("%q must be one of 'STRING, NUMERIC, NO_VALUE or ALL_OTHER_VALUES' but got: %q", key, value))
+									}
+									return
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func resourceRowLevelSecurityRule() *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeList,
+		Optional:    true,
+		Description: "Row Level Security Rule definition.",
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				RuleId: {
+					Type:        schema.TypeString,
+					Required:    true,
+					Description: "Rule id, has to be unique.",
+				},
+				RuleDescription: {
+					Type:        schema.TypeString,
+					Required:    true,
+					Description: "Rule description.",
+				},
+				Active: {
+					Type:        schema.TypeBool,
+					Required:    true,
+					Description: "Is active rule.",
+				},
+				RLSRuleFilter: {
+					Type:        schema.TypeList,
+					Required:    true,
+					MaxItems:    1,
+					Description: "Rule filter.",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							RLSRuleFilterDatastoreId: {
+								Type:        schema.TypeString,
+								Required:    true,
+								Description: "Datastore ID.",
+							},
+							RLSRuleFilterLocationPrefix: {
+								Type:        schema.TypeList,
+								Optional:    true,
+								Description: "Location to to be included in the rule.",
+								Elem:        getRelationalLocationResource(),
+							},
+							RLSRuleFilterAdvanced: {
+								Type:        schema.TypeBool,
+								Optional:    true,
+								Default:     true,
+								Description: "Describes if logic yaml contains complex configuration.",
+							},
+							RLSRuleFilterLogicYaml: {
+								Type:        schema.TypeString,
+								Required:    true,
+								Description: "Conditional rule, for more info see https://satoricyber.com/docs/security-policies/#setting-up-data-filtering.",
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 }
 
 func resourceMaskingProfile() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeList,
-		Optional:    true,
+		Required:    true,
 		MaxItems:    1,
 		Description: "Masking profile.",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
-				MaskingActive: &schema.Schema{
+				Active: {
 					Type:        schema.TypeBool,
 					Required:    true,
 					Description: "Is active.",
 				},
-				MaskingRule: &schema.Schema{
+				MaskingRule: {
 					Type:        schema.TypeList,
-					Required:    true,
+					Optional:    true,
 					Description: "Masking Rule.",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
-							MaskingRuleId: &schema.Schema{
+							RuleId: {
 								Type:        schema.TypeString,
 								Required:    true,
 								Description: "Rule id, has to be unique.",
 							},
-							MaskingRuleDescription: &schema.Schema{
+							RuleDescription: {
 								Type:        schema.TypeString,
 								Required:    true,
 								Description: "Rule description.",
 							},
-							MaskingRuleActive: &schema.Schema{
+							Active: {
 								Type:        schema.TypeBool,
 								Required:    true,
 								Description: "Is active rule.",
 							},
-							MaskingRuleAction: &schema.Schema{
+							MaskingRuleAction: {
 								Type:        schema.TypeList,
 								Required:    true,
 								MaxItems:    1,
 								Description: "Rule action.",
 								Elem: &schema.Resource{
 									Schema: map[string]*schema.Schema{
-										MaskingRuleActionType: &schema.Schema{
+										MaskingRuleActionType: {
 											Type:        schema.TypeString,
 											Optional:    true,
 											Default:     MaskingRuleActionDefaultActionType,
 											Description: "Rule type.",
 										},
-										MaskingRuleActionProfileId: &schema.Schema{
+										MaskingRuleActionProfileId: {
 											Type:        schema.TypeString,
 											Required:    true,
 											Description: "The reference id to be applied as masking profile.",
@@ -123,7 +314,7 @@ func resourceMaskingProfile() *schema.Schema {
 									},
 								},
 							},
-							MaskingRuleCriteria: &schema.Schema{
+							RuleCriteria: {
 								Type:        schema.TypeList,
 								Required:    true,
 								MinItems:    1,
@@ -131,12 +322,12 @@ func resourceMaskingProfile() *schema.Schema {
 								Description: "Masking criteria.",
 								Elem: &schema.Resource{
 									Schema: map[string]*schema.Schema{
-										MaskingRuleCriteriaCondition: &schema.Schema{
+										CriteriaCondition: {
 											Type:        schema.TypeString,
 											Required:    true,
 											Description: "Identity condition, for example IS_NOT, IS, etc.",
 										},
-										MaskingRuleCriteriaIdentity: resourceDataAccessIdentity(),
+										CriteriaIdentity: resourceDataAccessIdentity(),
 									},
 								},
 							},
@@ -154,22 +345,28 @@ func resourceMaskingProfile() *schema.Schema {
 func resourceToSecurityProfiles(d *schema.ResourceData) *api.SecurityProfiles {
 	out := api.SecurityProfiles{}
 	if _, ok := d.GetOk(SecurityPolicyProfile); ok {
-		out.Masking = api.MaskingSecurityProfile{}
+		out.Masking = &api.MaskingSecurityProfile{}
 		if m, ok := d.GetOk("profile.0.masking.0"); ok {
 			resourceToMasking(d, m, &out)
+		} else {
+			out.Masking.Active = false
+		}
+		if m, ok := d.GetOk("profile.0.row_level_security.0"); ok {
+			out.RowLevelSecurity = &api.RowLevelSecurityProfile{}
+			resourceToRowLevelSecurityProfile(d, m, &out)
+		} else {
+			out.RowLevelSecurity.Active = false
 		}
 	}
-	//if _, ok := d.GetOk("profile.0.row_level_security.0"); ok {
-	//	out.RowLevelSecurity = *(new(api.RowLevelSecurityProfile))
-	//}
 
 	return &out
 }
 
+// Masking
 func resourceToMasking(d *schema.ResourceData, m interface{}, out *api.SecurityProfiles) {
 	masking := m.(map[string]interface{})
 
-	isActive := masking[MaskingActive].(bool)
+	isActive := masking[Active].(bool)
 
 	log.Printf("Masking is active: %t", isActive)
 	out.Masking.Active = isActive
@@ -186,13 +383,12 @@ func resourceToMasking(d *schema.ResourceData, m interface{}, out *api.SecurityP
 func resourceToMaskingRule(raw interface{}, rules *[]api.MaskingRule, i int) {
 	inElement := raw.(map[string]interface{})
 	outElement := api.MaskingRule{}
-	outElement.Id = inElement[MaskingRuleId].(string)
-	outElement.Description = inElement[MaskingRuleDescription].(string)
-	outElement.Active = inElement[MaskingActive].(bool)
+	outElement.Id = inElement[RuleId].(string)
+	outElement.Description = inElement[RuleDescription].(string)
+	outElement.Active = inElement[Active].(bool)
 
 	actionList := inElement[MaskingRuleAction].([]interface{})
 	action := actionList[0].(map[string]interface{})
-	log.Printf("Action: %s", action)
 	maskingProfileId := action[MaskingRuleActionProfileId].(string)
 
 	// Masking action
@@ -200,14 +396,128 @@ func resourceToMaskingRule(raw interface{}, rules *[]api.MaskingRule, i int) {
 	outElement.MaskingAction.Type = MaskingRuleActionDefaultActionType
 
 	// Masking criteria
-	criteriaList := inElement[MaskingRuleCriteria].([]interface{})
-	criteria := criteriaList[0].(map[string]interface{})
-	outElement.DataFilterCriteria.Condition = criteria[MaskingRuleCriteriaCondition].(string)
+	outElement.DataFilterCriteria.Identity = *resourceToCriteriaRule(inElement, &outElement.DataFilterCriteria.Condition)
 
-	identityList := criteria[MaskingRuleCriteriaIdentity].([]interface{})
+	(*rules)[i] = outElement
+}
+
+func resourceToCriteriaRule(inElement map[string]interface{}, condition *string) *api.DataAccessIdentity {
+	criteriaList := inElement[RuleCriteria].([]interface{})
+	criteria := criteriaList[0].(map[string]interface{})
+	*condition = criteria[CriteriaCondition].(string)
+
+	identityList := criteria[CriteriaIdentity].([]interface{})
 
 	identity := identityList[0].(map[string]interface{})
-	outElement.DataFilterCriteria.Identity = *resourceToIdentity(identity)
+	identityOut := resourceToIdentity(identity)
+
+	return identityOut
+}
+
+// Row level security
+func resourceToRowLevelSecurityProfile(d *schema.ResourceData, m interface{}, out *api.SecurityProfiles) {
+	rls := m.(map[string]interface{})
+
+	isActive := rls[Active].(bool)
+	out.RowLevelSecurity.Active = isActive
+
+	if v, ok := d.GetOk("profile.0.row_level_security.0.rule"); ok {
+		rules := make([]api.RowLevelSecurityRule, len(v.([]interface{})))
+		for i, raw := range v.([]interface{}) {
+			resourceToRowLevelSecurityRule(raw, &rules, i)
+		}
+		out.RowLevelSecurity.Rules = rules
+	}
+	if v, ok := d.GetOk("profile.0.row_level_security.0.mapping"); ok {
+		mapping := make([]api.RowLevelSecurityFilter, len(v.([]interface{})))
+		for i, raw := range v.([]interface{}) {
+			resourceToRowLevelSecurityFilter(raw, &mapping, i)
+		}
+		out.RowLevelSecurity.Maps = mapping
+	}
+}
+
+func resourceToRowLevelSecurityRule(raw interface{}, rules *[]api.RowLevelSecurityRule, i int) {
+	inElement := raw.(map[string]interface{})
+	outElement := api.RowLevelSecurityRule{}
+
+	outElement.Id = inElement[RuleId].(string)
+	outElement.Description = inElement[RuleDescription].(string)
+	outElement.Active = inElement[Active].(bool)
+
+	filterList := inElement[RLSRuleFilter].([]interface{})
+	filter := filterList[0].(map[string]interface{})
+
+	datastoreId := filter[RLSRuleFilterDatastoreId].(string)
+	logicYaml := filter[RLSRuleFilterLogicYaml].(string)
+	advanced := filter[RLSRuleFilterAdvanced].(bool)
+	locationPrefix := filter[RLSRuleFilterLocationPrefix].([]interface{})
+
+	// Masking action
+	outElement.RuleFilter.DataStoreId = datastoreId
+	outElement.RuleFilter.LogicYaml = logicYaml
+	outElement.RuleFilter.Advanced = advanced
+
+	var location api.DataSetGenericLocation
+	resourceToGenericLocation(&location, locationPrefix, "RELATIONAL_TABLE_LOCATION")
+	outElement.RuleFilter.LocationPrefix = &location
+
+	(*rules)[i] = outElement
+}
+
+func resourceToRowLevelSecurityFilter(raw interface{}, rules *[]api.RowLevelSecurityFilter, i int) {
+	inElement := raw.(map[string]interface{})
+	outElement := api.RowLevelSecurityFilter{}
+
+	outElement.Name = inElement[FilterName].(string)
+
+	// filter
+	filterList := inElement[RLSMappingFilter].([]interface{})
+
+	filters := make([]api.RowLevelSecurityMapDataFilter, len(filterList))
+	for i, filter := range filterList {
+		inFilter := filter.(map[string]interface{})
+		var outFilter api.RowLevelSecurityMapDataFilter
+
+		// Filter criteria
+		outFilter.Criteria.Identity = *resourceToCriteriaRule(inFilter, &outFilter.Criteria.Condition)
+
+		// Filter values
+		valuesList := inFilter[RLSMappingValues].([]interface{})
+		values := valuesList[0].(map[string]interface{})
+		outFilter.Values.Type = values[RLSMappingValuesType].(string)
+
+		valueIn := values[RLSMappingValue].([]interface{})
+		if len(valueIn) > 0 {
+			strValuesArray := make([]string, len(valueIn))
+			for v, strValue := range valueIn {
+				strValuesArray[v] = strValue.(string)
+			}
+			outFilter.Values.Values = &strValuesArray
+		} else {
+			outFilter.Values.Values = nil
+		}
+
+		filters[i] = outFilter
+	}
+	outElement.Filters = filters
+
+	defaultsIn := inElement[RLSMappingDefaultValues].([]interface{})
+	defaults := defaultsIn[0].(map[string]interface{})
+
+	outElement.Defaults.Type = defaults[RLSMappingValuesType].(string)
+
+	defaultValues := defaults[RLSMappingValue].([]interface{})
+	if defaultValues != nil && len(defaultValues) > 0 {
+		strDefaultValues := make([]string, len(defaultValues))
+		for v, strDefaultValue := range defaultValues {
+			strDefaultValues[v] = strDefaultValue.(string)
+		}
+		outElement.Defaults.Values = &strDefaultValues
+	} else {
+		outElement.Defaults.Values = nil
+	}
+
 	(*rules)[i] = outElement
 }
 
@@ -228,7 +538,7 @@ func resourceSecurityPolicyCreate(ctx context.Context, d *schema.ResourceData, m
 
 	result, err := c.CreateSecurityPolicy(input)
 	if err != nil {
-		log.Printf("Recieved error in masking profile create: %s", err)
+		log.Printf("Recieved error in security policy create: %s", err)
 		diag.FromErr(err)
 	} else {
 		d.SetId(result.Id)
@@ -246,30 +556,114 @@ func securityProfilesToResource(profiles api.SecurityProfiles) interface{} {
 
 	out[0] = make(map[string]interface{})
 	out[0][MaskingProfile] = maskingToResource(profiles.Masking)
-	//out[0][RowLevelSecurity] = rowLevelSecurityToResource(profiles.RowLevelSecurity)
+	out[0][RowLevelSecurity] = rowLevelSecurityToResource(*profiles.RowLevelSecurity)
 
 	return out
 }
 
 func rowLevelSecurityToResource(security api.RowLevelSecurityProfile) interface{} {
-	//out := make([]map[string]interface{}, 0)
-
-	return ""
-}
-
-func maskingToResource(masking api.MaskingSecurityProfile) interface{} {
 	out := make([]map[string]interface{}, 1)
 	out[0] = make(map[string]interface{})
 
+	out[0][Active] = security.Active
+
+	rules := make([]map[string]interface{}, len(security.Rules))
+	mapping := make([]map[string]interface{}, len(security.Maps))
+
+	for i, v := range security.Rules {
+		rules[i] = make(map[string]interface{})
+		rules[i][RuleId] = v.Id
+		rules[i][Active] = v.Active
+		rules[i][RuleDescription] = v.Description
+
+		ruleFilter := make([]map[string]interface{}, 1)
+		ruleFilter[0] = make(map[string]interface{})
+		ruleFilter[0][RLSRuleFilterLogicYaml] = v.RuleFilter.LogicYaml
+		ruleFilter[0][RLSRuleFilterDatastoreId] = v.RuleFilter.DataStoreId
+		ruleFilter[0][RLSRuleFilterAdvanced] = v.RuleFilter.Advanced
+
+		locationPrefix := make([]map[string]interface{}, 1)
+		locationPrefix[0] = make(map[string]interface{})
+
+		locationPrefix[0]["schema"] = v.RuleFilter.LocationPrefix.Schema
+		locationPrefix[0]["db"] = v.RuleFilter.LocationPrefix.Db
+		locationPrefix[0]["table"] = v.RuleFilter.LocationPrefix.Table
+
+		ruleFilter[0][RLSRuleFilterLocationPrefix] = locationPrefix
+		rules[i][RLSRuleFilter] = ruleFilter
+
+	}
+
+	for i, v := range security.Maps {
+		mapping[i] = make(map[string]interface{})
+		mapping[i][FilterName] = v.Name
+
+		filters := make([]map[string]interface{}, len(v.Filters))
+		for j, f := range v.Filters {
+			filters[j] = make(map[string]interface{})
+
+			criteria := make([]map[string]interface{}, 1)
+			criteria[0] = make(map[string]interface{})
+			criteria[0][CriteriaCondition] = f.Criteria.Condition
+
+			identity := make([]map[string]interface{}, 1)
+			identity[0] = *dataAccessIdentityToResource(&f.Criteria.Identity)
+			criteria[0][CriteriaIdentity] = identity
+			filters[j][RuleCriteria] = criteria
+
+			values := make([]map[string]interface{}, 1)
+			values[0] = make(map[string]interface{})
+			values[0][RLSMappingValuesType] = f.Values.Type
+
+			if f.Values.Values != nil && len(*f.Values.Values) > 0 {
+				value := make([]string, len(*f.Values.Values))
+				for k, strValue := range *f.Values.Values {
+					value[k] = strValue
+				}
+				values[0][RLSMappingValue] = value
+				filters[j][RLSMappingValues] = values
+			}
+		}
+		mapping[i][RLSMappingFilter] = filters
+
+		defaults := make([]map[string]interface{}, 1)
+		defaults[0] = make(map[string]interface{})
+
+		defaults[0][RLSMappingValuesType] = v.Defaults.Type
+
+		if v.Defaults.Values != nil && len(*v.Defaults.Values) > 0 {
+			defaultsValues := make([]string, len(*v.Defaults.Values))
+			for k, strValue := range *v.Defaults.Values {
+				defaultsValues[k] = strValue
+			}
+			defaults[0][RLSMappingValue] = defaultsValues
+		} else {
+			defaults[0][RLSMappingValue] = nil
+		}
+
+		mapping[i][RLSMappingDefaultValues] = defaults
+	}
+
+	out[0][RLSRule] = rules
+	out[0][RLSMapping] = mapping
+	return out
+}
+
+func maskingToResource(masking *api.MaskingSecurityProfile) interface{} {
+	if masking == nil {
+		return nil
+	}
+	out := make([]map[string]interface{}, 1)
+
 	out[0] = make(map[string]interface{})
-	out[0][MaskingActive] = masking.Active
+	out[0][Active] = masking.Active
 	rules := make([]map[string]interface{}, len(masking.Rules))
 
 	for i, v := range masking.Rules {
 		rules[i] = make(map[string]interface{})
-		rules[i][MaskingRuleActive] = v.Active
-		rules[i][MaskingRuleDescription] = v.Description
-		rules[i][MaskingRuleId] = v.Id
+		rules[i][Active] = v.Active
+		rules[i][RuleDescription] = v.Description
+		rules[i][RuleId] = v.Id
 
 		action := make([]map[string]interface{}, 1)
 		action[0] = make(map[string]interface{})
@@ -279,12 +673,13 @@ func maskingToResource(masking api.MaskingSecurityProfile) interface{} {
 
 		criteria := make([]map[string]interface{}, 1)
 		criteria[0] = make(map[string]interface{})
-		criteria[0][MaskingRuleCriteriaCondition] = v.DataFilterCriteria.Condition
+		criteria[0][CriteriaCondition] = v.DataFilterCriteria.Condition
 
 		identity := make([]map[string]interface{}, 1)
 		identity[0] = *dataAccessIdentityToResource(&v.DataFilterCriteria.Identity)
-		criteria[0][MaskingRuleCriteriaIdentity] = identity
-		rules[i][MaskingRuleCriteria] = criteria
+		criteria[0][CriteriaIdentity] = identity
+
+		rules[i][RuleCriteria] = criteria
 	}
 	out[0][MaskingRule] = rules
 	return out
