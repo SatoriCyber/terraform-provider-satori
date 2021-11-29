@@ -396,12 +396,12 @@ func resourceToMaskingRule(raw interface{}, rules *[]api.MaskingRule, i int) {
 	outElement.MaskingAction.Type = MaskingRuleActionDefaultActionType
 
 	// Masking criteria
-	resourceToCriteriaRule(inElement, &outElement.DataFilterCriteria.Condition, &outElement.DataFilterCriteria.Identity)
+	outElement.DataFilterCriteria.Identity = *resourceToCriteriaRule(inElement, &outElement.DataFilterCriteria.Condition)
 
 	(*rules)[i] = outElement
 }
 
-func resourceToCriteriaRule(inElement map[string]interface{}, condition *string, identityOut *api.DataAccessIdentity) {
+func resourceToCriteriaRule(inElement map[string]interface{}, condition *string) *api.DataAccessIdentity {
 	criteriaList := inElement[RuleCriteria].([]interface{})
 	criteria := criteriaList[0].(map[string]interface{})
 	*condition = criteria[CriteriaCondition].(string)
@@ -409,7 +409,9 @@ func resourceToCriteriaRule(inElement map[string]interface{}, condition *string,
 	identityList := criteria[CriteriaIdentity].([]interface{})
 
 	identity := identityList[0].(map[string]interface{})
-	identityOut = resourceToIdentity(identity)
+	identityOut := resourceToIdentity(identity)
+
+	return identityOut
 }
 
 // Row level security
@@ -478,7 +480,7 @@ func resourceToRowLevelSecurityFilter(raw interface{}, rules *[]api.RowLevelSecu
 		var outFilter api.RowLevelSecurityMapDataFilter
 
 		// Filter criteria
-		resourceToCriteriaRule(inFilter, &outFilter.Criteria.Condition, &outFilter.Criteria.Identity)
+		outFilter.Criteria.Identity = *resourceToCriteriaRule(inFilter, &outFilter.Criteria.Condition)
 
 		// Filter values
 		valuesList := inFilter[RLSMappingValues].([]interface{})
