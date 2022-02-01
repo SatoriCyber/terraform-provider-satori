@@ -5,9 +5,8 @@ import (
 	"flag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
-	"log"
-
 	"github.com/satoricyber/terraform-provider-satori/satori"
+	"log"
 )
 
 // Run the docs generation tool, check its repository for more information on how it works and how docs
@@ -36,12 +35,14 @@ func main() {
 	}
 
 	if debugMode {
-		err := plugin.Debug(context.Background(), "registry.terraform.io/satoricyber/satori", opts)
+		err := plugin.Debug(context.Background(), "satoricyber.com/terraform/satori", opts)
+
 		if err != nil {
 			log.Fatal(err.Error())
 		}
 		return
 	}
 
+	//plugin.Serve(opts)
 	plugin.Serve(opts)
 }

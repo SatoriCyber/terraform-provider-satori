@@ -15,11 +15,11 @@ type DataStoreGenericLocation struct {
 }
 
 type DataStore struct {
-	Name             string              `json:"name"`
-	Description      string              `json:"description"`
-	OwnersIds        []string            `json:"ownersIds"`
-	IncludeLocations []DataStoreLocation `json:"includeLocations"`
-	ExcludeLocations []DataStoreLocation `json:"excludeLocations"`
+	Name         string              `json:"name"`
+	Hostname     string              `json:"hostname"`
+	Port         int                 `json:"port"`
+	Region       []map[string]string `json:"region"`
+	LoadBalancer int                 `json:"load_balancer"`
 }
 
 type DataStoreOutput struct {
