@@ -31,19 +31,63 @@ func getDataStoreDefinitionSchema() *schema.Schema {
 					Type:        schema.TypeString,
 					Required:    true,
 					Description: "Host FQDN name.",
-				},
-				"port": &schema.Schema{
+				}, "dataaccesscontrollerid": &schema.Schema{
 					Type:        schema.TypeString,
 					Required:    true,
+					Description: "Host FQDN name.",
+				},
+				"port": &schema.Schema{
+					Type:        schema.TypeInt,
+					Optional:    true,
+					Description: "Port number description.",
+				}, "customingressport": &schema.Schema{
+					Type:        schema.TypeInt,
+					Optional:    true,
 					Description: "Port number description.",
 				},
-				"owners": &schema.Schema{
+
+				"baselinesecuritypolicy": &schema.Schema{
+					Type:        schema.TypeList,
+					Optional:    true,
+					Description: "support only default baseline policy - gen object",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"name": &schema.Schema{
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "Member name for types: USERNAME, IDP_GROUP and DB_ROLE.",
+							},
+						},
+					},
+				}, "tags": &schema.Schema{
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "IDs of Satori users that will be set as DataStore owners.",
+					Elem: &schema.Schema{
+						Type: schema.TypeString,
+					},
+				}, "type": &schema.Schema{
+					Type:        schema.TypeString,
+					Required:    true,
+					Description: "IDs of Satori users that will be set as DataStore owners.",
+					Elem: &schema.Schema{
+						Type: schema.TypeString,
+					},
+				}, "projectids": &schema.Schema{
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "IDs of Satori users that will be set as DataStore owners.",
+				}, "rules": &schema.Schema{
 					Type:        schema.TypeList,
 					Optional:    true,
 					Description: "IDs of Satori users that will be set as DataStore owners.",
 					Elem: &schema.Schema{
 						Type: schema.TypeString,
 					},
+				}, "identityproviderid": &schema.Schema{
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "IDs of Satori users that will be set as DataStore owners.",
 				},
 				//"include_location": &schema.Schema{
 				//	Type:        schema.TypeList,
@@ -72,16 +116,21 @@ func createDataStore(d *schema.ResourceData, c *api.Client) (*api.DataStoreOutpu
 
 	d.SetId(result.Id)
 
-	if err := d.Set("data_policy_id", result.DataPolicyId); err != nil {
+	if err := d.Set("datastore_id", result.Id); err != nil {
 		return nil, err
 	}
 
 	return result, err
 }
 
+// convert terraform resource defs into datastore type //
 func resourceToDataStore(d *schema.ResourceData) *api.DataStore {
 	out := api.DataStore{}
 	out.Name = d.Get("definition.0.name").(string)
+	out.Hostname = d.Get("definition.0.hostname").(string)
+	out.Port = d.Get("definition.0.port").(int)
+	out.DataAccessControllerId = d.Get("definition.0.dataaccesscontrollerid").(string)
+	out.Type = d.Get("definition.0.type").(string)
 	//out.Description = d.Get("definition.0.description").(string)
 	//if v, ok := d.GetOk("definition.0.owners"); ok {
 	//	owners := v.([]interface{})
@@ -112,20 +161,6 @@ func resourceToDataStore(d *schema.ResourceData) *api.DataStore {
 //	out := make([]api.DataStoreLocation, 0)
 //	return &out
 //}
-
-func resourceToDataStoreLocation(inElement map[string]interface{}) api.DataStoreLocation {
-	outElement := api.DataStoreLocation{}
-	outElement.DataStoreId = inElement["datastore"].(string)
-	if inElement["relational_location"] != nil {
-		inLocations := inElement["relational_location"].([]interface{})
-		if len(inLocations) > 0 {
-			//var location api.DataStoreGenericLocation
-			//resourceToGenericLocation(&location, inLocations, "RELATIONAL_LOCATION")
-			//outElement.Location = &location
-		}
-	}
-	return outElement
-}
 
 //func resourceToGenericLocation(location *api.DataStoreGenericLocation, inLocations []interface{}, locationType string) {
 //	location.Type = locationType

@@ -27,8 +27,9 @@ resource "satori_datasource_definition" "datastore3" {
     name         = "datastore"
     hostname     = join(name, "terraform.com")
     port         = 8080
-    region       = "us-east-1"
-    projectids   = []
-    loadbalancer = 2
+    projectids   = {a:121,b:233}
+    customIngressPort= 3939
+
+
   }
 }

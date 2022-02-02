@@ -18,10 +18,10 @@ func ResourceDataStoreDefinition() *schema.Resource {
 		},
 		Description: "DataStore definition configuration only.",
 		Schema: map[string]*schema.Schema{
-			"data_policy_id": getDataStoreDataPolicyIdSchema(),
-			"definition":     getDataStoreDefinitionSchema(),
-			"hostname":       getDataStoreDefinitionSchema(),
-			"port":           getDataStoreDefinitionSchema(),
+			"datastore_id": getDataStoreDataPolicyIdSchema(),
+			"definition":   getDataStoreDefinitionSchema(),
+			"hostname":     getDataStoreDefinitionSchema(),
+			"port":         getDataStoreDefinitionSchema(),
 		},
 	}
 }

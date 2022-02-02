@@ -2,34 +2,26 @@ package api
 
 const DataStoreApiPrefix = "/api/v1/datastore"
 
-type DataStoreLocation struct {
-	DataStoreId string                  `json:"dataStoreId"`
-	Location    *DataSetGenericLocation `json:"location,omitempty"`
-}
-
-type DataStoreGenericLocation struct {
-	Type   string  `json:"type"`
-	Db     *string `json:"db,omitempty"`
-	Schema *string `json:"schema,omitempty"`
-	Table  *string `json:"table,omitempty"`
-}
-
 type DataStore struct {
-	Name         string              `json:"name"`
-	Hostname     string              `json:"hostname"`
-	Port         int                 `json:"port"`
-	Region       []map[string]string `json:"region"`
-	LoadBalancer int                 `json:"load_balancer"`
+	Name                   string              `json:"name"`
+	Hostname               string              `json:"hostname"`
+	Port                   int                 `json:"port"`
+	Type                   string              `json:"type"`
+	Rules                  []map[string]string `json:"rules"`
+	DataAccessControllerId string              `json:"dataAccessControllerId"`
+	CustomIngressPort      int                 `json:"customIngressPort"`
+	BaselineSecurityPolicy []map[string]string `json:"baselineSecurityPolicy"`
+	IdentityProviderId     string              `json:"identityProviderId"`
+	ProjectIds             []map[string]string `json:"projectIds"`
 }
 
 type DataStoreOutput struct {
-	Id               string              `json:"id"`
-	Name             string              `json:"name"`
-	Description      string              `json:"description"`
-	OwnersIds        []string            `json:"ownersIds"`
-	IncludeLocations []DataStoreLocation `json:"includeLocations"`
-	ExcludeLocations []DataStoreLocation `json:"excludeLocations"`
-	DataPolicyId     string              `json:"dataPolicyId"`
+	Id          string   `json:"id"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	OwnersIds   []string `json:"ownersIds"`
+
+	DataPolicyId string `json:"dataPolicyId"`
 }
 
 func (c *Client) CreateDataStore(input *DataStore) (*DataStoreOutput, error) {

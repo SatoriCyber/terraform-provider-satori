@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
@@ -18,7 +19,11 @@ func ResourceDataStore() *schema.Resource {
 		},
 		Description: "Full DataStore configuration.",
 		Schema: map[string]*schema.Schema{
-
+			"datastore_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Parent ID for dataset permissions.",
+			},
 			"definition": getDataStoreDefinitionSchema(),
 			"access_control_settings": {
 				Type:        schema.TypeList,
@@ -98,10 +103,10 @@ func resourceDataStoreCreate(ctx context.Context, d *schema.ResourceData, m inte
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	if err = updateDataPolicy(err, c, result.DataPolicyId, d); err != nil {
-		return diag.FromErr(err)
-	}
+	fmt.Println(result.Id)
+	//if err = updateDataPolicy(err, c, result.DataPolicyId, d); err != nil {
+	//	return diag.FromErr(err)
+	//}
 
 	return diags
 }
