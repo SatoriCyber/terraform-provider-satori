@@ -23,6 +23,16 @@ func getDataStoreDefinitionSchema() *schema.Schema {
 		Description: "Parameters for DataStore definition.",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
+				"id": &schema.Schema{
+					Type:        schema.TypeString,
+					Computed:    true,
+					Description: "DataStore name.",
+				},
+				"parentid": &schema.Schema{
+					Type:        schema.TypeString,
+					Computed:    true,
+					Description: "DataStore name.",
+				},
 				"name": &schema.Schema{
 					Type:        schema.TypeString,
 					Required:    true,
@@ -40,7 +50,7 @@ func getDataStoreDefinitionSchema() *schema.Schema {
 					Type:        schema.TypeInt,
 					Optional:    true,
 					Description: "Port number description.",
-				}, "customingressport": &schema.Schema{
+				}, "custom_ingress_port": &schema.Schema{
 					Type:        schema.TypeInt,
 					Optional:    true,
 					Description: "Port number description.",
@@ -129,6 +139,7 @@ func resourceToDataStore(d *schema.ResourceData) *api.DataStore {
 	out.Name = d.Get("definition.0.name").(string)
 	out.Hostname = d.Get("definition.0.hostname").(string)
 	out.Port = d.Get("definition.0.port").(int)
+	out.CustomIngressPort = d.Get("definition.0.custom_ingress_port").(int)
 	out.DataAccessControllerId = d.Get("definition.0.dataaccesscontrollerid").(string)
 	out.Type = d.Get("definition.0.type").(string)
 	//out.Description = d.Get("definition.0.description").(string)
@@ -182,6 +193,7 @@ func resourceToDataStore(d *schema.ResourceData) *api.DataStore {
 //	log.Printf("Out location: %s", location)
 //}
 
+// update datastoreoutput
 func getDataStore(c *api.Client, d *schema.ResourceData) (*api.DataStoreOutput, error) {
 	result, err, statusCode := c.GetDataStore(d.Id())
 	if statusCode == 404 {
@@ -191,11 +203,16 @@ func getDataStore(c *api.Client, d *schema.ResourceData) (*api.DataStoreOutput, 
 	if err != nil {
 		return nil, err
 	}
-
+	/// update output from request
 	definition := make(map[string]interface{})
+	definition["id"] = result.Id
 	definition["name"] = result.Name
-	definition["description"] = result.Description
-	definition["owners"] = result.OwnersIds
+	definition["hostname"] = result.Hostname
+	definition["parentid"] = result.ParentId
+	definition["type"] = result.Type
+	definition["port"] = result.Port
+	definition["custom_ingress_port"] = result.CustomIngressPort
+	definition["dataaccesscontrollerid"] = result.DataAccessControllerId
 
 	//definition["include_location"] = locationsToResource(&result.IncludeLocations)
 	//definition["exclude_location"] = locationsToResource(&result.ExcludeLocations)
@@ -204,9 +221,9 @@ func getDataStore(c *api.Client, d *schema.ResourceData) (*api.DataStoreOutput, 
 		return nil, err
 	}
 
-	if err := d.Set("data_policy_id", result.DataPolicyId); err != nil {
-		return nil, err
-	}
+	//if err := d.Set("data_policy_id", result.DataPolicyId); err != nil {
+	//	return nil, err
+	//}
 
 	return result, err
 }

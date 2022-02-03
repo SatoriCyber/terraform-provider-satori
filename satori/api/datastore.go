@@ -9,19 +9,23 @@ type DataStore struct {
 	Type                   string              `json:"type"`
 	Rules                  []map[string]string `json:"rules"`
 	DataAccessControllerId string              `json:"dataAccessControllerId"`
-	CustomIngressPort      int                 `json:"customIngressPort"`
 	BaselineSecurityPolicy []map[string]string `json:"baselineSecurityPolicy"`
 	IdentityProviderId     string              `json:"identityProviderId"`
 	ProjectIds             []map[string]string `json:"projectIds"`
+	port                   int                 `json:"port"`
+	CustomIngressPort      int                 `json:"customIngressPort"`
 }
 
 type DataStoreOutput struct {
-	Id          string   `json:"id"`
-	Name        string   `json:"name"`
-	Description string   `json:"description"`
-	OwnersIds   []string `json:"ownersIds"`
-
-	DataPolicyId string `json:"dataPolicyId"`
+	Id                     string `json:"Id"`
+	Name                   string `json:"Name"`
+	Hostname               string `json:"Hostname"`
+	Port                   int    `json:"originPort"`
+	CustomIngressPort      int    `json:"customIngressPort"`
+	Type                   string `json:"Type"`
+	ParentId               string `json:"parentId"`
+	DataPolicyId           string `json:"dataPolicyId"`
+	DataAccessControllerId string `json:"dataAccessControllerId"`
 }
 
 func (c *Client) CreateDataStore(input *DataStore) (*DataStoreOutput, error) {

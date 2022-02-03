@@ -124,32 +124,32 @@ func resourceDataStoreRead(ctx context.Context, d *schema.ResourceData, m interf
 		return diag.FromErr(err)
 	}
 
-	resultCustomPolicy, err := c.GetCustomPolicy(result.DataPolicyId)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if err := d.Set("custom_policy", []map[string]interface{}{*customPolicyToResource(resultCustomPolicy)}); err != nil {
-		return diag.FromErr(err)
-	}
-
-	resultAccessControl, err := c.GetAccessControl(result.DataPolicyId)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if err := d.Set("access_control_settings", []map[string]interface{}{*accessControlToResource(resultAccessControl)}); err != nil {
-		return diag.FromErr(err)
-	}
-
-	resultSecurityPolicies, err := c.GetSecurityPolicies(result.DataPolicyId)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if err := setStringListProp(&resultSecurityPolicies.Ids, "security_policies", d); err != nil {
-		return diag.FromErr(err)
-	}
+	//resultCustomPolicy, err := c.GetCustomPolicy(result.DataPolicyId)
+	//if err != nil {
+	//	return diag.FromErr(err)
+	//}
+	//
+	//if err := d.Set("custom_policy", []map[string]interface{}{*customPolicyToResource(resultCustomPolicy)}); err != nil {
+	//	return diag.FromErr(err)
+	//}
+	//
+	//resultAccessControl, err := c.GetAccessControl(result.DataPolicyId)
+	//if err != nil {
+	//	return diag.FromErr(err)
+	//}
+	//
+	//if err := d.Set("access_control_settings", []map[string]interface{}{*accessControlToResource(resultAccessControl)}); err != nil {
+	//	return diag.FromErr(err)
+	//}
+	//
+	//resultSecurityPolicies, err := c.GetSecurityPolicies(result.DataPolicyId)
+	//if err != nil {
+	//	return diag.FromErr(err)
+	//}
+	//
+	//if err := setStringListProp(&resultSecurityPolicies.Ids, "security_policies", d); err != nil {
+	//	return diag.FromErr(err)
+	//}
 
 	return diags
 }
@@ -163,10 +163,10 @@ func resourceDataStoreUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	if err = updateDataPolicy(err, c, result.DataPolicyId, d); err != nil {
-		return diag.FromErr(err)
-	}
+	fmt.Println(result)
+	//if err = updateDataPolicy(err, c, result.DataPolicyId, d); err != nil {
+	//	return diag.FromErr(err)
+	//}
 
 	return diags
 }
