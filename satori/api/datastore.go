@@ -3,29 +3,46 @@ package api
 const DataStoreApiPrefix = "/api/v1/datastore"
 
 type DataStore struct {
-	Name                   string              `json:"name"`
-	Hostname               string              `json:"hostname"`
-	Port                   int                 `json:"port"`
-	Type                   string              `json:"type"`
-	Rules                  []map[string]string `json:"rules"`
-	DataAccessControllerId string              `json:"dataAccessControllerId"`
-	BaselineSecurityPolicy []map[string]string `json:"baselineSecurityPolicy"`
-	IdentityProviderId     string              `json:"identityProviderId"`
-	ProjectIds             []map[string]string `json:"projectIds"`
-	port                   int                 `json:"port"`
-	CustomIngressPort      int                 `json:"customIngressPort"`
+	Name                   string                 `json:"name"`
+	Hostname               string                 `json:"hostname"`
+	Port                   int                    `json:"port"`
+	Type                   string                 `json:"type"`
+	Rules                  []map[string]string    `json:"rules"`
+	DataAccessControllerId string                 `json:"dataAccessControllerId"`
+	BaselineSecurityPolicy BaselineSecurityPolicy `json:"baselineSecurityPolicy"`
+	IdentityProviderId     string                 `json:"identityProviderId"`
+	ProjectIds             []string               `json:"projectIds,omitempty"`
+	port                   int                    `json:"port"`
+	CustomIngressPort      int                    `json:"customIngressPort"`
 }
 
 type DataStoreOutput struct {
-	Id                     string `json:"Id"`
-	Name                   string `json:"Name"`
-	Hostname               string `json:"Hostname"`
-	Port                   int    `json:"originPort"`
-	CustomIngressPort      int    `json:"customIngressPort"`
-	Type                   string `json:"Type"`
-	ParentId               string `json:"parentId"`
-	DataPolicyId           string `json:"dataPolicyId"`
-	DataAccessControllerId string `json:"dataAccessControllerId"`
+	Id                     string                 `json:"Id"`
+	Name                   string                 `json:"Name"`
+	Hostname               string                 `json:"Hostname"`
+	Port                   int                    `json:"originPort"`
+	CustomIngressPort      int                    `json:"customIngressPort"`
+	Type                   string                 `json:"type"`
+	ParentId               string                 `json:"parentId"`
+	DataPolicyId           string                 `json:"dataPolicyId"`
+	DataAccessControllerId string                 `json:"dataAccessControllerId"`
+	BaselineSecurityPolicy BaselineSecurityPolicy `json:"baselineSecurityPolicy"`
+
+	IdentityProviderId string   `json:"identityProviderId"`
+	ProjectIds         []string `json:"projectIds"`
+}
+
+type vUnassociatedQueriesCategory struct {
+}
+type vUnsupportedQueriesCategory struct {
+}
+type vExclusions struct {
+}
+type BaselineSecurityPolicy struct {
+	Type                        string `json:"type"`
+	unassociatedQueriesCategory vUnassociatedQueriesCategory
+	unsupportedQueriesCategory  vUnsupportedQueriesCategory
+	exclusions                  vExclusions
 }
 
 func (c *Client) CreateDataStore(input *DataStore) (*DataStoreOutput, error) {

@@ -2,9 +2,11 @@ package resources
 
 import (
 	"context"
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
+	"sort"
 )
 
 func getDataStoreDataPolicyIdSchema() *schema.Schema {
@@ -15,102 +17,132 @@ func getDataStoreDataPolicyIdSchema() *schema.Schema {
 	}
 }
 
-func getDataStoreDefinitionSchema() *schema.Schema {
-	return &schema.Schema{
-		Type:        schema.TypeList,
-		Required:    true,
-		MaxItems:    1,
-		Description: "Parameters for DataStore definition.",
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"id": &schema.Schema{
-					Type:        schema.TypeString,
-					Computed:    true,
-					Description: "DataStore name.",
-				},
-				"parentid": &schema.Schema{
-					Type:        schema.TypeString,
-					Computed:    true,
-					Description: "DataStore name.",
-				},
-				"name": &schema.Schema{
-					Type:        schema.TypeString,
-					Required:    true,
-					Description: "DataStore name.",
-				}, "hostname": &schema.Schema{
-					Type:        schema.TypeString,
-					Required:    true,
-					Description: "Host FQDN name.",
-				}, "dataaccesscontrollerid": &schema.Schema{
-					Type:        schema.TypeString,
-					Required:    true,
-					Description: "Host FQDN name.",
-				},
-				"port": &schema.Schema{
-					Type:        schema.TypeInt,
-					Optional:    true,
-					Description: "Port number description.",
-				}, "custom_ingress_port": &schema.Schema{
-					Type:        schema.TypeInt,
-					Optional:    true,
-					Description: "Port number description.",
-				},
-
-				"baselinesecuritypolicy": &schema.Schema{
-					Type:        schema.TypeList,
-					Optional:    true,
-					Description: "support only default baseline policy - gen object",
-					Elem: &schema.Resource{
-						Schema: map[string]*schema.Schema{
-							"name": &schema.Schema{
-								Type:        schema.TypeString,
-								Optional:    true,
-								Description: "Member name for types: USERNAME, IDP_GROUP and DB_ROLE.",
-							},
-						},
+func getDataStoreDefinitionSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"id": &schema.Schema{
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "DataStore name.",
+		},
+		"parentid": &schema.Schema{
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "DataStore name.",
+		},
+		"name": &schema.Schema{
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "DataStore name.",
+		}, "hostname": &schema.Schema{
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Host FQDN name.",
+		}, "dataaccess_controller_id": &schema.Schema{
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Host FQDN name.",
+		},
+		"port": &schema.Schema{
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Description: "Port number description.",
+		}, "custom_ingress_port": &schema.Schema{
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Description: "Port number description.",
+		}, "identity_provider_id": &schema.Schema{
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Port number description.",
+		}, "project_ids": &schema.Schema{
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "ProjectIds list of project IDs",
+			Elem:        &schema.Schema{Type: schema.TypeString},
+		}, "tags": &schema.Schema{
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "IDs of Satori users that will be set as DataStore owners.",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		}, "type": &schema.Schema{
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "IDs of Satori users that will be set as DataStore owners.",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		}, "rules": &schema.Schema{
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "IDs of Satori users that will be set as DataStore owners.",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		}, "identityproviderid": &schema.Schema{
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "IDs of Satori users that will be set as DataStore owners.",
+		},
+		//"include_location": &schema.Schema{
+		//	Type:        schema.TypeList,
+		//	Optional:    true,
+		//	Description: "Location to include in DataStore.",
+		//	Elem:        getDataStoreLocationResource(true),
+		//},
+		//"exclude_location": &schema.Schema{
+		//	Type:        schema.TypeList,
+		//	Optional:    true,
+		//	Description: "Location to exclude from DataStore.",
+		//	Elem:        getDataStoreLocationResource(false),
+		//},
+		"baseline_security_policy": {
+			Type:        schema.TypeList,
+			Required:    true,
+			MaxItems:    1,
+			Description: "Baseline security policy.",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"type": &schema.Schema{
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "DataStore basepolicy .",
 					},
-				}, "tags": &schema.Schema{
-					Type:        schema.TypeString,
-					Optional:    true,
-					Description: "IDs of Satori users that will be set as DataStore owners.",
-					Elem: &schema.Schema{
-						Type: schema.TypeString,
+					"exclusions": &schema.Schema{
+						Type:        schema.TypeList,
+						Optional:    true,
+						Description: "DataStore custom policy priority.",
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"excluded_identities": &schema.Schema{
+									Type:        schema.TypeList,
+									Optional:    true,
+									Description: "DataStore custom policy priority.",
+									Elem: &schema.Resource{
+										Schema: map[string]*schema.Schema{
+											"identity_type": &schema.Schema{
+												Type:        schema.TypeString,
+												Optional:    true,
+												Description: "DataStore custom policy priority.",
+											}, "identity": &schema.Schema{
+												Type:        schema.TypeString,
+												Optional:    true,
+												Description: "DataStore custom policy priority.",
+											},
+										},
+									}}}},
 					},
-				}, "type": &schema.Schema{
-					Type:        schema.TypeString,
-					Required:    true,
-					Description: "IDs of Satori users that will be set as DataStore owners.",
-					Elem: &schema.Schema{
-						Type: schema.TypeString,
+					"unassociated_queries_category": &schema.Schema{
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "DataStore custom policy priority.",
+					}, "unsupported_queries_category": &schema.Schema{
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "DataStore custom policy priority.",
 					},
-				}, "projectids": &schema.Schema{
-					Type:        schema.TypeString,
-					Optional:    true,
-					Description: "IDs of Satori users that will be set as DataStore owners.",
-				}, "rules": &schema.Schema{
-					Type:        schema.TypeList,
-					Optional:    true,
-					Description: "IDs of Satori users that will be set as DataStore owners.",
-					Elem: &schema.Schema{
-						Type: schema.TypeString,
-					},
-				}, "identityproviderid": &schema.Schema{
-					Type:        schema.TypeString,
-					Optional:    true,
-					Description: "IDs of Satori users that will be set as DataStore owners.",
 				},
-				//"include_location": &schema.Schema{
-				//	Type:        schema.TypeList,
-				//	Optional:    true,
-				//	Description: "Location to include in DataStore.",
-				//	Elem:        getDataStoreLocationResource(true),
-				//},
-				//"exclude_location": &schema.Schema{
-				//	Type:        schema.TypeList,
-				//	Optional:    true,
-				//	Description: "Location to exclude from DataStore.",
-				//	Elem:        getDataStoreLocationResource(false),
-				//},
 			},
 		},
 	}
@@ -126,7 +158,7 @@ func createDataStore(d *schema.ResourceData, c *api.Client) (*api.DataStoreOutpu
 
 	d.SetId(result.Id)
 
-	if err := d.Set("datastore_id", result.Id); err != nil {
+	if err := d.Set("id", result.Id); err != nil {
 		return nil, err
 	}
 
@@ -136,12 +168,17 @@ func createDataStore(d *schema.ResourceData, c *api.Client) (*api.DataStoreOutpu
 // convert terraform resource defs into datastore type //
 func resourceToDataStore(d *schema.ResourceData) *api.DataStore {
 	out := api.DataStore{}
-	out.Name = d.Get("definition.0.name").(string)
-	out.Hostname = d.Get("definition.0.hostname").(string)
-	out.Port = d.Get("definition.0.port").(int)
-	out.CustomIngressPort = d.Get("definition.0.custom_ingress_port").(int)
-	out.DataAccessControllerId = d.Get("definition.0.dataaccesscontrollerid").(string)
-	out.Type = d.Get("definition.0.type").(string)
+	out.Name = d.Get("name").(string)
+	out.Hostname = d.Get("hostname").(string)
+	out.Port = d.Get("port").(int)
+	out.CustomIngressPort = d.Get("custom_ingress_port").(int)
+	out.IdentityProviderId = d.Get("identity_provider_id").(string)
+	out.DataAccessControllerId = d.Get("dataaccess_controller_id").(string)
+	//out.ProjectIds, ok = d.GetOk("definition.0.project_ids")
+	//ok{}
+	out.ProjectIds = convertStringSet(d.Get("project_ids").(*schema.Set))
+	out.BaselineSecurityPolicy = baselineSecurityPolicyToResource(d.Get("baseline_security_policy").([]interface{}))
+	out.Type = d.Get("type").(string)
 	//out.Description = d.Get("definition.0.description").(string)
 	//if v, ok := d.GetOk("definition.0.owners"); ok {
 	//	owners := v.([]interface{})
@@ -157,6 +194,15 @@ func resourceToDataStore(d *schema.ResourceData) *api.DataStore {
 	//out.IncludeLocations = *resourceToLocations(d, "definition.0.include_location")
 	//out.ExcludeLocations = *resourceToLocations(d, "definition.0.exclude_location")
 	return &out
+}
+func convertStringSet(set *schema.Set) []string {
+	s := make([]string, 0, set.Len())
+	for _, v := range set.List() {
+		s = append(s, v.(string))
+	}
+	sort.Strings(s)
+
+	return s
 }
 
 //func resourceToLocations(d *schema.ResourceData, mainParamName string) *[]api.DataStoreLocation {
@@ -204,22 +250,25 @@ func getDataStore(c *api.Client, d *schema.ResourceData) (*api.DataStoreOutput, 
 		return nil, err
 	}
 	/// update output from request
-	definition := make(map[string]interface{})
-	definition["id"] = result.Id
-	definition["name"] = result.Name
-	definition["hostname"] = result.Hostname
-	definition["parentid"] = result.ParentId
-	definition["type"] = result.Type
-	definition["port"] = result.Port
-	definition["custom_ingress_port"] = result.CustomIngressPort
-	definition["dataaccesscontrollerid"] = result.DataAccessControllerId
+	//definition := make(map[string]interface{})
+	d.Set("id", result.Id)
+	d.Set("name", result.Name)
+	d.Set("hostname", result.Hostname)
+	d.Set("parentid", result.ParentId)
+	d.Set("type", result.Type)
+	d.Set("port", result.Port)
+	d.Set("custom_ingress_port", result.CustomIngressPort)
+	d.Set("identity_provider_id", result.IdentityProviderId)
+	d.Set("dataaccess_controller_id", result.DataAccessControllerId)
+	d.Set("project_ids", result.ProjectIds)
+	d.Set("baseline_security_policy", result.BaselineSecurityPolicy)
 
 	//definition["include_location"] = locationsToResource(&result.IncludeLocations)
 	//definition["exclude_location"] = locationsToResource(&result.ExcludeLocations)
 
-	if err := d.Set("definition", []map[string]interface{}{definition}); err != nil {
-		return nil, err
-	}
+	//if err := d.set( definition); err != nil {
+	//	return nil, err
+	//}
 
 	//if err := d.Set("data_policy_id", result.DataPolicyId); err != nil {
 	//	return nil, err
@@ -228,28 +277,32 @@ func getDataStore(c *api.Client, d *schema.ResourceData) (*api.DataStoreOutput, 
 	return result, err
 }
 
-//func locationsToResource(in *[]api.DataStoreLocation) *[]map[string]interface{} {
-//  out := make([]map[string]interface{}, len(*in))
-//  for i, v := range *in {
-//    outElement := make(map[string]interface{}, 2)
-//    outElement["datastore"] = v.DataStoreId
-//    if v.Location != nil && v.Location.Type == "RELATIONAL_LOCATION" {
-//      location := make(map[string]string, 3)
-//      if v.Location.Db != nil {
-//        location["db"] = *v.Location.Db
-//        if v.Location.Schema != nil {
-//          location["schema"] = *v.Location.Schema
-//          if v.Location.Table != nil {
-//            location["table"] = *v.Location.Table
-//          }
-//        }
-//      }
-//      outElement["relational_location"] = []map[string]string{location}
-//    }
-//    out[i] = outElement
-//  }
-//  return &out
-//}
+func baselineSecurityPolicyToResource(in []interface{}) api.BaselineSecurityPolicy {
+	var bls api.BaselineSecurityPolicy
+	var lesa map[string]interface{}
+	lesa = in[0].(map[string]interface{})
+	bls.Type = lesa["type"].(string)
+	fmt.Println(lesa)
+	//for i, v := range *in {
+	//outElement := new api.BaselineSecurityPolicy()
+
+	//    if v.Location != nil && v.Location.Type == "RELATIONAL_LOCATION" {
+	//      location := make(map[string]string, 3)
+	//      if v.Location.Db != nil {
+	//        location["db"] = *v.Location.Db
+	//        if v.Location.Schema != nil {
+	//          location["schema"] = *v.Location.Schema
+	//          if v.Location.Table != nil {
+	//            location["table"] = *v.Location.Table
+	//          }
+	//        }
+	//      }
+	//      outElement["relational_location"] = []map[string]string{location}
+	//    }
+	//out[0] = outElement
+
+	return bls
+}
 
 func updateDataStore(d *schema.ResourceData, c *api.Client) (*api.DataStoreOutput, error) {
 	input := resourceToDataStore(d)
