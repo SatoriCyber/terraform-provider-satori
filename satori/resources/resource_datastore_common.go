@@ -2,20 +2,16 @@ package resources
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
+	"reflect"
+	"regexp"
 	"sort"
+	"strings"
 )
-
-func getDataStoreDataPolicyIdSchema() *schema.Schema {
-	return &schema.Schema{
-		Type:        schema.TypeString,
-		Computed:    true,
-		Description: "Parent ID for DataStore permissions.",
-	}
-}
 
 func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
@@ -108,11 +104,39 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 						Type:        schema.TypeString,
 						Optional:    true,
 						Description: "DataStore basepolicy .",
+						Default:     "BASELINE-POLICY",
 					},
-					"exclusions": &schema.Schema{
+					"unassociated_queries_category": {
 						Type:        schema.TypeList,
 						Optional:    true,
-						Description: "DataStore custom policy priority.",
+						MaxItems:    1,
+						Description: "Baseline security policy.",
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"query_action": &schema.Schema{
+									Type:        schema.TypeString,
+									Optional:    true,
+									Description: "DataStore custom policy priority.",
+								}}}},
+
+					"unsupported_queries_category": {
+						Type:        schema.TypeList,
+						Optional:    true,
+						MaxItems:    1,
+						Description: "Baseline security policy.",
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"query_action": &schema.Schema{
+									Type:        schema.TypeString,
+									Optional:    true,
+									Description: "DataStore custom policy priority.",
+								}}}},
+
+					"exclusions": {
+						Type:        schema.TypeList,
+						Optional:    true,
+						MaxItems:    1,
+						Description: "Baseline security policy.",
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"excluded_identities": &schema.Schema{
@@ -130,21 +154,12 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 												Optional:    true,
 												Description: "DataStore custom policy priority.",
 											},
-										},
-									}}}},
-					},
-					"unassociated_queries_category": &schema.Schema{
-						Type:        schema.TypeString,
-						Optional:    true,
-						Description: "DataStore custom policy priority.",
-					}, "unsupported_queries_category": &schema.Schema{
-						Type:        schema.TypeString,
-						Optional:    true,
-						Description: "DataStore custom policy priority.",
-					},
+										}},
+								},
+							},
+						}},
 				},
-			},
-		},
+			}},
 	}
 }
 
@@ -177,22 +192,12 @@ func resourceToDataStore(d *schema.ResourceData) *api.DataStore {
 	//out.ProjectIds, ok = d.GetOk("definition.0.project_ids")
 	//ok{}
 	out.ProjectIds = convertStringSet(d.Get("project_ids").(*schema.Set))
-	out.BaselineSecurityPolicy = baselineSecurityPolicyToResource(d.Get("baseline_security_policy").([]interface{}))
+	re := baselineSecurityPolicyToResource(d.Get("baseline_security_policy").([]interface{}))
+	if re != nil {
+		out.BaselineSecurityPolicy = *re
+	}
 	out.Type = d.Get("type").(string)
-	//out.Description = d.Get("definition.0.description").(string)
-	//if v, ok := d.GetOk("definition.0.owners"); ok {
-	//	owners := v.([]interface{})
-	//	outOwners := make([]string, len(owners))
-	//	for i, owner := range owners {
-	//		outOwners[i] = owner.(string)
-	//	}
-	//	out.OwnersIds = outOwners
-	//} else {
-	//	out.OwnersIds = []string{}
-	//}
-	//
-	//out.IncludeLocations = *resourceToLocations(d, "definition.0.include_location")
-	//out.ExcludeLocations = *resourceToLocations(d, "definition.0.exclude_location")
+
 	return &out
 }
 func convertStringSet(set *schema.Set) []string {
@@ -204,40 +209,6 @@ func convertStringSet(set *schema.Set) []string {
 
 	return s
 }
-
-//func resourceToLocations(d *schema.ResourceData, mainParamName string) *[]api.DataStoreLocation {
-//	if v, ok := d.GetOk(mainParamName); ok {
-//		out := make([]api.DataStoreLocation, len(v.([]interface{})))
-//		for i, raw := range v.([]interface{}) {
-//			inElement := raw.(map[string]interface{})
-//			outElement := resourceToDataStoreLocation(inElement)
-//			out[i] = outElement
-//		}
-//		return &out
-//	}
-//	out := make([]api.DataStoreLocation, 0)
-//	return &out
-//}
-
-//func resourceToGenericLocation(location *api.DataStoreGenericLocation, inLocations []interface{}, locationType string) {
-//	location.Type = locationType
-//	inLocation := inLocations[0].(map[string]interface{})
-//	log.Printf("In location: %s", inLocation)
-//
-//	if len(inLocation["db"].(string)) > 0 {
-//		db := inLocation["db"].(string)
-//		location.Db = &db
-//		if len(inLocation["schema"].(string)) > 0 {
-//			schema := inLocation["schema"].(string)
-//			location.Schema = &schema
-//			if len(inLocation["table"].(string)) > 0 {
-//				table := inLocation["table"].(string)
-//				location.Table = &table
-//			}
-//		}
-//	}
-//	log.Printf("Out location: %s", location)
-//}
 
 // update datastoreoutput
 func getDataStore(c *api.Client, d *schema.ResourceData) (*api.DataStoreOutput, error) {
@@ -261,47 +232,84 @@ func getDataStore(c *api.Client, d *schema.ResourceData) (*api.DataStoreOutput, 
 	d.Set("identity_provider_id", result.IdentityProviderId)
 	d.Set("dataaccess_controller_id", result.DataAccessControllerId)
 	d.Set("project_ids", result.ProjectIds)
-	d.Set("baseline_security_policy", result.BaselineSecurityPolicy)
 
-	//definition["include_location"] = locationsToResource(&result.IncludeLocations)
-	//definition["exclude_location"] = locationsToResource(&result.ExcludeLocations)
+	var inInterface map[string]interface{}
+	inrec, _ := json.Marshal(result.BaselineSecurityPolicy)
+	err = json.Unmarshal(inrec, &inInterface)
 
-	//if err := d.set( definition); err != nil {
-	//	return nil, err
-	//}
+	//basepolicy := []map[string]interface{}{{
+	//	"type":                          result.BaselineSecurityPolicy.Type,
+	//	"unsupported_queries_category":  []map[string]interface{}{{"query_action": result.BaselineSecurityPolicy.UnsupportedQueriesCategory.QueryAction}},
+	//	"unassociated_queries_category": []map[string]interface{}{{"query_action": result.BaselineSecurityPolicy.UnassociatedQueriesCategory.QueryAction}},
+	//}}
+	asea := CopyMap(inInterface)
 
-	//if err := d.Set("data_policy_id", result.DataPolicyId); err != nil {
-	//	return nil, err
-	//}
+	d.Set("baseline_security_policy", []map[string]interface{}{asea})
+	//d.Set("baseline_security_policy", basepolicy)
 
 	return result, err
 }
+func resNameTfConver(in string) string {
+	var tfRegExp = `([A-Z])`
+	var re = regexp.MustCompile(tfRegExp)
+	s := strings.ToLower(string(re.ReplaceAll([]byte(in), []byte(`_$1`))))
+	return (s)
+}
 
-func baselineSecurityPolicyToResource(in []interface{}) api.BaselineSecurityPolicy {
+func CopyMap(m map[string]interface{}) map[string]interface{} {
+	cp := make(map[string]interface{})
+	for k, v := range m {
+		vm, ok := v.(map[string]interface{})
+		if ok {
+			cp[resNameTfConver(k)] = []map[string]interface{}{CopyMap(vm)}
+		} else {
+			cp[resNameTfConver(k)] = v
+		}
+	}
+
+	return cp
+}
+
+func extractValueFromInterface(in []interface{}) map[string]interface{} {
+	if len(in) > 0 {
+		return in[0].(map[string]interface{})
+	} else {
+		return nil
+	}
+}
+
+func baselineSecurityPolicyToResource(in []interface{}) *api.BaselineSecurityPolicy {
 	var bls api.BaselineSecurityPolicy
-	var lesa map[string]interface{}
-	lesa = in[0].(map[string]interface{})
+	lesa := extractValueFromInterface(in)
+	if lesa == nil {
+		return nil
+	}
 	bls.Type = lesa["type"].(string)
+	if reflect.ValueOf(lesa["unassociated_queries_category"]).Len() > 0 {
+		var uaqc api.UnassociatedQueriesCategory
+		query_action := (lesa["unassociated_queries_category"]).([]interface{})
+		uaqc.QueryAction = extractValueFromInterface(query_action)["query_action"].(string)
+		bls.UnassociatedQueriesCategory = uaqc
+	}
+	if reflect.ValueOf(lesa["unsupported_queries_category"]).Len() > 0 { //	bls.UnsupportedQueriesCategory = lesa["unassociated_queries_category"].(api.UnsupportedQueriesCategory)
+		var uaqc api.UnsupportedQueriesCategory
+		query_action := (lesa["unsupported_queries_category"]).([]interface{})
+		uaqc.QueryAction = extractValueFromInterface(query_action)["query_action"].(string)
+		bls.UnsupportedQueriesCategory = uaqc
+	}
+	if lesa["exclusions"] != nil { //	bls.UnsupportedQueriesCategory = lesa["unassociated_queries_category"].(api.UnsupportedQueriesCategory)
+		//var uaqc api.Exclusions
+		exclusions := lesa["exclusions"].([]interface{})
+		i := extractValueFromInterface(exclusions)["excluded_identities"].([]interface{})
+		fmt.Println(i)
+		//uaqc.ExcludedIdentities = nil
+		var tempIden api.ExcludedIdentities
+		tempIden.Identity = "user"
+		tempIden.IdentityType = "USER"
+		bls.Exclusions.ExcludedIdentities = []api.ExcludedIdentities{tempIden} //i
+	}
 	fmt.Println(lesa)
-	//for i, v := range *in {
-	//outElement := new api.BaselineSecurityPolicy()
-
-	//    if v.Location != nil && v.Location.Type == "RELATIONAL_LOCATION" {
-	//      location := make(map[string]string, 3)
-	//      if v.Location.Db != nil {
-	//        location["db"] = *v.Location.Db
-	//        if v.Location.Schema != nil {
-	//          location["schema"] = *v.Location.Schema
-	//          if v.Location.Table != nil {
-	//            location["table"] = *v.Location.Table
-	//          }
-	//        }
-	//      }
-	//      outElement["relational_location"] = []map[string]string{location}
-	//    }
-	//out[0] = outElement
-
-	return bls
+	return &bls
 }
 
 func updateDataStore(d *schema.ResourceData, c *api.Client) (*api.DataStoreOutput, error) {

@@ -32,17 +32,24 @@ type DataStoreOutput struct {
 	ProjectIds         []string `json:"projectIds"`
 }
 
-type vUnassociatedQueriesCategory struct {
+type UnassociatedQueriesCategory struct {
+	QueryAction string `json:"queryAction"`
 }
-type vUnsupportedQueriesCategory struct {
+type UnsupportedQueriesCategory struct {
+	QueryAction string `json:"queryAction"`
 }
-type vExclusions struct {
+type ExcludedIdentities struct {
+	IdentityType string `json:"identityType"`
+	Identity     string `json:"identity"`
+}
+type Exclusions struct {
+	ExcludedIdentities []ExcludedIdentities `json:"excludedIdentities"`
 }
 type BaselineSecurityPolicy struct {
-	Type                        string `json:"type"`
-	unassociatedQueriesCategory vUnassociatedQueriesCategory
-	unsupportedQueriesCategory  vUnsupportedQueriesCategory
-	exclusions                  vExclusions
+	Type                        string                      `json:"type"`
+	UnassociatedQueriesCategory UnassociatedQueriesCategory `json:"unassociatedQueriesCategory"`
+	UnsupportedQueriesCategory  UnsupportedQueriesCategory  `json:"unsupportedQueriesCategory"`
+	Exclusions                  Exclusions                  `json:"exclusions"`
 }
 
 func (c *Client) CreateDataStore(input *DataStore) (*DataStoreOutput, error) {
