@@ -13,20 +13,15 @@ import (
 func deepCopyMap(m map[string]interface{}) map[string]interface{} {
 	cp := make(map[string]interface{})
 	for k, v := range m {
-		if strings.Compare(k, "identityType") == 0 {
-			fmt.Println("fff")
-		}
 		vm, ok := v.(map[string]interface{})
 		fmt.Println(reflect.TypeOf(v), k)
 		if (v) == nil {
-			fmt.Println("dddd")
 			cp[resNameTfConvert(k)] = nil
 		} else if ok {
 			cp[resNameTfConvert(k)] = []map[string]interface{}{deepCopyMap(vm)}
 		} else if reflect.TypeOf(v).String() == "[]interface {}" {
 			myInt := (v.([]interface{}))
 			var cd []map[string]interface{}
-
 			for _, s := range myInt {
 				cd = append(cd, deepCopyMap(s.(map[string]interface{})))
 			}
@@ -35,7 +30,6 @@ func deepCopyMap(m map[string]interface{}) map[string]interface{} {
 			cp[resNameTfConvert(k)] = v
 		}
 	}
-
 	return cp
 }
 
@@ -60,7 +54,7 @@ func convertStringSet(set *schema.Set) []string {
 // convert schema to map[string]interface{} array
 func convertSchemaSet(set []interface{}) map[string]interface{} {
 	var s map[string]interface{}
-	if s == nil {
+	if set == nil {
 		return nil
 	}
 	for _, v := range set {

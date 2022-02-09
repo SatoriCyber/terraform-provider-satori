@@ -1,35 +1,28 @@
-terraform {
-  required_providers {
-    satori = {
-      version = "~>1.0.0"
-      source  = "satoricyber.com/terraform/satori"
-    }
-  }
-}
-
 provider "satori" {
   #can be provided via environment variable: SATORI_SA
-  service_account     = "57beb9b4-2d08-47ee-981a-5b33dfa18cd8"
+  service_account     = "9bd8dd14-50c9-4d52-b148-bc0dece8b964"
   #can be provided via environment variable: SATORI_SA_KEY
-  service_account_key = "UI18V8XwTVBRVSLG6D2CYwBmmj7vTRtnRO1fJt0tsnmJI9lk3vxABPOQWHq9urQ8"
+  service_account_key = "HBRwevC9uDOEYv5LIhNvtzdrgc7WTErqWJE3iqmTFxFbMFGkcEFvjiGqm3BlWACd"
   #satori account id for all resources in this terraform
-  satori_account      = "450338ff-5fb6-44a9-8662-2f3a9f4d2a76"
+  satori_account      = "fdd00136-69f2-471a-9b9e-b8ccb9658b81"
 
-  #for local env only:
-  url        = "http://127.0.0.1:8014"
+  url        = "https://<satori-mgmt-server-address>:8014"
   verify_tls = false
 }
 locals {
-  dataaccesscontroller_id = "e0293f3a-e527-47bf-8885-404d43c2608b"
+  dataaccess_controller_id = "<assigned dataaccess_controller_id>"
 }
-resource "satori_datasource_definition" "datastore3" {
-  definition {
-    name         = "datastore"
-    hostname     = join(name, "terraform.com")
-    port         = 8080
-    projectids   = {a:121,b:233}
-    customIngressPort= 3939
+resource "satori_datastore" "datastore0" {
+  name                     = "exampleDatastore"
+  hostname                 = "data source target hostname"
+  dataaccess_controller_id = local.dataaccess_controller_id
+  type                     = "SNOWFLAKE"
+  port                     = 8081
+  custom_ingress_port      = 8083
+  identity_provider_id     = "saml authXXXX"
 
-
-  }
+}
+# output of generated id for newly created datastore
+output "datastore_created_id" {
+  value = satori_datastore.datastore0.id
 }
