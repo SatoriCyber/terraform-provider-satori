@@ -133,7 +133,7 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 								}}}},
 
 					"exclusions": {
-						Type:        schema.TypeList,
+						Type:        schema.TypeSet,
 						Optional:    true,
 						MaxItems:    1,
 						Description: "Baseline security policy.",
@@ -210,6 +210,15 @@ func convertStringSet(set *schema.Set) []string {
 	return s
 }
 
+func convertSchemaSet(set []interface{}) map[string]interface{} {
+	var s map[string]interface{}
+	for _, v := range set {
+		s = v.(map[string]interface{})
+	}
+
+	return s
+}
+
 // update datastoreoutput
 func getDataStore(c *api.Client, d *schema.ResourceData) (*api.DataStoreOutput, error) {
 	result, err, statusCode := c.GetDataStore(d.Id())
@@ -268,9 +277,13 @@ func CopyMap(m map[string]interface{}) map[string]interface{} {
 			cp[resNameTfConver(k)] = []map[string]interface{}{CopyMap(vm)}
 		} else if reflect.TypeOf(v).String() == "[]interface {}" {
 			myInt := (v.([]interface{}))
+			cd := []map[string]interface{}{}
+
 			for _, s := range myInt {
-				cp[resNameTfConver(k)] = []map[string]interface{}{CopyMap(s.(map[string]interface{}))}
+				cd = append(cd, CopyMap(s.(map[string]interface{})))
+				//cp[resNameTfConver(k)] = []map[string]interface{}{CopyMap(s.(map[string]interface{}))}
 			}
+			cp[resNameTfConver(k)] = cd
 			fmt.Println("dddddd", myInt)
 		} else {
 			cp[resNameTfConver(k)] = v
@@ -309,8 +322,8 @@ func baselineSecurityPolicyToResource(in []interface{}) *api.BaselineSecurityPol
 	}
 	if lesa["exclusions"] != nil { //	bls.UnsupportedQueriesCategory = lesa["unassociated_queries_category"].(api.UnsupportedQueriesCategory)
 		//var uaqc api.Exclusions
-		exclusions := lesa["exclusions"].([]interface{})
-		i := extractValueFromInterface(exclusions)["excluded_identities"].([]interface{})
+		exclusions := lesa["exclusions"].(*schema.Set)
+		i := convertSchemaSet(exclusions.List())["excluded_identities"].([]interface{})
 		fmt.Println(i)
 		//uaqc.ExcludedIdentities = nil
 		for _, valued := range i {
