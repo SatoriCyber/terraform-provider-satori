@@ -31,7 +31,7 @@ resource "satori_datastore" "datastore0" {
   baseline_security_policy {
 
     unassociated_queries_category {
-      query_action = "REDACT"
+      query_action = "REDACT" #Allowed: PASS┃REDACT┃BLOCK
     }
     unsupported_queries_category {
       query_action = "REDACT"
