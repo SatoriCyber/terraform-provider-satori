@@ -8,131 +8,130 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
 	"reflect"
-	"regexp"
-	"sort"
-	"strings"
+)
+
+var (
+	Name                        = "name"
+	Hostname                    = "hostname"
+	SatoriHostname              = "satori_hostname"
+	Id                          = "id"
+	ParentId                    = "parent_id"
+	IdentityProviderId          = "identity_provider_id"
+	DataAccessControllerId      = "dataaccess_controller_id"
+	CustomIngressPort           = "custom_ingress_port"
+	Port                        = "port"
+	ProjectIds                  = "project_ids"
+	BaselineSecurityPolicy      = "baseline_security_policy"
+	Type                        = "type"
+	UnassociatedQueriesCategory = "unassociated_queries_category"
+	UnsupportedQueriesCategory  = "unsupported_queries_category"
+	Pattern                     = "pattern"
+	ExcludedIdentities          = "excluded_identities"
+	Exclusions                  = "exclusions"
+	QueryAction                 = "query_action"
+	ExcludedQueryPatterns       = "excluded_query_patterns"
+	Identity                    = "identity"
+	IdentityType                = "identity_type"
 )
 
 func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"id": &schema.Schema{
+		Id: &schema.Schema{
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "DataStore name.",
 		},
-		"parentid": &schema.Schema{
+		ParentId: &schema.Schema{
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "DataStore name.",
 		},
-		"name": &schema.Schema{
+		Name: &schema.Schema{
 			Type:        schema.TypeString,
 			Required:    true,
 			Description: "DataStore name.",
-		}, "hostname": &schema.Schema{
+		}, Hostname: &schema.Schema{
 			Type:        schema.TypeString,
 			Required:    true,
 			Description: "Host FQDN name.",
-		}, "dataaccess_controller_id": &schema.Schema{
+		}, DataAccessControllerId: &schema.Schema{
 			Type:        schema.TypeString,
 			Required:    true,
 			Description: "Host FQDN name.",
 		},
-		"port": &schema.Schema{
+		Port: &schema.Schema{
 			Type:        schema.TypeInt,
 			Optional:    true,
 			Description: "Port number description.",
-		}, "custom_ingress_port": &schema.Schema{
+		}, CustomIngressPort: &schema.Schema{
 			Type:        schema.TypeInt,
 			Optional:    true,
 			Description: "Port number description.",
-		}, "identity_provider_id": &schema.Schema{
+		}, IdentityProviderId: &schema.Schema{
 			Type:        schema.TypeString,
 			Optional:    true,
 			Description: "Port number description.",
-		}, "project_ids": &schema.Schema{
+		}, ProjectIds: &schema.Schema{
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "ProjectIds list of project IDs",
 			Elem:        &schema.Schema{Type: schema.TypeString},
-		}, "tags": &schema.Schema{
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "IDs of Satori users that will be set as DataStore owners.",
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
-		}, "type": &schema.Schema{
+		}, Type: &schema.Schema{
 			Type:        schema.TypeString,
 			Required:    true,
 			Description: "IDs of Satori users that will be set as DataStore owners.",
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
 			},
-		}, "rules": &schema.Schema{
-			Type:        schema.TypeList,
+		}, IdentityProviderId: &schema.Schema{
+			Type:        schema.TypeString,
 			Optional:    true,
 			Description: "IDs of Satori users that will be set as DataStore owners.",
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
-		}, "identityproviderid": &schema.Schema{
+		}, SatoriHostname: &schema.Schema{
 			Type:        schema.TypeString,
 			Optional:    true,
 			Description: "IDs of Satori users that will be set as DataStore owners.",
 		},
-		//"include_location": &schema.Schema{
-		//	Type:        schema.TypeList,
-		//	Optional:    true,
-		//	Description: "Location to include in DataStore.",
-		//	Elem:        getDataStoreLocationResource(true),
-		//},
-		//"exclude_location": &schema.Schema{
-		//	Type:        schema.TypeList,
-		//	Optional:    true,
-		//	Description: "Location to exclude from DataStore.",
-		//	Elem:        getDataStoreLocationResource(false),
-		//},
-		"baseline_security_policy": {
+		BaselineSecurityPolicy: {
 			Type:        schema.TypeList,
-			Required:    true,
+			Optional:    true,
 			MaxItems:    1,
 			Description: "Baseline security policy.",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"type": &schema.Schema{
+					Type: &schema.Schema{
 						Type:        schema.TypeString,
 						Optional:    true,
 						Description: "DataStore basepolicy .",
-						Default:     "BASELINE-POLICY",
+						Default:     "BASELINE_POLICY",
 					},
-					"unassociated_queries_category": {
+					UnassociatedQueriesCategory: {
 						Type:        schema.TypeList,
 						Optional:    true,
 						MaxItems:    1,
 						Description: "Baseline security policy.",
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
-								"query_action": &schema.Schema{
+								QueryAction: &schema.Schema{
 									Type:        schema.TypeString,
 									Optional:    true,
 									Description: "DataStore custom policy priority.",
 								}}}},
 
-					"unsupported_queries_category": {
+					UnsupportedQueriesCategory: {
 						Type:        schema.TypeList,
 						Optional:    true,
 						MaxItems:    1,
 						Description: "Baseline security policy.",
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
-								"query_action": &schema.Schema{
+								QueryAction: &schema.Schema{
 									Type:        schema.TypeString,
 									Optional:    true,
 									Description: "DataStore custom policy priority.",
 								}}}},
 
-					"exclusions": {
+					Exclusions: {
 						Type:        schema.TypeSet,
 						Optional:    true,
 						MaxItems:    1,
@@ -156,6 +155,19 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 											},
 										}},
 								},
+								ExcludedQueryPatterns: &schema.Schema{
+									Type:        schema.TypeList,
+									Optional:    true,
+									Description: "DataStore custom policy priority.",
+									Elem: &schema.Resource{
+										Schema: map[string]*schema.Schema{
+											Pattern: &schema.Schema{
+												Type:        schema.TypeString,
+												Optional:    true,
+												Description: "DataStore custom policy priority.",
+											},
+										}},
+								},
 							},
 						}},
 				},
@@ -165,18 +177,15 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 
 func createDataStore(d *schema.ResourceData, c *api.Client) (*api.DataStoreOutput, error) {
 	input := resourceToDataStore(d)
-
 	result, err := c.CreateDataStore(input)
 	if err != nil {
 		return nil, err
 	}
-
 	d.SetId(result.Id)
 
 	if err := d.Set("id", result.Id); err != nil {
 		return nil, err
 	}
-
 	return result, err
 }
 
@@ -185,38 +194,20 @@ func resourceToDataStore(d *schema.ResourceData) *api.DataStore {
 	out := api.DataStore{}
 	out.Name = d.Get("name").(string)
 	out.Hostname = d.Get("hostname").(string)
+	out.SatoriHostname = d.Get(SatoriHostname).(string)
 	out.Port = d.Get("port").(int)
 	out.CustomIngressPort = d.Get("custom_ingress_port").(int)
 	out.IdentityProviderId = d.Get("identity_provider_id").(string)
 	out.DataAccessControllerId = d.Get("dataaccess_controller_id").(string)
-	//out.ProjectIds, ok = d.GetOk("definition.0.project_ids")
-	//ok{}
 	out.ProjectIds = convertStringSet(d.Get("project_ids").(*schema.Set))
 	re := baselineSecurityPolicyToResource(d.Get("baseline_security_policy").([]interface{}))
-	if re != nil {
-		out.BaselineSecurityPolicy = *re
-	}
+	//if re != nil {
+	out.BaselineSecurityPolicy = re
+	//} else {
+	//	out.BaselineSecurityPolicy = nil
+	//}
 	out.Type = d.Get("type").(string)
-
 	return &out
-}
-func convertStringSet(set *schema.Set) []string {
-	s := make([]string, 0, set.Len())
-	for _, v := range set.List() {
-		s = append(s, v.(string))
-	}
-	sort.Strings(s)
-
-	return s
-}
-
-func convertSchemaSet(set []interface{}) map[string]interface{} {
-	var s map[string]interface{}
-	for _, v := range set {
-		s = v.(map[string]interface{})
-	}
-
-	return s
 }
 
 // update datastoreoutput
@@ -229,68 +220,36 @@ func getDataStore(c *api.Client, d *schema.ResourceData) (*api.DataStoreOutput, 
 	if err != nil {
 		return nil, err
 	}
-	/// update output from request
-	//definition := make(map[string]interface{})
-	d.Set("id", result.Id)
-	d.Set("name", result.Name)
-	d.Set("hostname", result.Hostname)
-	d.Set("parentid", result.ParentId)
-	d.Set("type", result.Type)
-	d.Set("port", result.Port)
-	d.Set("custom_ingress_port", result.CustomIngressPort)
-	d.Set("identity_provider_id", result.IdentityProviderId)
-	d.Set("dataaccess_controller_id", result.DataAccessControllerId)
-	d.Set("project_ids", result.ProjectIds)
 
+	d.Set("id", result.Id)
+	d.Set(Name, result.Name)
+	d.Set(Hostname, result.Hostname)
+	d.Set(ParentId, result.ParentId)
+	d.Set(Type, result.Type)
+	d.Set(Port, result.Port)
+	d.Set(CustomIngressPort, result.CustomIngressPort)
+	d.Set(IdentityProviderId, result.IdentityProviderId)
+	d.Set(DataAccessControllerId, result.DataAccessControllerId)
+	d.Set(SatoriHostname, result.SatoriHostname)
+	d.Set(ProjectIds, result.ProjectIds)
+
+	tfMap, err := getBaseLinePolicyOutput(result, err)
+	if err != nil {
+		return nil, err
+	}
+	d.Set(BaselineSecurityPolicy, []map[string]interface{}{tfMap})
+	return result, err
+}
+
+func getBaseLinePolicyOutput(result *api.DataStoreOutput, err error) (map[string]interface{}, error) {
 	var inInterface map[string]interface{}
 	inrec, _ := json.Marshal(result.BaselineSecurityPolicy)
 	err = json.Unmarshal(inrec, &inInterface)
-
-	//basepolicy := []map[string]interface{}{{
-	//	"type":                          result.BaselineSecurityPolicy.Type,
-	//	"unsupported_queries_category":  []map[string]interface{}{{"query_action": result.BaselineSecurityPolicy.UnsupportedQueriesCategory.QueryAction}},
-	//	"unassociated_queries_category": []map[string]interface{}{{"query_action": result.BaselineSecurityPolicy.UnassociatedQueriesCategory.QueryAction}},
-	//}}
-	asea := CopyMap(inInterface)
-
-	d.Set("baseline_security_policy", []map[string]interface{}{asea})
-	//d.Set("baseline_security_policy", basepolicy)
-
-	return result, err
-}
-func resNameTfConver(in string) string {
-	var tfRegExp = `([A-Z])`
-	var re = regexp.MustCompile(tfRegExp)
-	s := strings.ToLower(string(re.ReplaceAll([]byte(in), []byte(`_$1`))))
-	return (s)
-}
-
-func CopyMap(m map[string]interface{}) map[string]interface{} {
-	cp := make(map[string]interface{})
-	for k, v := range m {
-		if strings.Compare(k, "identityType") == 0 {
-			fmt.Println("fff")
-		}
-		vm, ok := v.(map[string]interface{})
-		fmt.Println(reflect.TypeOf(v), k)
-		if ok {
-			cp[resNameTfConver(k)] = []map[string]interface{}{CopyMap(vm)}
-		} else if reflect.TypeOf(v).String() == "[]interface {}" {
-			myInt := (v.([]interface{}))
-			cd := []map[string]interface{}{}
-
-			for _, s := range myInt {
-				cd = append(cd, CopyMap(s.(map[string]interface{})))
-				//cp[resNameTfConver(k)] = []map[string]interface{}{CopyMap(s.(map[string]interface{}))}
-			}
-			cp[resNameTfConver(k)] = cd
-			fmt.Println("dddddd", myInt)
-		} else {
-			cp[resNameTfConver(k)] = v
-		}
+	if err != nil {
+		return nil, err
 	}
-
-	return cp
+	tfMap := deepCopyMap(inInterface)
+	return tfMap, nil
 }
 
 func extractValueFromInterface(in []interface{}) map[string]interface{} {
@@ -320,19 +279,28 @@ func baselineSecurityPolicyToResource(in []interface{}) *api.BaselineSecurityPol
 		uaqc.QueryAction = extractValueFromInterface(query_action)["query_action"].(string)
 		bls.UnsupportedQueriesCategory = uaqc
 	}
-	if lesa["exclusions"] != nil { //	bls.UnsupportedQueriesCategory = lesa["unassociated_queries_category"].(api.UnsupportedQueriesCategory)
-		//var uaqc api.Exclusions
-		exclusions := lesa["exclusions"].(*schema.Set)
-		i := convertSchemaSet(exclusions.List())["excluded_identities"].([]interface{})
-		fmt.Println(i)
-		//uaqc.ExcludedIdentities = nil
-		for _, valued := range i {
+	if lesa[Exclusions] != nil { //	bls.UnsupportedQueriesCategory = lesa["unassociated_queries_category"].(api.UnsupportedQueriesCategory)
+		exclusions := lesa[Exclusions].(*schema.Set)
+		getSet := convertSchemaSet(exclusions.List())[ExcludedIdentities]
+		if getSet == nil {
+			return nil
+		}
+		for _, valued := range getSet.([]interface{}) {
 			var tempIden api.ExcludedIdentities
 			dsd := (valued).(map[string]interface{})
-			fmt.Println("dsd: ", dsd)
 			tempIden.Identity = dsd["identity"].(string)
 			tempIden.IdentityType = dsd["identity_type"].(string)
+			//if bls.Exclusions.ExcludedIdentities != nil {
 			bls.Exclusions.ExcludedIdentities = append(bls.Exclusions.ExcludedIdentities, tempIden) //i
+			//}
+		}
+		for _, valued := range convertSchemaSet(exclusions.List())[ExcludedQueryPatterns].([]interface{}) {
+			var tempIden api.ExcludedQueryPatterns
+			dsd := (valued).(map[string]interface{})
+			tempIden.Pattern = dsd["pattern"].(string)
+			//if bls.Exclusions.ExcludedQueryPatterns != nil {
+			bls.Exclusions.ExcludedQueryPatterns = append(bls.Exclusions.ExcludedQueryPatterns, tempIden) //i
+			//}
 		}
 	}
 	fmt.Println(lesa)
