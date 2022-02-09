@@ -259,9 +259,19 @@ func resNameTfConver(in string) string {
 func CopyMap(m map[string]interface{}) map[string]interface{} {
 	cp := make(map[string]interface{})
 	for k, v := range m {
+		if strings.Compare(k, "identityType") == 0 {
+			fmt.Println("fff")
+		}
 		vm, ok := v.(map[string]interface{})
+		fmt.Println(reflect.TypeOf(v), k)
 		if ok {
 			cp[resNameTfConver(k)] = []map[string]interface{}{CopyMap(vm)}
+		} else if reflect.TypeOf(v).String() == "[]interface {}" {
+			myInt := (v.([]interface{}))
+			for _, s := range myInt {
+				cp[resNameTfConver(k)] = []map[string]interface{}{CopyMap(s.(map[string]interface{}))}
+			}
+			fmt.Println("dddddd", myInt)
 		} else {
 			cp[resNameTfConver(k)] = v
 		}
@@ -303,10 +313,14 @@ func baselineSecurityPolicyToResource(in []interface{}) *api.BaselineSecurityPol
 		i := extractValueFromInterface(exclusions)["excluded_identities"].([]interface{})
 		fmt.Println(i)
 		//uaqc.ExcludedIdentities = nil
-		var tempIden api.ExcludedIdentities
-		tempIden.Identity = "user"
-		tempIden.IdentityType = "USER"
-		bls.Exclusions.ExcludedIdentities = []api.ExcludedIdentities{tempIden} //i
+		for _, valued := range i {
+			var tempIden api.ExcludedIdentities
+			dsd := (valued).(map[string]interface{})
+			fmt.Println("dsd: ", dsd)
+			tempIden.Identity = dsd["identity"].(string)
+			tempIden.IdentityType = dsd["identity_type"].(string)
+			bls.Exclusions.ExcludedIdentities = append(bls.Exclusions.ExcludedIdentities, tempIden) //i
+		}
 	}
 	fmt.Println(lesa)
 	return &bls
