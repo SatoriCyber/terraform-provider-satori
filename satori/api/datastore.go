@@ -34,21 +34,21 @@ type DataStoreOutput struct {
 }
 
 type UnassociatedQueriesCategory struct {
-	QueryAction string `json:"queryAction,omitempty"`
+	QueryAction string `json:"queryAction"`
 }
 type UnsupportedQueriesCategory struct {
-	QueryAction string `json:"queryAction,omitempty"`
+	QueryAction string `json:"queryAction"`
 }
 type ExcludedIdentities struct {
-	IdentityType string `json:"identityType,omitempty"`
-	Identity     string `json:"identity,omitempty"`
+	IdentityType string `json:"identityType"`
+	Identity     string `json:"identity"`
 }
 type ExcludedQueryPatterns struct {
-	Pattern string `json:"pattern,omitempty"`
+	Pattern string `json:"pattern"`
 }
 type Exclusions struct {
-	ExcludedIdentities    []ExcludedIdentities    `json:"excludedIdentities"`
-	ExcludedQueryPatterns []ExcludedQueryPatterns `json:"excludedQueryPatterns"`
+	ExcludedIdentities    []ExcludedIdentities    `json:"excludedIdentities,omitempty"`
+	ExcludedQueryPatterns []ExcludedQueryPatterns `json:"excludedQueryPatterns,omitempty"`
 }
 type BaselineSecurityPolicy struct {
 	Type                        string                      `json:"type,omitempty"`

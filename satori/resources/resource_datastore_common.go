@@ -114,6 +114,7 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 							Schema: map[string]*schema.Schema{
 								QueryAction: &schema.Schema{
 									Type:        schema.TypeString,
+									Default:     "PASS",
 									Optional:    true,
 									Description: "DataStore custom policy priority.",
 								}}}},
@@ -127,28 +128,31 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 							Schema: map[string]*schema.Schema{
 								QueryAction: &schema.Schema{
 									Type:        schema.TypeString,
+									Default:     "PASS",
 									Optional:    true,
 									Description: "DataStore custom policy priority.",
 								}}}},
 
 					Exclusions: {
-						Type:        schema.TypeSet,
+						Type:        schema.TypeList,
 						Optional:    true,
 						MaxItems:    1,
+						Default:     nil,
 						Description: "Baseline security policy.",
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
-								"excluded_identities": &schema.Schema{
+								ExcludedIdentities: &schema.Schema{
 									Type:        schema.TypeList,
 									Optional:    true,
+									Default:     nil,
 									Description: "DataStore custom policy priority.",
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
-											"identity_type": &schema.Schema{
+											IdentityType: &schema.Schema{
 												Type:        schema.TypeString,
 												Optional:    true,
 												Description: "DataStore custom policy priority.",
-											}, "identity": &schema.Schema{
+											}, Identity: &schema.Schema{
 												Type:        schema.TypeString,
 												Optional:    true,
 												Description: "DataStore custom policy priority.",
@@ -158,6 +162,7 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 								ExcludedQueryPatterns: &schema.Schema{
 									Type:        schema.TypeList,
 									Optional:    true,
+									Default:     nil,
 									Description: "DataStore custom policy priority.",
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
@@ -267,41 +272,48 @@ func baselineSecurityPolicyToResource(in []interface{}) *api.BaselineSecurityPol
 		return nil
 	}
 	bls.Type = lesa["type"].(string)
-	if reflect.ValueOf(lesa["unassociated_queries_category"]).Len() > 0 {
+	if reflect.ValueOf(lesa[UnassociatedQueriesCategory]).Len() > 0 {
 		var uaqc api.UnassociatedQueriesCategory
-		query_action := (lesa["unassociated_queries_category"]).([]interface{})
-		uaqc.QueryAction = extractValueFromInterface(query_action)["query_action"].(string)
+		query_action := (lesa[UnassociatedQueriesCategory]).([]interface{})
+		uaqc.QueryAction = extractValueFromInterface(query_action)[QueryAction].(string)
 		bls.UnassociatedQueriesCategory = uaqc
 	}
-	if reflect.ValueOf(lesa["unsupported_queries_category"]).Len() > 0 { //	bls.UnsupportedQueriesCategory = lesa["unassociated_queries_category"].(api.UnsupportedQueriesCategory)
+	if reflect.ValueOf(lesa[UnsupportedQueriesCategory]).Len() > 0 { //	bls.UnsupportedQueriesCategory = lesa["unassociated_queries_category"].(api.UnsupportedQueriesCategory)
 		var uaqc api.UnsupportedQueriesCategory
-		query_action := (lesa["unsupported_queries_category"]).([]interface{})
-		uaqc.QueryAction = extractValueFromInterface(query_action)["query_action"].(string)
+		query_action := (lesa[UnsupportedQueriesCategory]).([]interface{})
+		uaqc.QueryAction = extractValueFromInterface(query_action)[QueryAction].(string)
 		bls.UnsupportedQueriesCategory = uaqc
 	}
 	if lesa[Exclusions] != nil { //	bls.UnsupportedQueriesCategory = lesa["unassociated_queries_category"].(api.UnsupportedQueriesCategory)
-		exclusions := lesa[Exclusions].(*schema.Set)
-		getSet := convertSchemaSet(exclusions.List())[ExcludedIdentities]
-		if getSet == nil {
-			return nil
+		exclusions := lesa[Exclusions].([]interface{})
+		getSet := convertSchemaSet(exclusions)
+
+		if getSet[ExcludedIdentities] != nil {
+			// remove if possible
+			for _, valued := range getSet[ExcludedIdentities].([]interface{}) {
+				var tempIden api.ExcludedIdentities
+				dsd := (valued).(map[string]interface{})
+				tempIden.Identity = dsd[Identity].(string)
+				tempIden.IdentityType = dsd[IdentityType].(string)
+				bls.Exclusions.ExcludedIdentities = append(bls.Exclusions.ExcludedIdentities, tempIden) //i
+				//}
+			}
 		}
-		for _, valued := range getSet.([]interface{}) {
-			var tempIden api.ExcludedIdentities
-			dsd := (valued).(map[string]interface{})
-			tempIden.Identity = dsd["identity"].(string)
-			tempIden.IdentityType = dsd["identity_type"].(string)
-			//if bls.Exclusions.ExcludedIdentities != nil {
-			bls.Exclusions.ExcludedIdentities = append(bls.Exclusions.ExcludedIdentities, tempIden) //i
-			//}
+		if getSet[ExcludedQueryPatterns] != nil {
+			for _, valued := range getSet[ExcludedQueryPatterns].([]interface{}) {
+				var tempIden api.ExcludedQueryPatterns
+				dsd := (valued).(map[string]interface{})
+				tempIden.Pattern = dsd[Pattern].(string)
+				//if bls.Exclusions.ExcludedQueryPatterns != nil {
+				bls.Exclusions.ExcludedQueryPatterns = append(bls.Exclusions.ExcludedQueryPatterns, tempIden) //i
+				//}
+			}
 		}
-		for _, valued := range convertSchemaSet(exclusions.List())[ExcludedQueryPatterns].([]interface{}) {
-			var tempIden api.ExcludedQueryPatterns
-			dsd := (valued).(map[string]interface{})
-			tempIden.Pattern = dsd["pattern"].(string)
-			//if bls.Exclusions.ExcludedQueryPatterns != nil {
-			bls.Exclusions.ExcludedQueryPatterns = append(bls.Exclusions.ExcludedQueryPatterns, tempIden) //i
-			//}
-		}
+
+	} else {
+		var excEmptyInit api.Exclusions
+		bls.Exclusions = excEmptyInit
+
 	}
 	fmt.Println(lesa)
 	return &bls

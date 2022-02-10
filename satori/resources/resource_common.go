@@ -11,18 +11,29 @@ import (
 
 // converting API generated basepolicy to terraform friendly map
 func deepCopyMap(m map[string]interface{}) map[string]interface{} {
+	markNil := "exclusions"
 	cp := make(map[string]interface{})
 	for k, v := range m {
 		vm, ok := v.(map[string]interface{})
+		vd, okVd := v.([]interface{})
+		_, okStr := v.(string)
+		_, okInt := v.(int)
+		// replace  wirh switch
 		fmt.Println(reflect.TypeOf(v), k)
-		if (v) == nil {
+		if k == markNil && v == nil {
+			cp[resNameTfConvert(k)] = nil
+		} else if (v) == nil && !okVd && !okStr && !okInt {
 			cp[resNameTfConvert(k)] = nil
 		} else if ok {
-			cp[resNameTfConvert(k)] = []map[string]interface{}{deepCopyMap(vm)}
-		} else if reflect.TypeOf(v).String() == "[]interface {}" {
-			myInt := (v.([]interface{}))
+			if len(vm) == 0 {
+				fmt.Println("empty interface")
+			} else {
+				cp[resNameTfConvert(k)] = []map[string]interface{}{deepCopyMap(vm)}
+			}
+		} else if okVd {
+			//myInt := (v.([]interface{}))
 			var cd []map[string]interface{}
-			for _, s := range myInt {
+			for _, s := range vd {
 				cd = append(cd, deepCopyMap(s.(map[string]interface{})))
 			}
 			cp[resNameTfConvert(k)] = cd
@@ -58,7 +69,9 @@ func convertSchemaSet(set []interface{}) map[string]interface{} {
 		return nil
 	}
 	for _, v := range set {
-		s = v.(map[string]interface{})
+		if v != nil {
+			s = v.(map[string]interface{})
+		}
 	}
 	return s
 }
