@@ -8,23 +8,19 @@ import (
 )
 
 // converting API generated basepolicy to terraform friendly map
-func deepCopyMap(m map[string]interface{}, camelCase bool, parentRef interface{}) map[string]interface{} {
-	//markNil := "exclusions"
+func deepCopyMap(m map[string]interface{}, camelCase bool) map[string]interface{} {
 	cp := make(map[string]interface{})
-	//var bib *map[string]interface{}=&cp
 	for k, v := range m {
 		vm, ok := v.(map[string]interface{})
 		vd, okVd := v.([]interface{})
-
 		if (v) == nil && !okVd {
 			cp[resNameTfConvert(k, camelCase)] = nil
 		} else if ok {
-			cp[resNameTfConvert(k, camelCase)] = []map[string]interface{}{deepCopyMap(vm, camelCase, nil)}
+			cp[resNameTfConvert(k, camelCase)] = []map[string]interface{}{deepCopyMap(vm, camelCase)}
 		} else if okVd {
-			//myInt := (v.([]interface{}))
 			var cd []map[string]interface{}
 			for _, s := range vd {
-				cd = append(cd, deepCopyMap(s.(map[string]interface{}), camelCase, vd))
+				cd = append(cd, deepCopyMap(s.(map[string]interface{}), camelCase))
 			}
 			if !TreatAsMap[k] {
 				cp[resNameTfConvert(k, camelCase)] = cd
@@ -41,8 +37,6 @@ func deepCopyMap(m map[string]interface{}, camelCase bool, parentRef interface{}
 					cp[resNameTfConvert(k, camelCase)] = map[string]interface{}{}
 				}
 			}
-			//parentRef = myInfd
-
 		} else {
 			cp[resNameTfConvert(k, camelCase)] = v
 		}
@@ -64,9 +58,7 @@ func resNameTfConvert(in string, camelCase bool) string {
 func convertToCamelCase(myString string) string {
 	var tfRegExp = `(_)([a-z])`
 	re := regexp.MustCompile(tfRegExp).ReplaceAllStringFunc(myString, strings.ToUpper)
-
 	return strings.Replace(re, "_", "", -1)
-
 }
 
 // convert terraform set of strings to string array
@@ -79,31 +71,6 @@ func convertStringSet(set *schema.Set) []string {
 	return s
 }
 
-// convert schema to map[string]interface{} array
-func convertSchemaSet(set []interface{}) map[string]interface{} {
-	var s map[string]interface{}
-	if set == nil {
-		return nil
-	}
-	for _, v := range set {
-		if v != nil {
-			s = v.(map[string]interface{})
-		}
-	}
-	return s
-}
-func convertNullInterfaceToMap(set []interface{}) []map[string]interface{} {
-	var s []map[string]interface{}
-	if set == nil {
-		return nil
-	}
-	for _, v := range set {
-		if v != nil {
-			s = append(s, v.(map[string]interface{}))
-		}
-	}
-	return s
-}
 func setNullableStringProp(in *string, prop string, d *schema.ResourceData) error {
 	if in != nil {
 		if err := d.Set(prop, in); err != nil {

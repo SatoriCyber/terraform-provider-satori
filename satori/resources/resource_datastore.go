@@ -57,9 +57,6 @@ func resourceDataStoreUpdate(ctx context.Context, d *schema.ResourceData, m inte
 		return diag.FromErr(err)
 	}
 	fmt.Println(result)
-	//if err = updateDataPolicy(err, c, result.DataPolicyId, d); err != nil {
-	//	return diag.FromErr(err)
-	//}
 
 	return diags
 }
