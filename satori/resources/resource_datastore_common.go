@@ -257,7 +257,7 @@ func getBaseLinePolicyOutput(result *api.DataStoreOutput, err error) (map[string
 	if err != nil {
 		return nil, err
 	}
-	tfMap := deepCopyMap(inInterface, false, nil)
+	tfMap := deepCopyMap(inInterface, false)
 	return tfMap, nil
 }
 
@@ -275,7 +275,7 @@ func baselineSecurityPolicyToResource(in []interface{}) *api.BaselineSecurityPol
 	if lesa == nil {
 		return nil
 	}
-	tfMap := deepCopyMap(lesa, true, nil)
+	tfMap := deepCopyMap(lesa, true)
 	jk, _ := json.Marshal(tfMap)
 	err := json.Unmarshal(jk, &bls)
 	if err != nil {
