@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
-	"reflect"
 )
 
 var (
@@ -33,6 +32,11 @@ var (
 	Identity                    = "identity"
 	IdentityType                = "identity_type"
 )
+var TreatAsMap = map[string]bool{
+	Exclusions:                  true,
+	UnsupportedQueriesCategory:  true,
+	UnassociatedQueriesCategory: true,
+}
 
 func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
@@ -253,7 +257,7 @@ func getBaseLinePolicyOutput(result *api.DataStoreOutput, err error) (map[string
 	if err != nil {
 		return nil, err
 	}
-	tfMap := deepCopyMap(inInterface, false)
+	tfMap := deepCopyMap(inInterface, false, nil)
 	return tfMap, nil
 }
 
@@ -271,50 +275,13 @@ func baselineSecurityPolicyToResource(in []interface{}) *api.BaselineSecurityPol
 	if lesa == nil {
 		return nil
 	}
-	bls.Type = lesa["type"].(string)
-	if reflect.ValueOf(lesa[UnassociatedQueriesCategory]).Len() > 0 {
-		var uaqc api.UnassociatedQueriesCategory
-		query_action := (lesa[UnassociatedQueriesCategory]).([]interface{})
-		uaqc.QueryAction = extractValueFromInterface(query_action)[QueryAction].(string)
-		bls.UnassociatedQueriesCategory = uaqc
+	tfMap := deepCopyMap(lesa, true, nil)
+	jk, _ := json.Marshal(tfMap)
+	err := json.Unmarshal(jk, &bls)
+	if err != nil {
+		return nil
 	}
-	if reflect.ValueOf(lesa[UnsupportedQueriesCategory]).Len() > 0 { //	bls.UnsupportedQueriesCategory = lesa["unassociated_queries_category"].(api.UnsupportedQueriesCategory)
-		var uaqc api.UnsupportedQueriesCategory
-		query_action := (lesa[UnsupportedQueriesCategory]).([]interface{})
-		uaqc.QueryAction = extractValueFromInterface(query_action)[QueryAction].(string)
-		bls.UnsupportedQueriesCategory = uaqc
-	}
-	if lesa[Exclusions] != nil { //	bls.UnsupportedQueriesCategory = lesa["unassociated_queries_category"].(api.UnsupportedQueriesCategory)
-		exclusions := lesa[Exclusions].([]interface{})
-		getSet := convertSchemaSet(exclusions)
-
-		if getSet[ExcludedIdentities] != nil {
-			// remove if possible
-			for _, valued := range getSet[ExcludedIdentities].([]interface{}) {
-				var tempIden api.ExcludedIdentities
-				dsd := (valued).(map[string]interface{})
-				tempIden.Identity = dsd[Identity].(string)
-				tempIden.IdentityType = dsd[IdentityType].(string)
-				bls.Exclusions.ExcludedIdentities = append(bls.Exclusions.ExcludedIdentities, tempIden) //i
-				//}
-			}
-		}
-		if getSet[ExcludedQueryPatterns] != nil {
-			for _, valued := range getSet[ExcludedQueryPatterns].([]interface{}) {
-				var tempIden api.ExcludedQueryPatterns
-				dsd := (valued).(map[string]interface{})
-				tempIden.Pattern = dsd[Pattern].(string)
-				//if bls.Exclusions.ExcludedQueryPatterns != nil {
-				bls.Exclusions.ExcludedQueryPatterns = append(bls.Exclusions.ExcludedQueryPatterns, tempIden) //i
-				//}
-			}
-		}
-
-	} else {
-		var excEmptyInit api.Exclusions
-		bls.Exclusions = excEmptyInit
-
-	}
+	fmt.Println(tfMap, err)
 	fmt.Println(lesa)
 	return &bls
 }

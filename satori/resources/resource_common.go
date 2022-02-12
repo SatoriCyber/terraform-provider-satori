@@ -8,29 +8,41 @@ import (
 )
 
 // converting API generated basepolicy to terraform friendly map
-func deepCopyMap(m map[string]interface{}, camelCase bool) map[string]interface{} {
+func deepCopyMap(m map[string]interface{}, camelCase bool, parentRef interface{}) map[string]interface{} {
 	//markNil := "exclusions"
 	cp := make(map[string]interface{})
+	//var bib *map[string]interface{}=&cp
 	for k, v := range m {
 		vm, ok := v.(map[string]interface{})
 		vd, okVd := v.([]interface{})
-		_, okStr := v.(string)
-		_, okInt := v.(int)
-		//fmt.Println(reflect.TypeOf(v), k)
-		//if k == markNil && v == nil {
-		//	cp[resNameTfConvert(k, camelCase)] = nil
-		//} else
-		if (v) == nil && !okVd && !okStr && !okInt {
+
+		if (v) == nil && !okVd {
 			cp[resNameTfConvert(k, camelCase)] = nil
 		} else if ok {
-			cp[resNameTfConvert(k, camelCase)] = []map[string]interface{}{deepCopyMap(vm, camelCase)}
+			cp[resNameTfConvert(k, camelCase)] = []map[string]interface{}{deepCopyMap(vm, camelCase, nil)}
 		} else if okVd {
 			//myInt := (v.([]interface{}))
 			var cd []map[string]interface{}
 			for _, s := range vd {
-				cd = append(cd, deepCopyMap(s.(map[string]interface{}), camelCase))
+				cd = append(cd, deepCopyMap(s.(map[string]interface{}), camelCase, vd))
 			}
-			cp[resNameTfConvert(k, camelCase)] = cd
+			if !TreatAsMap[k] {
+				cp[resNameTfConvert(k, camelCase)] = cd
+			} else {
+				var mpSa []interface{}
+				for _, curRecord := range cd {
+					for _, vaa := range curRecord {
+						mpSa = append(mpSa, vaa)
+					}
+				}
+				if len(cd) != 0 {
+					cp[resNameTfConvert(k, camelCase)] = cd[0]
+				} else {
+					cp[resNameTfConvert(k, camelCase)] = map[string]interface{}{}
+				}
+			}
+			//parentRef = myInfd
+
 		} else {
 			cp[resNameTfConvert(k, camelCase)] = v
 		}
