@@ -1,9 +1,7 @@
 package resources
 
 import (
-	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"reflect"
 	"regexp"
 	"sort"
 	"strings"
@@ -11,25 +9,21 @@ import (
 
 // converting API generated basepolicy to terraform friendly map
 func deepCopyMap(m map[string]interface{}, camelCase bool) map[string]interface{} {
-	markNil := "exclusions"
+	//markNil := "exclusions"
 	cp := make(map[string]interface{})
 	for k, v := range m {
 		vm, ok := v.(map[string]interface{})
 		vd, okVd := v.([]interface{})
 		_, okStr := v.(string)
 		_, okInt := v.(int)
-		// replace  wirh switch
-		fmt.Println(reflect.TypeOf(v), k)
-		if k == markNil && v == nil {
-			cp[resNameTfConvert(k, camelCase)] = nil
-		} else if (v) == nil && !okVd && !okStr && !okInt {
+		//fmt.Println(reflect.TypeOf(v), k)
+		//if k == markNil && v == nil {
+		//	cp[resNameTfConvert(k, camelCase)] = nil
+		//} else
+		if (v) == nil && !okVd && !okStr && !okInt {
 			cp[resNameTfConvert(k, camelCase)] = nil
 		} else if ok {
-			//if len(vm) == 0 {
-			//	fmt.Println("empty interface")
-			//} else {
 			cp[resNameTfConvert(k, camelCase)] = []map[string]interface{}{deepCopyMap(vm, camelCase)}
-			//}
 		} else if okVd {
 			//myInt := (v.([]interface{}))
 			var cd []map[string]interface{}
@@ -82,6 +76,18 @@ func convertSchemaSet(set []interface{}) map[string]interface{} {
 	for _, v := range set {
 		if v != nil {
 			s = v.(map[string]interface{})
+		}
+	}
+	return s
+}
+func convertNullInterfaceToMap(set []interface{}) []map[string]interface{} {
+	var s []map[string]interface{}
+	if set == nil {
+		return nil
+	}
+	for _, v := range set {
+		if v != nil {
+			s = append(s, v.(map[string]interface{}))
 		}
 	}
 	return s
