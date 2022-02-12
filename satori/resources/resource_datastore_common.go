@@ -253,7 +253,7 @@ func getBaseLinePolicyOutput(result *api.DataStoreOutput, err error) (map[string
 	if err != nil {
 		return nil, err
 	}
-	tfMap := deepCopyMap(inInterface)
+	tfMap := deepCopyMap(inInterface, false)
 	return tfMap, nil
 }
 
