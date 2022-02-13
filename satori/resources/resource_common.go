@@ -38,7 +38,7 @@ func deepCopyMap(m map[string]interface{}, camelCase bool) map[string]interface{
 				if len(cd) != 0 {
 					cp[resNameTfConvert(k, camelCase)] = cd[0]
 				} else {
-					cp[resNameTfConvert(k, camelCase)] = map[string]interface{}{}
+					cp[resNameTfConvert(k, camelCase)] = []map[string]interface{}{}
 				}
 			}
 		} else {

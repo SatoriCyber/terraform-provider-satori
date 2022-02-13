@@ -47,14 +47,14 @@ type ExcludedQueryPatterns struct {
 	Pattern string `json:"pattern"`
 }
 type Exclusions struct {
-	ExcludedIdentities    []ExcludedIdentities    `json:"excludedIdentities,omitempty"`
-	ExcludedQueryPatterns []ExcludedQueryPatterns `json:"excludedQueryPatterns,omitempty"`
+	ExcludedIdentities    []ExcludedIdentities    `json:"excludedIdentities"`
+	ExcludedQueryPatterns []ExcludedQueryPatterns `json:"excludedQueryPatterns"`
 }
 type BaselineSecurityPolicy struct {
 	Type                        string                      `json:"type,omitempty"`
-	UnassociatedQueriesCategory UnassociatedQueriesCategory `json:"unassociatedQueriesCategory,omitempty"`
-	UnsupportedQueriesCategory  UnsupportedQueriesCategory  `json:"unsupportedQueriesCategory,omitempty"`
-	Exclusions                  Exclusions                  `json:"exclusions,omitempty"`
+	UnassociatedQueriesCategory UnassociatedQueriesCategory `json:"unassociatedQueriesCategory"`
+	UnsupportedQueriesCategory  UnsupportedQueriesCategory  `json:"unsupportedQueriesCategory"`
+	Exclusions                  Exclusions                  `json:"exclusions"`
 }
 
 func (c *Client) CreateDataStore(input *DataStore) (*DataStoreOutput, error) {

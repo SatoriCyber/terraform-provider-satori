@@ -116,8 +116,8 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								QueryAction: &schema.Schema{
-									Type:        schema.TypeString,
-									Default:     "PASS",
+									Type: schema.TypeString,
+									//Default:     "PASS",
 									Optional:    true,
 									Description: "DataStore custom policy priority.",
 								}}}},
@@ -130,8 +130,8 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								QueryAction: &schema.Schema{
-									Type:        schema.TypeString,
-									Default:     "PASS",
+									Type: schema.TypeString,
+									//Default:     "PASS",
 									Optional:    true,
 									Description: "DataStore custom policy priority.",
 								}}}},
