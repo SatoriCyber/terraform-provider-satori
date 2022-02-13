@@ -3,7 +3,6 @@ package resources
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
@@ -141,7 +140,6 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 						Type:        schema.TypeList,
 						Optional:    true,
 						MaxItems:    1,
-						Default:     nil,
 						Description: "Baseline security policy.",
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
@@ -281,8 +279,7 @@ func baselineSecurityPolicyToResource(in []interface{}) *api.BaselineSecurityPol
 	if err != nil {
 		return nil
 	}
-	fmt.Println(tfMap, err)
-	fmt.Println(lesa)
+
 	return &bls
 }
 

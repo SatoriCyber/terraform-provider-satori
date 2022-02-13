@@ -20,7 +20,11 @@ func deepCopyMap(m map[string]interface{}, camelCase bool) map[string]interface{
 		} else if okVd {
 			var cd []map[string]interface{}
 			for _, s := range vd {
-				cd = append(cd, deepCopyMap(s.(map[string]interface{}), camelCase))
+				if s != nil {
+					if currVal := deepCopyMap(s.(map[string]interface{}), camelCase); currVal != nil {
+						cd = append(cd, currVal)
+					}
+				}
 			}
 			if !TreatAsMap[k] {
 				cp[resNameTfConvert(k, camelCase)] = cd
