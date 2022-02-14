@@ -35,6 +35,7 @@ var TreatAsMap = map[string]bool{
 	Exclusions:                  true,
 	UnsupportedQueriesCategory:  true,
 	UnassociatedQueriesCategory: true,
+	BaselineSecurityPolicy:      true,
 }
 
 func getDataStoreDefinitionSchema() map[string]*schema.Schema {
