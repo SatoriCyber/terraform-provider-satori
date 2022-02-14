@@ -11,13 +11,13 @@ import (
 func deepCopyMap(m map[string]interface{}, camelCase bool) map[string]interface{} {
 	cp := make(map[string]interface{})
 	for k, v := range m {
-		vm, ok := v.(map[string]interface{})
-		vd, okArrInterface := v.([]interface{})
-		if (v) == nil && !okArrInterface {
+		vm, okMapInterface := v.(map[string]interface{})
+		vd, okArrNullInterface := v.([]interface{})
+		if (v) == nil && !okArrNullInterface && !okMapInterface {
 			cp[resNameTfConvert(k, camelCase)] = nil
-		} else if ok {
+		} else if okMapInterface {
 			cp[resNameTfConvert(k, camelCase)] = []map[string]interface{}{deepCopyMap(vm, camelCase)}
-		} else if okArrInterface {
+		} else if okArrNullInterface {
 			var cd []map[string]interface{}
 			for _, s := range vd {
 				if s != nil {
