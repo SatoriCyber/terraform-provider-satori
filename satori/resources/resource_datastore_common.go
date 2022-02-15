@@ -94,7 +94,7 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 		},
 		BaselineSecurityPolicy: {
 			Type:        schema.TypeList,
-			Optional:    true,
+			Required:    true,
 			MaxItems:    1,
 			Description: "Baseline security policy.",
 			Elem: &schema.Resource{
@@ -107,54 +107,54 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 					},
 					UnassociatedQueriesCategory: {
 						Type:        schema.TypeList,
-						Optional:    true,
+						Required:    true,
 						MaxItems:    1,
-						Description: "Baseline security policy.",
+						Description: "UnassociatedQueriesCategory",
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								QueryAction: &schema.Schema{
 									Type: schema.TypeString,
 									//Default:     "PASS",
 									Optional:    true,
-									Description: "DataStore custom policy priority.",
+									Description: "Default policy action for querying locations that are not associated with a dataset.",
 								}}}},
 
 					UnsupportedQueriesCategory: {
 						Type:        schema.TypeList,
-						Optional:    true,
+						Required:    true,
 						MaxItems:    1,
-						Description: "Baseline security policy.",
+						Description: "UnsupportedQueriesCategory",
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								QueryAction: &schema.Schema{
 									Type: schema.TypeString,
 									//Default:     "PASS",
-									Optional:    true,
-									Description: "DataStore custom policy priority.",
+									Required:    true,
+									Description: "Default policy action for unsupported queries and objects",
 								}}}},
 
 					Exclusions: {
 						Type:        schema.TypeList,
-						Optional:    true,
+						Required:    true,
 						MaxItems:    1,
-						Description: "Baseline security policy.",
+						Description: "Exempt users and patterns from baseline security policy",
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								ExcludedIdentities: &schema.Schema{
 									Type:        schema.TypeList,
 									Optional:    true,
 									Default:     nil,
-									Description: "DataStore custom policy priority.",
+									Description: "Exempt Users from the Baseline Security Policy\n",
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
 											IdentityType: &schema.Schema{
 												Type:        schema.TypeString,
 												Optional:    true,
-												Description: "DataStore custom policy priority.",
+												Description: "USER type are supported",
 											}, Identity: &schema.Schema{
 												Type:        schema.TypeString,
 												Optional:    true,
-												Description: "DataStore custom policy priority.",
+												Description: "Username",
 											},
 										}},
 								},
@@ -162,13 +162,13 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 									Type:        schema.TypeList,
 									Optional:    true,
 									Default:     nil,
-									Description: "DataStore custom policy priority.",
+									Description: "Exempt Queries from the Baseline Security Policy",
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
 											Pattern: &schema.Schema{
 												Type:        schema.TypeString,
 												Optional:    true,
-												Description: "DataStore custom policy priority.",
+												Description: "Query pattern",
 											},
 										}},
 								},
@@ -233,7 +233,7 @@ func getDataStore(c *api.Client, d *schema.ResourceData) (*api.DataStoreOutput, 
 		return nil, err
 	}
 
-	d.Set("id", result.Id)
+	d.Set(Id, result.Id)
 	d.Set(Name, result.Name)
 	d.Set(Hostname, result.Hostname)
 	d.Set(ParentId, result.ParentId)
