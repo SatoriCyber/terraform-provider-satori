@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
@@ -11,13 +12,12 @@ import (
 var (
 	Name                        = "name"
 	Hostname                    = "hostname"
-	SatoriHostname              = "satori_hostname"
 	Id                          = "id"
 	ParentId                    = "parent_id"
 	IdentityProviderId          = "identity_provider_id"
 	DataAccessControllerId      = "dataaccess_controller_id"
 	CustomIngressPort           = "custom_ingress_port"
-	Port                        = "port"
+	OriginPort                  = "origin_port"
 	ProjectIds                  = "project_ids"
 	BaselineSecurityPolicy      = "baseline_security_policy"
 	Type                        = "type"
@@ -43,12 +43,12 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 		Id: &schema.Schema{
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "DataStore name.",
+			Description: "DataStore resource id.",
 		},
 		ParentId: &schema.Schema{
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "DataStore name.",
+			Description: "Parent resource id.",
 		},
 		Name: &schema.Schema{
 			Type:        schema.TypeString,
@@ -57,17 +57,17 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 		}, Hostname: &schema.Schema{
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "Host FQDN name.",
+			Description: "Data provider's FQDN hostname.", // example: snowflakecomputing.com, xyz.redshift.amazonaws.com:5439/dev
+		}, OriginPort: &schema.Schema{
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Description: "Port number description.",
 		}, DataAccessControllerId: &schema.Schema{
 			Type:        schema.TypeString,
 			Required:    true,
 			Description: "Host FQDN name.",
 		},
-		Port: &schema.Schema{
-			Type:        schema.TypeInt,
-			Optional:    true,
-			Description: "Port number description.",
-		}, CustomIngressPort: &schema.Schema{
+		CustomIngressPort: &schema.Schema{
 			Type:        schema.TypeInt,
 			Optional:    true,
 			Description: "Port number description.",
@@ -88,10 +88,6 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 				Type: schema.TypeString,
 			},
 		}, IdentityProviderId: &schema.Schema{
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "IDs of Satori users that will be set as DataStore owners.",
-		}, SatoriHostname: &schema.Schema{
 			Type:        schema.TypeString,
 			Optional:    true,
 			Description: "IDs of Satori users that will be set as DataStore owners.",
@@ -184,7 +180,12 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 }
 
 func createDataStore(d *schema.ResourceData, c *api.Client) (*api.DataStoreOutput, error) {
-	input := resourceToDataStore(d)
+	input, err := resourceToDataStore(d)
+
+	if err != nil {
+		return nil, err
+	}
+
 	result, err := c.CreateDataStore(input)
 	if err != nil {
 		return nil, err
@@ -198,24 +199,27 @@ func createDataStore(d *schema.ResourceData, c *api.Client) (*api.DataStoreOutpu
 }
 
 // convert terraform resource defs into datastore type //
-func resourceToDataStore(d *schema.ResourceData) *api.DataStore {
+func resourceToDataStore(d *schema.ResourceData) (*api.DataStore, error) {
+
+	re, err := baselineSecurityPolicyToResource(d.Get("baseline_security_policy").([]interface{}))
+	if err != nil {
+		return nil, err
+	}
+
 	out := api.DataStore{}
 	out.Name = d.Get("name").(string)
 	out.Hostname = d.Get("hostname").(string)
-	out.SatoriHostname = d.Get(SatoriHostname).(string)
-	out.Port = d.Get("port").(int)
+	out.OriginPort = d.Get(OriginPort).(int)
 	out.CustomIngressPort = d.Get("custom_ingress_port").(int)
 	out.IdentityProviderId = d.Get("identity_provider_id").(string)
 	out.DataAccessControllerId = d.Get("dataaccess_controller_id").(string)
 	out.ProjectIds = convertStringSet(d.Get("project_ids").(*schema.Set))
-	re := baselineSecurityPolicyToResource(d.Get("baseline_security_policy").([]interface{}))
-	//if re != nil {
 	out.BaselineSecurityPolicy = re
 	//} else {
 	//	out.BaselineSecurityPolicy = nil
 	//}
 	out.Type = d.Get("type").(string)
-	return &out
+	return &out, nil
 }
 
 // update datastoreoutput
@@ -234,11 +238,10 @@ func getDataStore(c *api.Client, d *schema.ResourceData) (*api.DataStoreOutput, 
 	d.Set(Hostname, result.Hostname)
 	d.Set(ParentId, result.ParentId)
 	d.Set(Type, result.Type)
-	d.Set(Port, result.Port)
+	d.Set(OriginPort, result.OriginPort)
 	d.Set(CustomIngressPort, result.CustomIngressPort)
 	d.Set(IdentityProviderId, result.IdentityProviderId)
 	d.Set(DataAccessControllerId, result.DataAccessControllerId)
-	d.Set(SatoriHostname, result.SatoriHostname)
 	d.Set(ProjectIds, result.ProjectIds)
 
 	tfMap, err := getBaseLinePolicyOutput(result, err)
@@ -268,24 +271,26 @@ func extractValueFromInterface(in []interface{}) map[string]interface{} {
 	}
 }
 
-func baselineSecurityPolicyToResource(in []interface{}) *api.BaselineSecurityPolicy {
+func baselineSecurityPolicyToResource(in []interface{}) (*api.BaselineSecurityPolicy, error) {
 	var bls api.BaselineSecurityPolicy
 	lesa := extractValueFromInterface(in)
 	if lesa == nil {
-		return nil
+		return nil, errors.New("no datastore correct")
 	}
 	tfMap := deepCopyMap(lesa, true)
 	jk, _ := json.Marshal(tfMap)
 	err := json.Unmarshal(jk, &bls)
 	if err != nil {
-		return nil
+		return nil, (err)
 	}
-
-	return &bls
+	return &bls, nil
 }
 
 func updateDataStore(d *schema.ResourceData, c *api.Client) (*api.DataStoreOutput, error) {
-	input := resourceToDataStore(d)
+	input, err := resourceToDataStore(d)
+	if err != nil {
+		return nil, err
+	}
 	result, err := c.UpdateDataStore(d.Id(), input)
 	return result, err
 }

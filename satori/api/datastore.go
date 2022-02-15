@@ -5,14 +5,12 @@ const DataStoreApiPrefix = "/api/v1/datastore"
 type DataStore struct {
 	Name                   string                  `json:"name"`
 	Hostname               string                  `json:"hostname"`
-	SatoriHostname         string                  `json:"satoriHostname,omitempty"`
-	Port                   int                     `json:"port"`
+	OriginPort             int                     `json:"originPort,omitempty"`
 	Type                   string                  `json:"type"`
 	DataAccessControllerId string                  `json:"dataAccessControllerId"`
 	BaselineSecurityPolicy *BaselineSecurityPolicy `json:"baselineSecurityPolicy,omitempty"`
 	IdentityProviderId     string                  `json:"identityProviderId,omitempty"`
 	ProjectIds             []string                `json:"projectIds,omitempty"`
-	port                   int                     `json:"port"`
 	CustomIngressPort      int                     `json:"customIngressPort"`
 }
 
@@ -20,8 +18,7 @@ type DataStoreOutput struct {
 	Id                     string                  `json:"id"`
 	Name                   string                  `json:"name"`
 	Hostname               string                  `json:"hostname"`
-	SatoriHostname         string                  `json:"satoriHostname,omitempty"`
-	Port                   int                     `json:"originPort"`
+	OriginPort             int                     `json:"originPort"`
 	CustomIngressPort      int                     `json:"customIngressPort"`
 	Type                   string                  `json:"type"`
 	ParentId               string                  `json:"parentId"`

@@ -1,25 +1,24 @@
 provider "satori" {
   #can be provided via environment variable: SATORI_SA
-  service_account     = "9bd8dd14-50c9-4d52-b148-bc0dece8b964"
+  service_account     = "aaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaaa"
   #can be provided via environment variable: SATORI_SA_KEY
-  service_account_key = "HBRwevC9uDOEYv5LIhNvtzdrgc7WTErqWJE3iqmTFxFbMFGkcEFvjiGqm3BlWACd"
+  service_account_key = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
   #satori account id for all resources in this terraform
-  satori_account      = "fdd00136-69f2-471a-9b9e-b8ccb9658b81"
-
+  satori_account      = "cccccc-cccc-cccc-cccc-cccccccccccc"
   url        = "https://<satori-mgmt-server-address>:8014"
-  verify_tls = false
+  verify_tls = true
 }
 locals {
   dataaccess_controller_id = "<assigned dataaccess_controller_id>"
 }
 resource "satori_datastore" "datastore0" {
   name                     = "exampleDatastore"
-  hostname                 = "data source target hostname"
+  hostname                 = "data.source.target.hostname"
   dataaccess_controller_id = local.dataaccess_controller_id
   type                     = "SNOWFLAKE"
-  port                     = 8081
+  OriginPort                     = 8081
   custom_ingress_port      = 8083
-  identity_provider_id     = "saml authXXXX"
+  identity_provider_id     = "OKTA"
 
 }
 # output of generated id for newly created datastore
