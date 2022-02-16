@@ -36,13 +36,11 @@ func main() {
 
 	if debugMode {
 		err := plugin.Debug(context.Background(), "registry.terraform.io/satoricyber/satori", opts)
-
 		if err != nil {
 			log.Fatal(err.Error())
 		}
 		return
 	}
 
-	//plugin.Serve(opts)
 	plugin.Serve(opts)
 }
