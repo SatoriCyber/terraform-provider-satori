@@ -31,7 +31,7 @@ resource "satori_datastore" "datastore0" {
   hostname                 = "data.source.target.hostname"
   dataaccess_controller_id = local.dataaccess_controller_id
   type                     = "SNOWFLAKE"
-  OriginPort                     = 8081
+  originPort                     = 8081
   custom_ingress_port      = 8083
   identity_provider_id     = "OKTA"
 
