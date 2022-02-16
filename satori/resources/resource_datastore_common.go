@@ -14,7 +14,6 @@ var (
 	Hostname                    = "hostname"
 	Id                          = "id"
 	ParentId                    = "parent_id"
-	IdentityProviderId          = "identity_provider_id"
 	DataAccessControllerId      = "dataaccess_controller_id"
 	CustomIngressPort           = "custom_ingress_port"
 	OriginPort                  = "origin_port"
@@ -71,10 +70,6 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 			Type:        schema.TypeInt,
 			Optional:    true,
 			Description: "Port number description.",
-		}, IdentityProviderId: &schema.Schema{
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Port number description.",
 		}, ProjectIds: &schema.Schema{
 			Type:        schema.TypeSet,
 			Optional:    true,
@@ -87,10 +82,6 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
 			},
-		}, IdentityProviderId: &schema.Schema{
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "IDs of Satori users that will be set as DataStore owners.",
 		},
 		BaselineSecurityPolicy: {
 			Type:        schema.TypeList,
@@ -209,7 +200,6 @@ func resourceToDataStore(d *schema.ResourceData) (*api.DataStore, error) {
 	out.Hostname = d.Get("hostname").(string)
 	out.OriginPort = d.Get(OriginPort).(int)
 	out.CustomIngressPort = d.Get("custom_ingress_port").(int)
-	out.IdentityProviderId = d.Get("identity_provider_id").(string)
 	out.DataAccessControllerId = d.Get("dataaccess_controller_id").(string)
 	out.ProjectIds = convertStringSet(d.Get("project_ids").(*schema.Set))
 	out.BaselineSecurityPolicy = re
@@ -238,7 +228,6 @@ func getDataStore(c *api.Client, d *schema.ResourceData) (*api.DataStoreOutput, 
 	d.Set(Type, result.Type)
 	d.Set(OriginPort, result.OriginPort)
 	d.Set(CustomIngressPort, result.CustomIngressPort)
-	d.Set(IdentityProviderId, result.IdentityProviderId)
 	d.Set(DataAccessControllerId, result.DataAccessControllerId)
 	d.Set(ProjectIds, result.ProjectIds)
 

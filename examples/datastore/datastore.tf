@@ -7,8 +7,6 @@ resource "satori_datastore" "datastore0" {
   dataaccess_controller_id = local.dataaccess_controller_id
   type                     = "SNOWFLAKE"
   origin_port               = 8081
-  identity_provider_id     = "aaaaaaaaaaaaa-ddddd-ddddddddd-dddddddd"
-
 }
 # output of generated id for newly created datastore
 output "datastore_created_id" {

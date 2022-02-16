@@ -22,8 +22,6 @@ resource "satori_datastore" "datastore0" {
   dataaccess_controller_id = local.dataaccess_controller_id
   type                     = "SNOWFLAKE"
   origin_port               = 8081
-  identity_provider_id     = "aaaaaaaaaaaaa-ddddd-ddddddddd-dddddddd"
-
 }
 # output of generated id for newly created datastore
 output "datastore_created_id" {
@@ -44,7 +42,6 @@ resource "satori_datastore" "datastore0" {
   project_ids              = ["abc", "cdf"] #  BigQuery affected project ids
   hostname                 = "data source target hostname"
   origin_port              = 8081 # data source server's ip
-  identity_provider_id     = "aaaaaaaaaaaaa-ddddd-ddddddddd-dddddddd"
   ####### BASELINE_POLICY SETTINGS #########
   baseline_security_policy {
 
@@ -94,7 +91,6 @@ output "datastore_created_id" {
 ### Optional
 
 - **custom_ingress_port** (Number) Port number description.
-- **identity_provider_id** (String) IDs of Satori users that will be set as DataStore owners.
 - **origin_port** (Number) Port number description.
 - **project_ids** (Set of String) ProjectIds list of project IDs
 

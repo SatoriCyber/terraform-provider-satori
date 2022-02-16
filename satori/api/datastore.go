@@ -9,7 +9,6 @@ type DataStore struct {
 	Type                   string                  `json:"type"`
 	DataAccessControllerId string                  `json:"dataAccessControllerId"`
 	BaselineSecurityPolicy *BaselineSecurityPolicy `json:"baselineSecurityPolicy,omitempty"`
-	IdentityProviderId     string                  `json:"identityProviderId,omitempty"`
 	ProjectIds             []string                `json:"projectIds,omitempty"`
 	CustomIngressPort      int                     `json:"customIngressPort"`
 }
@@ -25,9 +24,7 @@ type DataStoreOutput struct {
 	DataPolicyId           string                  `json:"dataPolicyId"`
 	DataAccessControllerId string                  `json:"dataAccessControllerId"`
 	BaselineSecurityPolicy *BaselineSecurityPolicy `json:"baselineSecurityPolicy,omitempty"`
-
-	IdentityProviderId string   `json:"identityProviderId"`
-	ProjectIds         []string `json:"projectIds,omitempty"`
+	ProjectIds             []string                `json:"projectIds,omitempty"`
 }
 
 type UnassociatedQueriesCategory struct {
