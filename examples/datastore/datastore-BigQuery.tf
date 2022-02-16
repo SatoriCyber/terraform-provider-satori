@@ -21,8 +21,7 @@ resource "satori_datastore" "datastore0" {
   project_ids              = [111, 222] #  BigQuery affected project ids
   hostname                 = "data source target hostname"
   origin_port              = 8081 # data source server's ip
-  custom_ingress_port      = 8083
-  identity_provider_id     = "OKTA"
+  identity_provider_id     = "aaaaaaaaaaaaa-ddddd-ddddddddd-dddddddd"
   ####### BASELINE_POLICY SETTINGS #########
   baseline_security_policy {
 
