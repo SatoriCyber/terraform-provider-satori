@@ -41,7 +41,7 @@ resource "satori_datastore" "datastore0" {
   dataaccess_controller_id = local.dataaccess_controller_id
   # data source specific connection settings
   type                     = "BIGQUERY"
-  project_ids              = [111, 222] #  BigQuery affected project ids
+  project_ids              = ["abc", "cdf"] #  BigQuery affected project ids
   hostname                 = "data source target hostname"
   origin_port              = 8081 # data source server's ip
   identity_provider_id     = "aaaaaaaaaaaaa-ddddd-ddddddddd-dddddddd"
