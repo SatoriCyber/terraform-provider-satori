@@ -7,45 +7,47 @@ import (
 	"strings"
 )
 
-// converting API generated basepolicy to terraform friendly map
-func deepCopyMap(m map[string]interface{}, camelCase bool) map[string]interface{} {
-	cp := make(map[string]interface{})
+// converting API objects back&forth to TF objects
+// the function resolves the limitation that TypeMap can't have the TypeList elements
+// !!! tf resources and api structures have to be similiar !!!
+func biTfApiConverter(m map[string]interface{}, camelCase bool) map[string]interface{} {
+	currentMap := make(map[string]interface{})
 	for k, v := range m {
 		vm, okMapInterface := v.(map[string]interface{})
-		vd, okArrNullInterface := v.([]interface{})
+		arrNullInterface, okArrNullInterface := v.([]interface{})
 		if (v) == nil && !okArrNullInterface && !okMapInterface {
-			cp[resNameTfConvert(k, camelCase)] = nil
+			currentMap[resNameTfConvert(k, camelCase)] = nil
 		} else if okMapInterface {
-			cp[resNameTfConvert(k, camelCase)] = []map[string]interface{}{deepCopyMap(vm, camelCase)}
+			currentMap[resNameTfConvert(k, camelCase)] = []map[string]interface{}{biTfApiConverter(vm, camelCase)}
 		} else if okArrNullInterface {
-			var cd []map[string]interface{}
-			for _, s := range vd {
-				if s != nil {
-					if currVal := deepCopyMap(s.(map[string]interface{}), camelCase); currVal != nil {
-						cd = append(cd, currVal)
+			var mapFromNullInterface []map[string]interface{}
+			for _, curNullInterface := range arrNullInterface {
+				if curNullInterface != nil {
+					if currVal := biTfApiConverter(curNullInterface.(map[string]interface{}), camelCase); currVal != nil {
+						mapFromNullInterface = append(mapFromNullInterface, currVal)
 					}
 				}
 			}
 			if !TreatAsMap[k] {
-				cp[resNameTfConvert(k, camelCase)] = cd
+				currentMap[resNameTfConvert(k, camelCase)] = mapFromNullInterface
 			} else {
-				var mpSa []interface{}
-				for _, curRecord := range cd {
+				var newMapArrayInterface []interface{}
+				for _, curRecord := range mapFromNullInterface {
 					for _, vaa := range curRecord {
-						mpSa = append(mpSa, vaa)
+						newMapArrayInterface = append(newMapArrayInterface, vaa)
 					}
 				}
-				if len(cd) != 0 {
-					cp[resNameTfConvert(k, camelCase)] = cd[0]
+				if len(mapFromNullInterface) != 0 {
+					currentMap[resNameTfConvert(k, camelCase)] = mapFromNullInterface[0]
 				} else {
-					cp[resNameTfConvert(k, camelCase)] = []map[string]interface{}{}
+					currentMap[resNameTfConvert(k, camelCase)] = []map[string]interface{}{}
 				}
 			}
 		} else {
-			cp[resNameTfConvert(k, camelCase)] = v
+			currentMap[resNameTfConvert(k, camelCase)] = v
 		}
 	}
-	return cp
+	return currentMap
 }
 
 // converts name from camelCase to tf underscore style

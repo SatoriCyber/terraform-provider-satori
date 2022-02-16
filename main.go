@@ -35,7 +35,7 @@ func main() {
 	}
 
 	if debugMode {
-		err := plugin.Debug(context.Background(), "registry.terraform.io/satoricyber/satori", opts)
+		err := plugin.Debug(context.Background(), "satoricyber.com/terraform/satori", opts)
 		if err != nil {
 			log.Fatal(err.Error())
 		}

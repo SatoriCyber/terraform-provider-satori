@@ -90,14 +90,13 @@ output "datastore_created_id" {
 
 ### Optional
 
-- **custom_ingress_port** (Number) Port number description.
+- **custom_ingress_port** (Number) Custom ingress port number description.
 - **origin_port** (Number) Port number description.
 - **project_ids** (Set of String) ProjectIds list of project IDs
 
 ### Read-Only
 
 - **id** (String) DataStore resource id.
-- **parent_id** (String) Parent resource id.
 
 <a id="nestedblock--baseline_security_policy"></a>
 ### Nested Schema for `baseline_security_policy`
@@ -126,7 +125,7 @@ Optional:
 Optional:
 
 - **identity** (String) Username
-- **identity_type** (String) USER type are supported
+- **identity_type** (String) USER type is supported
 
 
 <a id="nestedblock--baseline_security_policy--exclusions--excluded_query_patterns"></a>
@@ -143,7 +142,7 @@ Optional:
 
 Optional:
 
-- **query_action** (String) Default policy action for querying locations that are not associated with a dataset.
+- **query_action** (String) Default policy action for querying locations that are not associated with a dataset, modes supported:  PASS┃REDACT┃BLOCK.
 
 
 <a id="nestedblock--baseline_security_policy--unsupported_queries_category"></a>
@@ -151,4 +150,4 @@ Optional:
 
 Required:
 
-- **query_action** (String) Default policy action for unsupported queries and objects
+- **query_action** (String) Default policy action for unsupported queries and objects, modes supported:  PASS┃REDACT┃BLOCK

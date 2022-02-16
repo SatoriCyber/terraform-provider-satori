@@ -2,8 +2,6 @@ package resources
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
@@ -13,7 +11,6 @@ var (
 	Name                        = "name"
 	Hostname                    = "hostname"
 	Id                          = "id"
-	ParentId                    = "parent_id"
 	DataAccessControllerId      = "dataaccess_controller_id"
 	CustomIngressPort           = "custom_ingress_port"
 	OriginPort                  = "origin_port"
@@ -44,11 +41,6 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "DataStore resource id.",
 		},
-		ParentId: &schema.Schema{
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Parent resource id.",
-		},
 		Name: &schema.Schema{
 			Type:        schema.TypeString,
 			Required:    true,
@@ -69,7 +61,8 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 		CustomIngressPort: &schema.Schema{
 			Type:        schema.TypeInt,
 			Optional:    true,
-			Description: "Port number description.",
+			Default:     nil,
+			Description: "Custom ingress port number description.",
 		}, ProjectIds: &schema.Schema{
 			Type:        schema.TypeSet,
 			Optional:    true,
@@ -83,91 +76,9 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 				Type: schema.TypeString,
 			},
 		},
-		BaselineSecurityPolicy: {
-			Type:        schema.TypeList,
-			Required:    true,
-			MaxItems:    1,
-			Description: "Baseline security policy.",
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					Type: &schema.Schema{
-						Type:        schema.TypeString,
-						Optional:    true,
-						Description: "DataStore basepolicy .",
-						Default:     "BASELINE_POLICY",
-					},
-					UnassociatedQueriesCategory: {
-						Type:        schema.TypeList,
-						Required:    true,
-						MaxItems:    1,
-						Description: "UnassociatedQueriesCategory",
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								QueryAction: &schema.Schema{
-									Type:        schema.TypeString, //Default:     "PASS",
-									Optional:    true,
-									Description: "Default policy action for querying locations that are not associated with a dataset.",
-								}}}},
-
-					UnsupportedQueriesCategory: {
-						Type:        schema.TypeList,
-						Required:    true,
-						MaxItems:    1,
-						Description: "UnsupportedQueriesCategory",
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								QueryAction: &schema.Schema{
-									Type:        schema.TypeString, //Default:     "PASS",
-									Required:    true,
-									Description: "Default policy action for unsupported queries and objects",
-								}}}},
-
-					Exclusions: {
-						Type:        schema.TypeList,
-						Required:    true,
-						MaxItems:    1,
-						Description: "Exempt users and patterns from baseline security policy",
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								ExcludedIdentities: &schema.Schema{
-									Type:        schema.TypeList,
-									Optional:    true,
-									Default:     nil,
-									Description: "Exempt Users from the Baseline Security Policy\n",
-									Elem: &schema.Resource{
-										Schema: map[string]*schema.Schema{
-											IdentityType: &schema.Schema{
-												Type:        schema.TypeString,
-												Optional:    true,
-												Description: "USER type are supported",
-											}, Identity: &schema.Schema{
-												Type:        schema.TypeString,
-												Optional:    true,
-												Description: "Username",
-											},
-										}},
-								},
-								ExcludedQueryPatterns: &schema.Schema{
-									Type:        schema.TypeList,
-									Optional:    true,
-									Default:     nil,
-									Description: "Exempt Queries from the Baseline Security Policy",
-									Elem: &schema.Resource{
-										Schema: map[string]*schema.Schema{
-											Pattern: &schema.Schema{
-												Type:        schema.TypeString,
-												Optional:    true,
-												Description: "Query pattern",
-											},
-										}},
-								},
-							},
-						}},
-				},
-			}},
+		BaselineSecurityPolicy: GetBaseLinePolicyDefinition(),
 	}
 }
-
 func createDataStore(d *schema.ResourceData, c *api.Client) (*api.DataStoreOutput, error) {
 	input, err := resourceToDataStore(d)
 
@@ -190,7 +101,7 @@ func createDataStore(d *schema.ResourceData, c *api.Client) (*api.DataStoreOutpu
 // convert terraform resource defs into datastore type //
 func resourceToDataStore(d *schema.ResourceData) (*api.DataStore, error) {
 
-	re, err := baselineSecurityPolicyToResource(d.Get("baseline_security_policy").([]interface{}))
+	re, err := BaselineSecurityPolicyToResource(d.Get("baseline_security_policy").([]interface{}))
 	if err != nil {
 		return nil, err
 	}
@@ -203,9 +114,6 @@ func resourceToDataStore(d *schema.ResourceData) (*api.DataStore, error) {
 	out.DataAccessControllerId = d.Get("dataaccess_controller_id").(string)
 	out.ProjectIds = convertStringSet(d.Get("project_ids").(*schema.Set))
 	out.BaselineSecurityPolicy = re
-	//} else {
-	//	out.BaselineSecurityPolicy = nil
-	//}
 	out.Type = d.Get("type").(string)
 	return &out, nil
 }
@@ -224,14 +132,13 @@ func getDataStore(c *api.Client, d *schema.ResourceData) (*api.DataStoreOutput, 
 	d.Set(Id, result.Id)
 	d.Set(Name, result.Name)
 	d.Set(Hostname, result.Hostname)
-	d.Set(ParentId, result.ParentId)
 	d.Set(Type, result.Type)
 	d.Set(OriginPort, result.OriginPort)
 	d.Set(CustomIngressPort, result.CustomIngressPort)
 	d.Set(DataAccessControllerId, result.DataAccessControllerId)
 	d.Set(ProjectIds, result.ProjectIds)
 
-	tfMap, err := getBaseLinePolicyOutput(result, err)
+	tfMap, err := GetBaseLinePolicyDatastoreOutput(result, err)
 	if err != nil {
 		return nil, err
 	}
@@ -239,38 +146,12 @@ func getDataStore(c *api.Client, d *schema.ResourceData) (*api.DataStoreOutput, 
 	return result, err
 }
 
-func getBaseLinePolicyOutput(result *api.DataStoreOutput, err error) (map[string]interface{}, error) {
-	var inInterface map[string]interface{}
-	inrec, _ := json.Marshal(result.BaselineSecurityPolicy)
-	err = json.Unmarshal(inrec, &inInterface)
-	if err != nil {
-		return nil, err
-	}
-	tfMap := deepCopyMap(inInterface, false)
-	return tfMap, nil
-}
-
-func extractValueFromInterface(in []interface{}) map[string]interface{} {
+func extractMapFromInterface(in []interface{}) map[string]interface{} {
 	if len(in) > 0 {
 		return in[0].(map[string]interface{})
 	} else {
 		return nil
 	}
-}
-
-func baselineSecurityPolicyToResource(in []interface{}) (*api.BaselineSecurityPolicy, error) {
-	var bls api.BaselineSecurityPolicy
-	lesa := extractValueFromInterface(in)
-	if lesa == nil {
-		return nil, errors.New("no datastore correct")
-	}
-	tfMap := deepCopyMap(lesa, true)
-	jk, _ := json.Marshal(tfMap)
-	err := json.Unmarshal(jk, &bls)
-	if err != nil {
-		return nil, (err)
-	}
-	return &bls, nil
 }
 
 func updateDataStore(d *schema.ResourceData, c *api.Client) (*api.DataStoreOutput, error) {
@@ -284,12 +165,9 @@ func updateDataStore(d *schema.ResourceData, c *api.Client) (*api.DataStoreOutpu
 
 func resourceDataStoreDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
-
 	c := m.(*api.Client)
-
 	if err := c.DeleteDataStore(d.Id()); err != nil {
 		return diag.FromErr(err)
 	}
-
 	return diags
 }
