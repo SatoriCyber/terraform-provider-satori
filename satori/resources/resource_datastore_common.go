@@ -113,8 +113,7 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								QueryAction: &schema.Schema{
-									Type: schema.TypeString,
-									//Default:     "PASS",
+									Type:        schema.TypeString, //Default:     "PASS",
 									Optional:    true,
 									Description: "Default policy action for querying locations that are not associated with a dataset.",
 								}}}},
@@ -127,8 +126,7 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								QueryAction: &schema.Schema{
-									Type: schema.TypeString,
-									//Default:     "PASS",
+									Type:        schema.TypeString, //Default:     "PASS",
 									Required:    true,
 									Description: "Default policy action for unsupported queries and objects",
 								}}}},

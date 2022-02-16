@@ -13,16 +13,6 @@ The **satori_datastore** resource allows lifecycle management for the datastores
 ## Example Usage
 
 ```terraform
-provider "satori" {
-  #can be provided via environment variable: SATORI_SA
-  service_account     = "aaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaaa"
-  #can be provided via environment variable: SATORI_SA_KEY
-  service_account_key = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
-  #satori account id for all resources in this terraform
-  satori_account      = "cccccc-cccc-cccc-cccc-cccccccccccc"
-  url        = "https://<satori-mgmt-server-address>:8014"
-  verify_tls = true
-}
 locals {
   dataaccess_controller_id = "<assigned dataaccess_controller_id>"
 }
@@ -41,16 +31,6 @@ output "datastore_created_id" {
 }
 ```
 ```terraform
-provider "satori" {
-  #can be provided via environment variable: SATORI_SA
-  service_account     = "aaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaaa"
-  #can be provided via environment variable: SATORI_SA_KEY
-  service_account_key = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
-  #satori account id for all resources in this terraform
-  satori_account      = "cccccc-cccc-cccc-cccc-cccccccccccc"
-  url        = "https://<satori-mgmt-server-address>:8014"
-  verify_tls = false
-}
 locals {
   dataaccess_controller_id = "<assigned dataaccess_controller_id>"
 }
@@ -61,7 +41,7 @@ resource "satori_datastore" "datastore0" {
   dataaccess_controller_id = local.dataaccess_controller_id
   # data source specific connection settings
   type                     = "BIGQUERY"
-  project_ids              = [111, 222] #  BigQuery affected project ids
+  project_ids              = ["ABC", "DEF"] #  BigQuery affected project ids
   hostname                 = "data source target hostname"
   origin_port              = 8081 # data source server's ip
   identity_provider_id     = "aaaaaaaaaaaaa-ddddd-ddddddddd-dddddddd"
