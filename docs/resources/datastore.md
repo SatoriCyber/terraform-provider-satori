@@ -21,7 +21,7 @@ resource "satori_datastore" "datastore0" {
   hostname                 = "data.source.target.hostname"
   dataaccess_controller_id = local.dataaccess_controller_id
   type                     = "SNOWFLAKE"
-  originPort                     = 8081
+  origin_port               = 8081
   identity_provider_id     = "aaaaaaaaaaaaa-ddddd-ddddddddd-dddddddd"
 
 }
@@ -41,7 +41,7 @@ resource "satori_datastore" "datastore0" {
   dataaccess_controller_id = local.dataaccess_controller_id
   # data source specific connection settings
   type                     = "BIGQUERY"
-  project_ids              = ["ABC", "DEF"] #  BigQuery affected project ids
+  project_ids              = [111, 222] #  BigQuery affected project ids
   hostname                 = "data source target hostname"
   origin_port              = 8081 # data source server's ip
   identity_provider_id     = "aaaaaaaaaaaaa-ddddd-ddddddddd-dddddddd"
@@ -58,11 +58,11 @@ resource "satori_datastore" "datastore0" {
 
       excluded_identities {
         identity_type = "USER"
-        identity = "user1"
+        identity      = "user1"
       }
       excluded_identities {
         identity_type = "USER"
-        identity = "user2"
+        identity      = "user2"
       }
       excluded_query_patterns {
         pattern = ".*a.*"
