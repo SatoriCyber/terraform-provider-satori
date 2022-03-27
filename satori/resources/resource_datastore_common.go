@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
@@ -26,6 +27,12 @@ var (
 	ExcludedQueryPatterns       = "excluded_query_patterns"
 	Identity                    = "identity"
 	IdentityType                = "identity_type"
+	NetworkPolicy               = "network_policy"
+	AllowedRules                = "allowed_rules"
+	BlockedRules                = "blocked_rules"
+	Note                        = "note"
+	IPRanges                    = "ip_ranges"
+	IPRange                     = "ip_range"
 )
 var TreatAsMap = map[string]bool{
 	Exclusions:                  true,
@@ -45,15 +52,18 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Required:    true,
 			Description: "DataStore name.",
-		}, Hostname: &schema.Schema{
+		},
+		Hostname: &schema.Schema{
 			Type:        schema.TypeString,
 			Required:    true,
 			Description: "Data provider's FQDN hostname.", // example: snowflakecomputing.com, xyz.redshift.amazonaws.com:5439/dev
-		}, OriginPort: &schema.Schema{
+		},
+		OriginPort: &schema.Schema{
 			Type:        schema.TypeInt,
 			Optional:    true,
 			Description: "Port number description.",
-		}, DataAccessControllerId: &schema.Schema{
+		},
+		DataAccessControllerId: &schema.Schema{
 			Type:        schema.TypeString,
 			Required:    true,
 			Description: "Host FQDN name.",
@@ -63,12 +73,14 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Default:     nil,
 			Description: "Custom ingress port number description.",
-		}, ProjectIds: &schema.Schema{
+		},
+		ProjectIds: &schema.Schema{
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "ProjectIds list of project IDs",
 			Elem:        &schema.Schema{Type: schema.TypeString},
-		}, Type: &schema.Schema{
+		},
+		Type: &schema.Schema{
 			Type:        schema.TypeString,
 			Required:    true,
 			Description: "IDs of Satori users that will be set as DataStore owners.",
@@ -77,6 +89,7 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 			},
 		},
 		BaselineSecurityPolicy: GetBaseLinePolicyDefinition(),
+		NetworkPolicy:          GetNetworkPolicyDefinition(),
 	}
 }
 func createDataStore(d *schema.ResourceData, c *api.Client) (*api.DataStoreOutput, error) {
@@ -106,6 +119,11 @@ func resourceToDataStore(d *schema.ResourceData) (*api.DataStore, error) {
 		return nil, err
 	}
 
+	np, nerr := NetworkPolicyToResource(d.Get(NetworkPolicy).([]interface{}))
+	if nerr != nil {
+		return nil, nerr
+	}
+
 	out := api.DataStore{}
 	out.Name = d.Get("name").(string)
 	out.Hostname = d.Get("hostname").(string)
@@ -114,6 +132,7 @@ func resourceToDataStore(d *schema.ResourceData) (*api.DataStore, error) {
 	out.DataAccessControllerId = d.Get("dataaccess_controller_id").(string)
 	out.ProjectIds = convertStringSet(d.Get("project_ids").(*schema.Set))
 	out.BaselineSecurityPolicy = re
+	out.NetworkPolicy = np
 	out.Type = d.Get("type").(string)
 	return &out, nil
 }
@@ -143,6 +162,15 @@ func getDataStore(c *api.Client, d *schema.ResourceData) (*api.DataStoreOutput, 
 		return nil, err
 	}
 	d.Set(BaselineSecurityPolicy, []map[string]interface{}{tfMap})
+
+	npMap, err := GetNetworkPolicyDatastoreOutput(result.NetworkPolicy, err)
+	if err != nil {
+		return nil, err
+	}
+	if npMap != nil {
+		d.Set(NetworkPolicy, []map[string]interface{}{npMap})
+	}
+
 	return result, err
 }
 
