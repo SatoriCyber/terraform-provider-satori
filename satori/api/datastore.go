@@ -59,11 +59,11 @@ type NetworkPolicy struct {
 }
 
 type NetworkPolicyRules struct {
-	Note     string    `json:"note,omitempty"`
-	IPRanges []IPRange `json:"ipRanges,omitempty"`
+	Note     string     `json:"note,omitempty"`
+	IPRanges []IPRanges `json:"ipRanges,omitempty"`
 }
 
-type IPRange struct {
+type IPRanges struct {
 	IPRange string `json:"ipRange,omitempty"`
 }
 

@@ -113,18 +113,21 @@ func createDataStore(d *schema.ResourceData, c *api.Client) (*api.DataStoreOutpu
 
 // convert terraform resource defs into datastore type //
 func resourceToDataStore(d *schema.ResourceData) (*api.DataStore, error) {
+	out := api.DataStore{}
 
 	re, err := BaselineSecurityPolicyToResource(d.Get("baseline_security_policy").([]interface{}))
 	if err != nil {
 		return nil, err
 	}
 
-	np, nerr := NetworkPolicyToResource(d.Get(NetworkPolicy).([]interface{}))
-	if nerr != nil {
-		return nil, nerr
+	if d.Get(NetworkPolicy) != nil {
+		np, nerr := NetworkPolicyToResource(d.Get(NetworkPolicy).([]interface{}))
+		if nerr != nil {
+			diag.FromErr(nerr)
+		}
+		out.NetworkPolicy = np
 	}
 
-	out := api.DataStore{}
 	out.Name = d.Get("name").(string)
 	out.Hostname = d.Get("hostname").(string)
 	out.OriginPort = d.Get(OriginPort).(int)
@@ -132,7 +135,6 @@ func resourceToDataStore(d *schema.ResourceData) (*api.DataStore, error) {
 	out.DataAccessControllerId = d.Get("dataaccess_controller_id").(string)
 	out.ProjectIds = convertStringSet(d.Get("project_ids").(*schema.Set))
 	out.BaselineSecurityPolicy = re
-	out.NetworkPolicy = np
 	out.Type = d.Get("type").(string)
 	return &out, nil
 }
