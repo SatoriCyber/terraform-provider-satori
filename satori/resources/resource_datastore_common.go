@@ -31,8 +31,8 @@ var (
 	AllowedRules                = "allowed_rules"
 	BlockedRules                = "blocked_rules"
 	Note                        = "note"
-	IPRanges                    = "ip_ranges"
-	IPRange                     = "ip_range"
+	IpRanges                    = "ip_ranges"
+	IpRange                     = "ip_range"
 )
 var TreatAsMap = map[string]bool{
 	Exclusions:                  true,
@@ -115,17 +115,14 @@ func createDataStore(d *schema.ResourceData, c *api.Client) (*api.DataStoreOutpu
 func resourceToDataStore(d *schema.ResourceData) (*api.DataStore, error) {
 	out := api.DataStore{}
 
-	re, err := BaselineSecurityPolicyToResource(d.Get("baseline_security_policy").([]interface{}))
+	baselineSecurityPolicyToResource, err := BaselineSecurityPolicyToResource(d.Get("baseline_security_policy").([]interface{}))
 	if err != nil {
 		return nil, err
 	}
 
-	if d.Get(NetworkPolicy) != nil {
-		np, nerr := NetworkPolicyToResource(d.Get(NetworkPolicy).([]interface{}))
-		if nerr != nil {
-			diag.FromErr(nerr)
-		}
-		out.NetworkPolicy = np
+	networkPolicyToResource, err := NetworkPolicyToResource(d.Get(NetworkPolicy).([]interface{}))
+	if err != nil {
+		return nil, err
 	}
 
 	out.Name = d.Get("name").(string)
@@ -134,8 +131,9 @@ func resourceToDataStore(d *schema.ResourceData) (*api.DataStore, error) {
 	out.CustomIngressPort = d.Get("custom_ingress_port").(int)
 	out.DataAccessControllerId = d.Get("dataaccess_controller_id").(string)
 	out.ProjectIds = convertStringSet(d.Get("project_ids").(*schema.Set))
-	out.BaselineSecurityPolicy = re
 	out.Type = d.Get("type").(string)
+	out.BaselineSecurityPolicy = baselineSecurityPolicyToResource
+	out.NetworkPolicy = networkPolicyToResource
 	return &out, nil
 }
 
@@ -165,13 +163,11 @@ func getDataStore(c *api.Client, d *schema.ResourceData) (*api.DataStoreOutput, 
 	}
 	d.Set(BaselineSecurityPolicy, []map[string]interface{}{tfMap})
 
-	npMap, err := GetNetworkPolicyDatastoreOutput(result.NetworkPolicy, err)
+	npMap, err := GetNetworkPolicyDatastoreOutput(result, err)
 	if err != nil {
 		return nil, err
 	}
-	if npMap != nil {
-		d.Set(NetworkPolicy, []map[string]interface{}{npMap})
-	}
+	d.Set(NetworkPolicy, []map[string]interface{}{npMap})
 
 	return result, err
 }
