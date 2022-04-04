@@ -2,7 +2,6 @@ package resources
 
 import (
 	"encoding/json"
-	"errors"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
 )
@@ -80,14 +79,13 @@ func GetNetworkPolicyDatastoreOutput(result *api.DataStoreOutput, err error) (ma
 func NetworkPolicyToResource(in []interface{}) (*api.NetworkPolicy, error) {
 	var networkPolicy api.NetworkPolicy
 	mapNetworkPolicy := extractMapFromInterface(in)
-	if mapNetworkPolicy == nil {
-		return nil, errors.New("networkPolicy is incorrect/missing")
-	}
-	tfMap := biTfApiConverter(mapNetworkPolicy, true)
-	jsonOutput, _ := json.Marshal(tfMap)
-	err := json.Unmarshal(jsonOutput, &networkPolicy)
-	if err != nil {
-		return nil, err
+	if mapNetworkPolicy != nil {
+		tfMap := biTfApiConverter(mapNetworkPolicy, true)
+		jsonOutput, _ := json.Marshal(tfMap)
+		err := json.Unmarshal(jsonOutput, &networkPolicy)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return &networkPolicy, nil
 }

@@ -18,11 +18,23 @@ locals {
 }
 resource "satori_datastore" "datastore0" {
   name                     = "exampleDatastore"
-  hostname                 = "data.source.target.hostname"
+  hostname                 = "ers.snowflakecomputing.com"
   dataaccess_controller_id = local.dataaccess_controller_id
   type                     = "SNOWFLAKE"
-  origin_port               = 8081
+  origin_port              = 8081
+  baseline_security_policy {
+    unassociated_queries_category {
+      query_action = "PASS"
+    }
+    unsupported_queries_category {
+      query_action = "PASS"
+    }
+    exclusions {
+    }
+  }
+  network_policy {}
 }
+
 # output of generated id for newly created datastore
 output "datastore_created_id" {
   value = satori_datastore.datastore0.id
@@ -79,28 +91,16 @@ resource "satori_datastore" "datastore0" {
         ip_range = "3.2.3.1"
       }
     }
-    allowed_rules {
-      note = "desc2"
-      ip_ranges {
-        ip_range = "3.2.3.1"
-      }
-    }
     blocked_rules {
-      note = "desc1"
+      note = "desc3"
       ip_ranges {
-        ip_range = "3.2.3.1"
+        ip_range = "3.2.3.3"
       }
       ip_ranges {
-        ip_range = "3.2.3.1"
-      }
-    }
-    blocked_rules {
-      note = "desc2"
-      ip_ranges {
-        ip_range = "3.2.3.1"
+        ip_range = "3.2.3.3"
       }
     }
-}
+  }
 
 
 output "datastore_created_id" {
@@ -117,12 +117,12 @@ output "datastore_created_id" {
 - **dataaccess_controller_id** (String) Host FQDN name.
 - **hostname** (String) Data provider's FQDN hostname.
 - **name** (String) DataStore name.
-- **network_policy** (Block List, Min: 1) a Network Policy for a Data Store (see [below for nested schema](#nestedblock--network_policy))
 - **type** (String) IDs of Satori users that will be set as DataStore owners.
 
 ### Optional
 
 - **custom_ingress_port** (Number) Custom ingress port number description.
+- **network_policy** (Block List) a Network Policy for a Data Store (see [below for nested schema](#nestedblock--network_policy))
 - **origin_port** (Number) Port number description.
 - **project_ids** (Set of String) ProjectIds list of project IDs
 

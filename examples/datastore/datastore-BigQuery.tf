@@ -48,28 +48,16 @@ resource "satori_datastore" "datastore0" {
         ip_range = "3.2.3.1"
       }
     }
-    allowed_rules {
-      note = "desc2"
-      ip_ranges {
-        ip_range = "3.2.3.1"
-      }
-    }
     blocked_rules {
-      note = "desc1"
+      note = "desc3"
       ip_ranges {
-        ip_range = "3.2.3.1"
+        ip_range = "3.2.3.3"
       }
       ip_ranges {
-        ip_range = "3.2.3.1"
-      }
-    }
-    blocked_rules {
-      note = "desc2"
-      ip_ranges {
-        ip_range = "3.2.3.1"
+        ip_range = "3.2.3.3"
       }
     }
-}
+  }
 
 
 output "datastore_created_id" {

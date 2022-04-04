@@ -39,6 +39,7 @@ var TreatAsMap = map[string]bool{
 	UnsupportedQueriesCategory:  true,
 	UnassociatedQueriesCategory: true,
 	BaselineSecurityPolicy:      true,
+	NetworkPolicy:               true,
 }
 
 func getDataStoreDefinitionSchema() map[string]*schema.Schema {
@@ -174,6 +175,9 @@ func getDataStore(c *api.Client, d *schema.ResourceData) (*api.DataStoreOutput, 
 
 func extractMapFromInterface(in []interface{}) map[string]interface{} {
 	if len(in) > 0 {
+		if in[0] == nil {
+			return nil
+		}
 		return in[0].(map[string]interface{})
 	} else {
 		return nil

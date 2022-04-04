@@ -53,7 +53,6 @@ type BaselineSecurityPolicy struct {
 }
 
 type NetworkPolicy struct {
-	Name         string               `json:"name,omitempty"`
 	AllowedRules []NetworkPolicyRules `json:"allowedRules,omitempty"`
 	BlockedRules []NetworkPolicyRules `json:"blockedRules,omitempty"`
 }

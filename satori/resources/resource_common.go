@@ -40,7 +40,7 @@ func biTfApiConverter(m map[string]interface{}, camelCase bool) map[string]inter
 				if len(mapFromNullInterface) != 0 {
 					currentMap[resNameTfConvert(k, camelCase)] = mapFromNullInterface[0]
 				} else {
-					currentMap[resNameTfConvert(k, camelCase)] = []map[string]interface{}{}
+					currentMap[resNameTfConvert(k, camelCase)] = map[string]interface{}{}
 				}
 			}
 		} else {
