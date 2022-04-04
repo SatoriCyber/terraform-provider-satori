@@ -10,7 +10,7 @@ import (
 func GetNetworkPolicyDefinition() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeList,
-		Required:    true,
+		Optional:    true,
 		Description: "a Network Policy for a Data Store",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -23,9 +23,9 @@ func GetNetworkPolicyDefinition() *schema.Schema {
 							Note: {
 								Type:        schema.TypeString,
 								Optional:    true,
-								Description: "Description",
+								Description: "custom description for allowed IP ranges",
 							},
-							IpRanges: GetIPRangesSchemaDefinitions(),
+							IpRanges: GetIpRangesSchemaDefinitions(),
 						},
 					},
 				},
@@ -38,9 +38,9 @@ func GetNetworkPolicyDefinition() *schema.Schema {
 							Note: {
 								Type:        schema.TypeString,
 								Optional:    true,
-								Description: "Description",
+								Description: "custom description for blocked IP ranges",
 							},
-							IpRanges: GetIPRangesSchemaDefinitions(),
+							IpRanges: GetIpRangesSchemaDefinitions(),
 						},
 					},
 				},
@@ -49,11 +49,11 @@ func GetNetworkPolicyDefinition() *schema.Schema {
 	}
 }
 
-func GetIPRangesSchemaDefinitions() *schema.Schema {
+func GetIpRangesSchemaDefinitions() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeList,
 		Optional:    true,
-		Description: "IP Ranges",
+		Description: "enable access control from specified IP ranges",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				IpRange: {

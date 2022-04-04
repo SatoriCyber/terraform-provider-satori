@@ -69,6 +69,37 @@ resource "satori_datastore" "datastore0" {
       }
     }
   }
+  network_policy {
+    allowed_rules {
+      note = "desc1"
+      ip_ranges {
+        ip_range = "3.2.3.1"
+      }
+      ip_ranges {
+        ip_range = "3.2.3.1"
+      }
+    }
+    allowed_rules {
+      note = "desc2"
+      ip_ranges {
+        ip_range = "3.2.3.1"
+      }
+    }
+    blocked_rules {
+      note = "desc1"
+      ip_ranges {
+        ip_range = "3.2.3.1"
+      }
+      ip_ranges {
+        ip_range = "3.2.3.1"
+      }
+    }
+    blocked_rules {
+      note = "desc2"
+      ip_ranges {
+        ip_range = "3.2.3.1"
+      }
+    }
 }
 
 
@@ -86,6 +117,7 @@ output "datastore_created_id" {
 - **dataaccess_controller_id** (String) Host FQDN name.
 - **hostname** (String) Data provider's FQDN hostname.
 - **name** (String) DataStore name.
+- **network_policy** (Block List, Min: 1) a Network Policy for a Data Store (see [below for nested schema](#nestedblock--network_policy))
 - **type** (String) IDs of Satori users that will be set as DataStore owners.
 
 ### Optional
@@ -151,3 +183,45 @@ Optional:
 Required:
 
 - **query_action** (String) Default policy action for unsupported queries and objects, modes supported:  PASS┃REDACT┃BLOCK
+
+
+
+<a id="nestedblock--network_policy"></a>
+### Nested Schema for `network_policy`
+
+Optional:
+
+- **allowed_rules** (Block List) Allowed Ip Rules (see [below for nested schema](#nestedblock--network_policy--allowed_rules))
+- **blocked_rules** (Block List) Blocked Ips Rules (see [below for nested schema](#nestedblock--network_policy--blocked_rules))
+
+<a id="nestedblock--network_policy--allowed_rules"></a>
+### Nested Schema for `network_policy.allowed_rules`
+
+Optional:
+
+- **ip_ranges** (Block List) enable access control from specified IP ranges (see [below for nested schema](#nestedblock--network_policy--allowed_rules--ip_ranges))
+- **note** (String) custom description for allowed IP ranges
+
+<a id="nestedblock--network_policy--allowed_rules--ip_ranges"></a>
+### Nested Schema for `network_policy.allowed_rules.ip_ranges`
+
+Required:
+
+- **ip_range** (String) IP Range
+
+
+
+<a id="nestedblock--network_policy--blocked_rules"></a>
+### Nested Schema for `network_policy.blocked_rules`
+
+Optional:
+
+- **ip_ranges** (Block List) enable access control from specified IP ranges (see [below for nested schema](#nestedblock--network_policy--blocked_rules--ip_ranges))
+- **note** (String) custom description for blocked IP ranges
+
+<a id="nestedblock--network_policy--blocked_rules--ip_ranges"></a>
+### Nested Schema for `network_policy.blocked_rules.ip_ranges`
+
+Required:
+
+- **ip_range** (String) IP Range

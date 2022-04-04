@@ -60,11 +60,11 @@ type NetworkPolicy struct {
 
 type NetworkPolicyRules struct {
 	Note     string     `json:"note,omitempty"`
-	IPRanges []IPRanges `json:"ipRanges,omitempty"`
+	IPRanges []IpRanges `json:"ipRanges,omitempty"`
 }
 
-type IPRanges struct {
-	IPRange string `json:"ipRange,omitempty"`
+type IpRanges struct {
+	IpRange string `json:"ipRange,omitempty"`
 }
 
 func (c *Client) CreateDataStore(input *DataStore) (*DataStoreOutput, error) {
