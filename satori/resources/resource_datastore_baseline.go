@@ -3,6 +3,7 @@ package resources
 import (
 	"encoding/json"
 	"errors"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
 )
@@ -92,6 +93,7 @@ func GetBaseLinePolicyDefinition() *schema.Schema {
 		},
 	}
 }
+
 func GetBaseLinePolicyDatastoreOutput(result *api.DataStoreOutput, err error) (map[string]interface{}, error) {
 	var inInterface map[string]interface{}
 	inJson, _ := json.Marshal(result.BaselineSecurityPolicy)
@@ -102,6 +104,7 @@ func GetBaseLinePolicyDatastoreOutput(result *api.DataStoreOutput, err error) (m
 	tfMap := biTfApiConverter(inInterface, false)
 	return tfMap, nil
 }
+
 func BaselineSecurityPolicyToResource(in []interface{}) (*api.BaselineSecurityPolicy, error) {
 	var baselineSecurityPolicy api.BaselineSecurityPolicy
 	mapBaselineSecurityPolicy := extractMapFromInterface(in)

@@ -38,7 +38,26 @@ resource "satori_datastore" "datastore0" {
       }
     }
   }
-}
+  network_policy {
+    allowed_rules {
+      note = "desc1"
+      ip_ranges {
+        ip_range = "1.1.1.0/24"
+      }
+      ip_ranges {
+        ip_range = "3.2.3.1"
+      }
+    }
+    blocked_rules {
+      note = "desc3"
+      ip_ranges {
+        ip_range = "1.1.1.0/30"
+      }
+      ip_ranges {
+        ip_range = "3.2.3.3"
+      }
+    }
+  }
 
 
 output "datastore_created_id" {

@@ -11,6 +11,7 @@ type DataStore struct {
 	BaselineSecurityPolicy *BaselineSecurityPolicy `json:"baselineSecurityPolicy,omitempty"`
 	ProjectIds             []string                `json:"projectIds,omitempty"`
 	CustomIngressPort      int                     `json:"customIngressPort,omitempty"`
+	NetworkPolicy          *NetworkPolicy          `json:"networkPolicy,omitempty"`
 }
 
 type DataStoreOutput struct {
@@ -24,6 +25,7 @@ type DataStoreOutput struct {
 	DataAccessControllerId string                  `json:"dataAccessControllerId"`
 	BaselineSecurityPolicy *BaselineSecurityPolicy `json:"baselineSecurityPolicy,omitempty"`
 	ProjectIds             []string                `json:"projectIds,omitempty"`
+	NetworkPolicy          *NetworkPolicy          `json:"networkPolicy,omitempty"`
 }
 
 type UnassociatedQueriesCategory struct {
@@ -48,6 +50,20 @@ type BaselineSecurityPolicy struct {
 	UnassociatedQueriesCategory UnassociatedQueriesCategory `json:"unassociatedQueriesCategory"`
 	UnsupportedQueriesCategory  UnsupportedQueriesCategory  `json:"unsupportedQueriesCategory"`
 	Exclusions                  Exclusions                  `json:"exclusions"`
+}
+
+type NetworkPolicy struct {
+	AllowedRules []NetworkPolicyRules `json:"allowedRules,omitempty"`
+	BlockedRules []NetworkPolicyRules `json:"blockedRules,omitempty"`
+}
+
+type NetworkPolicyRules struct {
+	Note     string     `json:"note,omitempty"`
+	IPRanges []IpRanges `json:"ipRanges,omitempty"`
+}
+
+type IpRanges struct {
+	IpRange string `json:"ipRange,omitempty"`
 }
 
 func (c *Client) CreateDataStore(input *DataStore) (*DataStoreOutput, error) {
