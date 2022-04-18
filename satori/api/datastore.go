@@ -12,6 +12,7 @@ type DataStore struct {
 	ProjectIds             []string                `json:"projectIds,omitempty"`
 	CustomIngressPort      int                     `json:"customIngressPort,omitempty"`
 	NetworkPolicy          *NetworkPolicy          `json:"networkPolicy,omitempty"`
+	SatoriAuthSettings     *SatoriAuthSettings     `json:"satoriAuthSettings,omitempty"`
 }
 
 type DataStoreOutput struct {
@@ -26,6 +27,7 @@ type DataStoreOutput struct {
 	BaselineSecurityPolicy *BaselineSecurityPolicy `json:"baselineSecurityPolicy,omitempty"`
 	ProjectIds             []string                `json:"projectIds,omitempty"`
 	NetworkPolicy          *NetworkPolicy          `json:"networkPolicy,omitempty"`
+	SatoriAuthSettings     *SatoriAuthSettings     `json:"satoriAuthSettings,omitempty"`
 }
 
 type UnassociatedQueriesCategory struct {
@@ -55,6 +57,14 @@ type BaselineSecurityPolicy struct {
 type NetworkPolicy struct {
 	AllowedRules []NetworkPolicyRules `json:"allowedRules,omitempty"`
 	BlockedRules []NetworkPolicyRules `json:"blockedRules,omitempty"`
+}
+type SatoriAuthSettings struct {
+	Enabled     bool        `json:"enabled,omitempty"`
+	Credentials Credentials `json:"credentials,omitempty"`
+}
+type Credentials struct {
+	Username string `json:"username,omitempty"`
+	Password string `json:"password,omitempty"`
 }
 
 type NetworkPolicyRules struct {
