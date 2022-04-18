@@ -18,7 +18,7 @@ locals {
 }
 resource "satori_datastore" "datastore0" {
   name                     = "exampleDatastore"
-  hostname                 = "ers.snowflakecomputing.com"
+  hostname                 = "data.source.target.hostname"
   dataaccess_controller_id = local.dataaccess_controller_id
   type                     = "SNOWFLAKE"
   origin_port              = 8081
@@ -85,7 +85,7 @@ resource "satori_datastore" "datastore0" {
     allowed_rules {
       note = "desc1"
       ip_ranges {
-        ip_range = "3.2.3.1"
+        ip_range = "1.1.1.0/24"
       }
       ip_ranges {
         ip_range = "3.2.3.1"
@@ -94,7 +94,7 @@ resource "satori_datastore" "datastore0" {
     blocked_rules {
       note = "desc3"
       ip_ranges {
-        ip_range = "3.2.3.3"
+        ip_range = "1.1.1.0/30"
       }
       ip_ranges {
         ip_range = "3.2.3.3"
@@ -122,7 +122,7 @@ output "datastore_created_id" {
 ### Optional
 
 - **custom_ingress_port** (Number) Custom ingress port number description.
-- **network_policy** (Block List) a Network Policy for a Data Store (see [below for nested schema](#nestedblock--network_policy))
+- **network_policy** (Block List) A network Policy for a Data Store (see [below for nested schema](#nestedblock--network_policy))
 - **origin_port** (Number) Port number description.
 - **project_ids** (Set of String) ProjectIds list of project IDs
 
@@ -199,7 +199,7 @@ Optional:
 
 Optional:
 
-- **ip_ranges** (Block List) enable access control from specified IP ranges (see [below for nested schema](#nestedblock--network_policy--allowed_rules--ip_ranges))
+- **ip_ranges** (Block List) Defines IP addresses or CIDR ranges allowed to access the datastore (see [below for nested schema](#nestedblock--network_policy--allowed_rules--ip_ranges))
 - **note** (String) custom description for allowed IP ranges
 
 <a id="nestedblock--network_policy--allowed_rules--ip_ranges"></a>
@@ -207,7 +207,7 @@ Optional:
 
 Required:
 
-- **ip_range** (String) IP Range
+- **ip_range** (String) Range (IP or CIDR)
 
 
 
@@ -216,7 +216,7 @@ Required:
 
 Optional:
 
-- **ip_ranges** (Block List) enable access control from specified IP ranges (see [below for nested schema](#nestedblock--network_policy--blocked_rules--ip_ranges))
+- **ip_ranges** (Block List) Defines IP addresses or CIDR ranges allowed to access the datastore (see [below for nested schema](#nestedblock--network_policy--blocked_rules--ip_ranges))
 - **note** (String) custom description for blocked IP ranges
 
 <a id="nestedblock--network_policy--blocked_rules--ip_ranges"></a>
@@ -224,4 +224,4 @@ Optional:
 
 Required:
 
-- **ip_range** (String) IP Range
+- **ip_range** (String) Range (IP or CIDR)

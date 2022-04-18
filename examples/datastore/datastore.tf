@@ -3,7 +3,7 @@ locals {
 }
 resource "satori_datastore" "datastore0" {
   name                     = "exampleDatastore"
-  hostname                 = "ers.snowflakecomputing.com"
+  hostname                 = "data.source.target.hostname"
   dataaccess_controller_id = local.dataaccess_controller_id
   type                     = "SNOWFLAKE"
   origin_port              = 8081

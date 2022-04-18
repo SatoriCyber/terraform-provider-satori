@@ -10,7 +10,7 @@ func GetNetworkPolicyDefinition() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeList,
 		Optional:    true,
-		Description: "a Network Policy for a Data Store",
+		Description: "A network Policy for a Data Store",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				AllowedRules: {
@@ -52,13 +52,13 @@ func GetIpRangesSchemaDefinitions() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeList,
 		Optional:    true,
-		Description: "enable access control from specified IP ranges",
+		Description: "Defines IP addresses or CIDR ranges allowed to access the datastore",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				IpRange: {
 					Type:        schema.TypeString,
 					Required:    true,
-					Description: "IP Range",
+					Description: "Range (IP or CIDR)",
 				},
 			},
 		},
