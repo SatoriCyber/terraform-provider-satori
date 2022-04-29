@@ -28,7 +28,7 @@ func ResourceMaskingProfile() *schema.Resource {
 				ValidateFunc: func(v interface{}, key string) (warns []string, errs []error) {
 					name := v.(string)
 					var isValid = regexp.MustCompile(`^[a-zA-Z ]+$`).MatchString
-					if isValid(name) {
+					if !isValid(name) {
 						errs = append(errs, fmt.Errorf("%q must contain only alphanumeric characters and spaces but got: %q", key, name))
 					}
 					return
