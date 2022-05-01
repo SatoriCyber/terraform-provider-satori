@@ -9,7 +9,7 @@ import (
 func GetSatoriAuthSettingsDefinitions() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeList,
-		Required:    true,
+		Optional:    true,
 		MaxItems:    1,
 		Description: "Sets temporary credentials for admin to creeate temporary user datastore",
 		Elem: &schema.Resource{
