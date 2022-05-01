@@ -7,10 +7,9 @@ resource "satori_datastore" "datastore0" {
 
   dataaccess_controller_id = local.dataaccess_controller_id
   # data source specific connection settings
-  type                     = "BIGQUERY"
-  project_ids              = ["abc", "cdf"] #  BigQuery affected project ids
+  type                     = "POSTGRESQL"
   hostname                 = "data source target hostname"
-  origin_port              = 8081 # data source server's ip
+  origin_port              = 3532 # data source server's ip
   ####### BASELINE_POLICY SETTINGS #########
   baseline_security_policy {
 
@@ -58,6 +57,14 @@ resource "satori_datastore" "datastore0" {
       }
     }
   }
+  satori_auth_settings {
+    enabled = true
+    credentials {
+      password = "*********"
+      username = "adminuser"
+    }
+  }
+
 }
 
 

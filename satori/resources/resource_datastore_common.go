@@ -19,6 +19,10 @@ var (
 	BaselineSecurityPolicy      = "baseline_security_policy"
 	Type                        = "type"
 	UnassociatedQueriesCategory = "unassociated_queries_category"
+	Credentials                 = "credentials"
+	Enabled                     = "enabled"
+	Username                    = "username"
+	Password                    = "password"
 	UnsupportedQueriesCategory  = "unsupported_queries_category"
 	Pattern                     = "pattern"
 	ExcludedIdentities          = "excluded_identities"
@@ -28,6 +32,7 @@ var (
 	Identity                    = "identity"
 	IdentityType                = "identity_type"
 	NetworkPolicy               = "network_policy"
+	SatoriAuthSettings          = "satori_auth_settings"
 	AllowedRules                = "allowed_rules"
 	BlockedRules                = "blocked_rules"
 	Note                        = "note"
@@ -40,6 +45,7 @@ var TreatAsMap = map[string]bool{
 	UnassociatedQueriesCategory: true,
 	BaselineSecurityPolicy:      true,
 	NetworkPolicy:               true,
+	Credentials:                 true,
 }
 
 func getDataStoreDefinitionSchema() map[string]*schema.Schema {
@@ -89,6 +95,7 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 				Type: schema.TypeString,
 			},
 		},
+		SatoriAuthSettings:     GetSatoriAuthSettingsDefinitions(),
 		BaselineSecurityPolicy: GetBaseLinePolicyDefinition(),
 		NetworkPolicy:          GetNetworkPolicyDefinition(),
 	}
@@ -126,6 +133,11 @@ func resourceToDataStore(d *schema.ResourceData) (*api.DataStore, error) {
 		return nil, err
 	}
 
+	satoriAuthSettingsToResource, err := SatoriAuthSettingsToResource(d.Get(SatoriAuthSettings).([]interface{}))
+	if err != nil {
+		return nil, err
+	}
+
 	out.Name = d.Get("name").(string)
 	out.Hostname = d.Get("hostname").(string)
 	out.OriginPort = d.Get(OriginPort).(int)
@@ -135,6 +147,7 @@ func resourceToDataStore(d *schema.ResourceData) (*api.DataStore, error) {
 	out.Type = d.Get("type").(string)
 	out.BaselineSecurityPolicy = baselineSecurityPolicyToResource
 	out.NetworkPolicy = networkPolicyToResource
+	out.SatoriAuthSettings = satoriAuthSettingsToResource
 	return &out, nil
 }
 
@@ -169,6 +182,12 @@ func getDataStore(c *api.Client, d *schema.ResourceData) (*api.DataStoreOutput, 
 		return nil, err
 	}
 	d.Set(NetworkPolicy, []map[string]interface{}{npMap})
+
+	sasMap, err := GetSatoriAuthSettingsDatastoreOutput(result, err)
+	if err != nil {
+		return nil, err
+	}
+	d.Set(SatoriAuthSettings, []map[string]interface{}{sasMap})
 
 	return result, err
 }
