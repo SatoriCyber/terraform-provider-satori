@@ -84,7 +84,9 @@ func resourceToIdentity(resourceIdentity map[string]interface{}) *api.DataAccess
 	identityName := resourceIdentity["name"].(string)
 	identityGroupId := resourceIdentity["group_id"].(string)
 
-	if len(identityName) > 0 {
+  if (identity.IdentityType == "EVERYONE") {
+    identity.Identity = ""
+  } else if len(identityName) > 0 {
 		identity.Identity = identityName
 	} else if len(identityGroupId) > 0 {
 		identity.Identity = identityGroupId
