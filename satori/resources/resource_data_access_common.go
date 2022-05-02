@@ -88,8 +88,6 @@ func resourceToIdentity(resourceIdentity map[string]interface{}) *api.DataAccess
 		identity.Identity = identityName
 	} else if len(identityGroupId) > 0 {
 		identity.Identity = identityGroupId
-	} else {
-		identity.Identity = identity.IdentityType
 	}
 	return &identity
 }
