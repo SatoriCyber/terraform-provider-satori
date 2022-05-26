@@ -11,32 +11,32 @@ func GetSatoriAuthSettingsDefinitions() *schema.Schema {
 		Type:        schema.TypeList,
 		Optional:    true,
 		MaxItems:    1,
-		Description: "Sets temporary credentials for admin to creeate temporary user datastore",
+		Description: "Sets the authentication settings for the Data Store",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				Enabled: &schema.Schema{
 					Type:        schema.TypeBool,
 					Optional:    true,
-					Description: "Enables to activate the creation of temporary credentials for this data store.",
+					Description: "Enables Satori Data Store authentication.",
 					Default:     false,
 				},
 				Credentials: {
 					Type:        schema.TypeList,
 					Optional:    true,
 					MaxItems:    1,
-					Description: "Credentials for Satori User Admin",
+					Description: "Root user credentials",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							Username: &schema.Schema{
 								Type:        schema.TypeString,
 								Required:    true,
-								Description: "An admin username with rights to create a new user",
+								Description: "Username of root user",
 							},
 							Password: &schema.Schema{
 								Type:        schema.TypeString,
 								Sensitive:   true,
 								Required:    true,
-								Description: "Password for the admin user",
+								Description: "Password of root user",
 							},
 						}}},
 			},
