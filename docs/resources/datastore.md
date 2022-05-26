@@ -19,8 +19,7 @@ The **satori_datastore** resource allows lifecycle management for the datastores
 - **dataaccess_controller_id** (String) Host FQDN name.
 - **hostname** (String) Data provider's FQDN hostname.
 - **name** (String) DataStore name.
-- **satori_auth_settings** (Block List, Min: 1, Max: 1) Sets temporary credentials for admin to creeate temporary user datastore (see [below for nested schema](#nestedblock--satori_auth_settings))
-- **type** (String) IDs of Satori users that will be set as DataStore owners.
+- **type** (String) The datastore type, for example: POSTGRESQL, SNOWFLAKE, etc. The full list is available at https://app.satoricyber.com/docs/api#post-/api/v1/datastore
 
 ### Optional
 
@@ -28,6 +27,7 @@ The **satori_datastore** resource allows lifecycle management for the datastores
 - **network_policy** (Block List) A network Policy for a Data Store (see [below for nested schema](#nestedblock--network_policy))
 - **origin_port** (Number) Port number description.
 - **project_ids** (Set of String) ProjectIds list of project IDs
+- **satori_auth_settings** (Block List, Max: 1) Sets the authentication settings for the Data Store (see [below for nested schema](#nestedblock--satori_auth_settings))
 
 ### Read-Only
 
@@ -89,24 +89,6 @@ Required:
 
 
 
-<a id="nestedblock--satori_auth_settings"></a>
-### Nested Schema for `satori_auth_settings`
-
-Optional:
-
-- **credentials** (Block List, Max: 1) Credentials for Satori User Admin (see [below for nested schema](#nestedblock--satori_auth_settings--credentials))
-- **enabled** (Boolean) Enables to activate the creation of temporary credentials for this data store. Defaults to `false`.
-
-<a id="nestedblock--satori_auth_settings--credentials"></a>
-### Nested Schema for `satori_auth_settings.credentials`
-
-Required:
-
-- **password** (String, Sensitive) Password for the admin user
-- **username** (String) An admin username with rights to create a new user
-
-
-
 <a id="nestedblock--network_policy"></a>
 ### Nested Schema for `network_policy`
 
@@ -146,6 +128,25 @@ Optional:
 Required:
 
 - **ip_range** (String) Range (IP or CIDR)
+
+
+
+
+<a id="nestedblock--satori_auth_settings"></a>
+### Nested Schema for `satori_auth_settings`
+
+Optional:
+
+- **credentials** (Block List, Max: 1) Root user credentials (see [below for nested schema](#nestedblock--satori_auth_settings--credentials))
+- **enabled** (Boolean) Enables Satori Data Store authentication. Defaults to `false`.
+
+<a id="nestedblock--satori_auth_settings--credentials"></a>
+### Nested Schema for `satori_auth_settings.credentials`
+
+Required:
+
+- **password** (String, Sensitive) Password of root user
+- **username** (String) Username of root user
 
 ## Example Usage
 
