@@ -90,7 +90,7 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 		Type: &schema.Schema{
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "IDs of Satori users that will be set as DataStore owners.",
+			Description: "The datastore type, for example: POSTGRESQL, SNOWFLAKE, etc. The full list is available at https://app.satoricyber.com/docs/api#post-/api/v1/datastore",
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
 			},
