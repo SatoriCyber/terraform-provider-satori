@@ -19,11 +19,12 @@ The **satori_datastore** resource allows lifecycle management for the datastores
 - **dataaccess_controller_id** (String) Host FQDN name.
 - **hostname** (String) Data provider's FQDN hostname.
 - **name** (String) DataStore name.
-- **type** (String) The datastore type, for example: POSTGRESQL, SNOWFLAKE, etc. The full list is available at https://app.satoricyber.com/docs/api#post-/api/v1/datastore
+- **type** (String) The datastore type, for example: POSTGRESQL, SNOWFLAKE, etc. The full list is available at [Satori Docs site](https://app.satoricyber.com/docs/api#post-/api/v1/datastore)
 
 ### Optional
 
 - **custom_ingress_port** (Number) Custom ingress port number description.
+- **identity_provider_id** (String) Data Store's Associated Identity Provider, The Satori ID of the Identity Provider Object. (see [Identity Providers on Satori Docs.](https://satoricyber.com/docs/integrations/idp/))
 - **network_policy** (Block List) A network Policy for a Data Store (see [below for nested schema](#nestedblock--network_policy))
 - **origin_port** (Number) Port number description.
 - **project_ids** (Set of String) ProjectIds list of project IDs
@@ -153,6 +154,7 @@ Required:
 ```terraform
 locals {
   dataaccess_controller_id = "<assigned dataaccess_controller_id>"
+  some_identity_provider_id = "<assigned some_identity_provider_id>"
 }
 resource "satori_datastore" "datastore0" {
   name                     = "exampleDatastore"
@@ -171,6 +173,14 @@ resource "satori_datastore" "datastore0" {
     }
   }
   network_policy {}
+  identity_provider_id     = local.some_identity_provider_id
+  satori_auth_settings {
+    enabled = false
+    credentials {
+      password = ""
+      username = ""
+    }
+  }
 }
 
 # output of generated id for newly created datastore

@@ -13,6 +13,7 @@ var (
 	Hostname                    = "hostname"
 	Id                          = "id"
 	DataAccessControllerId      = "dataaccess_controller_id"
+	IdentityProviderId          = "identity_provider_id"
 	CustomIngressPort           = "custom_ingress_port"
 	OriginPort                  = "origin_port"
 	ProjectIds                  = "project_ids"
@@ -75,6 +76,12 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 			Required:    true,
 			Description: "Host FQDN name.",
 		},
+		IdentityProviderId: &schema.Schema{
+      Type:        schema.TypeString,
+      Optional:    true,
+      Default:     nil,
+      Description: "Data Store's Associated Identity Provider, The Satori ID of the Identity Provider Object. (see [Identity Providers on Satori Docs.](https://satoricyber.com/docs/integrations/idp/))", // example: 3cb9d6ef-1812-47fc-9f3d-0758098331ef
+    },
 		CustomIngressPort: &schema.Schema{
 			Type:        schema.TypeInt,
 			Optional:    true,
@@ -90,7 +97,7 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 		Type: &schema.Schema{
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "The datastore type, for example: POSTGRESQL, SNOWFLAKE, etc. The full list is available at https://app.satoricyber.com/docs/api#post-/api/v1/datastore",
+			Description: "The datastore type, for example: POSTGRESQL, SNOWFLAKE, etc. The full list is available at [Satori Docs site](https://app.satoricyber.com/docs/api#post-/api/v1/datastore)",
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
 			},
@@ -143,6 +150,7 @@ func resourceToDataStore(d *schema.ResourceData) (*api.DataStore, error) {
 	out.OriginPort = d.Get(OriginPort).(int)
 	out.CustomIngressPort = d.Get("custom_ingress_port").(int)
 	out.DataAccessControllerId = d.Get("dataaccess_controller_id").(string)
+	out.IdentityProviderId = d.Get("identity_provider_id").(string)
 	out.ProjectIds = convertStringSet(d.Get("project_ids").(*schema.Set))
 	out.Type = d.Get("type").(string)
 	out.BaselineSecurityPolicy = baselineSecurityPolicyToResource
@@ -169,6 +177,7 @@ func getDataStore(c *api.Client, d *schema.ResourceData) (*api.DataStoreOutput, 
 	d.Set(OriginPort, result.OriginPort)
 	d.Set(CustomIngressPort, result.CustomIngressPort)
 	d.Set(DataAccessControllerId, result.DataAccessControllerId)
+	d.Set(IdentityProviderId, result.IdentityProviderId)
 	d.Set(ProjectIds, result.ProjectIds)
 
 	tfMap, err := GetBaseLinePolicyDatastoreOutput(result, err)

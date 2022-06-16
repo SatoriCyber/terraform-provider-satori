@@ -8,6 +8,7 @@ type DataStore struct {
 	OriginPort             int                     `json:"originPort,omitempty"`
 	Type                   string                  `json:"type"`
 	DataAccessControllerId string                  `json:"dataAccessControllerId"`
+	IdentityProviderId     string                  `json:"identityProviderId"`
 	BaselineSecurityPolicy *BaselineSecurityPolicy `json:"baselineSecurityPolicy,omitempty"`
 	ProjectIds             []string                `json:"projectIds,omitempty"`
 	CustomIngressPort      int                     `json:"customIngressPort,omitempty"`
@@ -24,6 +25,7 @@ type DataStoreOutput struct {
 	Type                   string                  `json:"type"`
 	DataPolicyId           string                  `json:"dataPolicyId"`
 	DataAccessControllerId string                  `json:"dataAccessControllerId"`
+	IdentityProviderId     string                  `json:"identityProviderId"`
 	BaselineSecurityPolicy *BaselineSecurityPolicy `json:"baselineSecurityPolicy,omitempty"`
 	ProjectIds             []string                `json:"projectIds,omitempty"`
 	NetworkPolicy          *NetworkPolicy          `json:"networkPolicy,omitempty"`

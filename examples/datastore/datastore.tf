@@ -1,5 +1,6 @@
 locals {
   dataaccess_controller_id = "<assigned dataaccess_controller_id>"
+  some_identity_provider_id = "<assigned some_identity_provider_id>"
 }
 resource "satori_datastore" "datastore0" {
   name                     = "exampleDatastore"
@@ -18,6 +19,14 @@ resource "satori_datastore" "datastore0" {
     }
   }
   network_policy {}
+  identity_provider_id     = local.some_identity_provider_id
+  satori_auth_settings {
+    enabled = false
+    credentials {
+      password = ""
+      username = ""
+    }
+  }
 }
 
 # output of generated id for newly created datastore

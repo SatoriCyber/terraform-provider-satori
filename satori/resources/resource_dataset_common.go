@@ -141,7 +141,7 @@ func resourceToGenericLocation(location *api.DataSetGenericLocation, inLocations
 			}
 		}
 	}
-	log.Printf("Out location: %s", location)
+// 	log.Printf("Out location: %s", location)
 }
 
 func getDataSet(c *api.Client, d *schema.ResourceData) (*api.DataSetOutput, error) {
