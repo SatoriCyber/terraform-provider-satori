@@ -35,5 +35,9 @@ resource "satori_directory_group" "group_in_group" {
     type = "DIRECTORY_GROUP"
     group_id = satori_directory_group.group1.id
   }
+}
 
+resource "satori_directory_group" "empty_group" {
+  name        = "group4"
+  description = "Empty directory group"
 }

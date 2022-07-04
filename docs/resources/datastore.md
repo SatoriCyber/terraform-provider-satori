@@ -15,7 +15,6 @@ The **satori_datastore** resource allows lifecycle management for the datastores
 
 ### Required
 
-- **baseline_security_policy** (Block List, Min: 1, Max: 1) Baseline security policy. (see [below for nested schema](#nestedblock--baseline_security_policy))
 - **dataaccess_controller_id** (String) Host FQDN name.
 - **hostname** (String) Data provider's FQDN hostname.
 - **name** (String) DataStore name.
@@ -23,6 +22,7 @@ The **satori_datastore** resource allows lifecycle management for the datastores
 
 ### Optional
 
+- **baseline_security_policy** (Block List, Max: 1) Baseline security policy. (see [below for nested schema](#nestedblock--baseline_security_policy))
 - **custom_ingress_port** (Number) Custom ingress port number description.
 - **network_policy** (Block List) A network Policy for a Data Store (see [below for nested schema](#nestedblock--network_policy))
 - **origin_port** (Number) Port number description.
@@ -44,7 +44,7 @@ Required:
 
 Optional:
 
-- **type** (String) DataStore basepolicy . Defaults to `BASELINE_POLICY`.
+- **type** (String) DataStore security policy. Defaults to `BASELINE_POLICY`.
 
 <a id="nestedblock--baseline_security_policy--exclusions"></a>
 ### Nested Schema for `baseline_security_policy.exclusions`
@@ -145,7 +145,7 @@ Optional:
 
 Required:
 
-- **password** (String, Sensitive) Password of root user
+- **password** (String, Sensitive) Password of root user. This property is sensitive, and API does not return it in output. In order to bypass terraform update, use lifecycle.ignore_changes, see example.
 - **username** (String) Username of root user
 
 ## Example Usage
@@ -169,6 +169,28 @@ resource "satori_datastore" "datastore0" {
     }
     exclusions {
     }
+  }
+  network_policy {}
+}
+
+resource "satori_datastore" "datastoreWithIgnorePasswordUpdate" {
+  // lifecycle.ignore_changes should be used after first time creation in order to ignore password update as API does not return it.
+  name                     = "exampleDatastore"
+  hostname                 = "data.source.target.hostname"
+  dataaccess_controller_id = local.dataaccess_controller_id
+  type                     = "SNOWFLAKE"
+  origin_port              = 8081
+  satori_auth_settings {
+    enabled = true
+    credentials {
+      password = "*********"
+      username = "adminuser"
+    }
+  }
+  lifecycle {
+    ignore_changes = [
+      satori_auth_settings.0.credentials.0.password
+    ]
   }
   network_policy {}
 }
