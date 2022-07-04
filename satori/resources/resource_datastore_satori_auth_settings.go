@@ -33,10 +33,11 @@ func GetSatoriAuthSettingsDefinitions() *schema.Schema {
 								Description: "Username of root user",
 							},
 							Password: &schema.Schema{
-								Type:        schema.TypeString,
-								Sensitive:   true,
-								Required:    true,
-								Description: "Password of root user",
+								Type:      schema.TypeString,
+								Sensitive: true,
+								Required:  true,
+								Description: "Password of root user. This property is sensitive, and API does not return it in output. " +
+									"In order to bypass terraform update, use lifecycle.ignore_changes, see example.",
 							},
 						}}},
 			},

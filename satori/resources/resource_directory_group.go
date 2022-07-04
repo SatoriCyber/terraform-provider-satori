@@ -31,7 +31,7 @@ func ResourceDirectoryGroup() *schema.Resource {
 			},
 			"member": &schema.Schema{
 				Type:        schema.TypeList,
-				Required:    true,
+				Optional:    true,
 				MinItems:    1,
 				Description: "Group members.",
 				Elem: &schema.Resource{

@@ -49,7 +49,11 @@ resource "satori_directory_group" "group_in_group" {
     type = "DIRECTORY_GROUP"
     group_id = satori_directory_group.group1.id
   }
+}
 
+resource "satori_directory_group" "empty_group" {
+  name        = "group4"
+  description = "Empty directory group"
 }
 ```
 
@@ -58,13 +62,13 @@ resource "satori_directory_group" "group_in_group" {
 
 ### Required
 
-- **member** (Block List, Min: 1) Group members. (see [below for nested schema](#nestedblock--member))
 - **name** (String) Group name.
 
 ### Optional
 
 - **description** (String) Group description.
 - **id** (String) The ID of this resource.
+- **member** (Block List) Group members. (see [below for nested schema](#nestedblock--member))
 
 <a id="nestedblock--member"></a>
 ### Nested Schema for `member`

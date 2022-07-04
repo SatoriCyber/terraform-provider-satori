@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
@@ -175,7 +174,9 @@ func getDataStore(c *api.Client, d *schema.ResourceData) (*api.DataStoreOutput, 
 	if err != nil {
 		return nil, err
 	}
-	d.Set(BaselineSecurityPolicy, []map[string]interface{}{tfMap})
+	if len(tfMap) > 0 { // empty result, skip it.
+		d.Set(BaselineSecurityPolicy, []map[string]interface{}{tfMap})
+	}
 
 	npMap, err := GetNetworkPolicyDatastoreOutput(result, err)
 	if err != nil {
@@ -187,8 +188,9 @@ func getDataStore(c *api.Client, d *schema.ResourceData) (*api.DataStoreOutput, 
 	if err != nil {
 		return nil, err
 	}
-	d.Set(SatoriAuthSettings, []map[string]interface{}{sasMap})
-
+	if len(sasMap) > 0 { // empty result, skip it.
+		d.Set(SatoriAuthSettings, []map[string]interface{}{sasMap})
+	}
 	return result, err
 }
 

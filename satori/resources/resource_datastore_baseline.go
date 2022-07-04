@@ -2,8 +2,6 @@ package resources
 
 import (
 	"encoding/json"
-	"errors"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
 )
@@ -11,7 +9,7 @@ import (
 func GetBaseLinePolicyDefinition() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeList,
-		Required:    true,
+		Optional:    true,
 		MaxItems:    1,
 		Description: "Baseline security policy.",
 		Elem: &schema.Resource{
@@ -19,7 +17,7 @@ func GetBaseLinePolicyDefinition() *schema.Schema {
 				Type: &schema.Schema{
 					Type:        schema.TypeString,
 					Optional:    true,
-					Description: "DataStore basepolicy .",
+					Description: "DataStore security policy.",
 					Default:     "BASELINE_POLICY",
 				},
 				UnassociatedQueriesCategory: {
@@ -109,7 +107,7 @@ func BaselineSecurityPolicyToResource(in []interface{}) (*api.BaselineSecurityPo
 	var baselineSecurityPolicy api.BaselineSecurityPolicy
 	mapBaselineSecurityPolicy := extractMapFromInterface(in)
 	if mapBaselineSecurityPolicy == nil {
-		return nil, errors.New("datastore is incorrect/missing")
+		return nil, nil
 	}
 	tfMap := biTfApiConverter(mapBaselineSecurityPolicy, true)
 	jsonOutput, _ := json.Marshal(tfMap)
