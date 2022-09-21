@@ -24,6 +24,7 @@ The **satori_datastore** resource allows lifecycle management for the datastores
 
 - **baseline_security_policy** (Block List, Max: 1) Baseline security policy. (see [below for nested schema](#nestedblock--baseline_security_policy))
 - **custom_ingress_port** (Number) Custom ingress port number description.
+- **data_store_settings** (Block List) Settings for a Data Store (may be unique per Data Store) (see [below for nested schema](#nestedblock--data_store_settings))
 - **network_policy** (Block List) A network Policy for a Data Store (see [below for nested schema](#nestedblock--network_policy))
 - **origin_port** (Number) Port number description.
 - **project_ids** (Set of String) ProjectIds list of project IDs
@@ -87,6 +88,14 @@ Required:
 
 - **query_action** (String) Default policy action for unsupported queries and objects, modes supported:  PASS┃REDACT┃BLOCK
 
+
+
+<a id="nestedblock--data_store_settings"></a>
+### Nested Schema for `data_store_settings`
+
+Optional:
+
+- **deployment_type** (String) MongoDB deployment type, for now supports only mongodb+srv and mongodb deployment
 
 
 <a id="nestedblock--network_policy"></a>
