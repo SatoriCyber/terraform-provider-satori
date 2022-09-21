@@ -33,8 +33,6 @@ type DataStoreOutput struct {
 }
 
 type DataStoreSettings struct {
-	Type string `json:"type"`
-	// DeploymentType set to optional for future set-up
 	DeploymentType string `json:"deploymentType,omitempty"`
 }
 
