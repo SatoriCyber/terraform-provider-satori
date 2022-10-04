@@ -161,6 +161,34 @@ func (c *Client) getJsonForAccount(path string, search *string, output interface
 	return nil
 }
 
+func (c *Client) getJsonForAccountWithParams(path string, params *map[string]string, output interface{}) error {
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s%s", c.HostURL, path), nil)
+	if err != nil {
+		return err
+	}
+
+	q := req.URL.Query()
+	for k, v := range *params {
+		q.Set(k, v)
+	}
+	q.Add("accountId", c.AccountId)
+	q.Add("page", "0")
+	q.Add("pageSize", "200")
+	req.URL.RawQuery = q.Encode()
+
+	body, err, _ := c.doRequest(req)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(body, output)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (c *Client) postJsonForAccount(path string, input interface{}, output interface{}) error {
 	params := make(map[string]string, 1)
 	params["accountId"] = c.AccountId
