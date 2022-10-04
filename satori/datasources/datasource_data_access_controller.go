@@ -10,7 +10,7 @@ import (
 func DatasourceDataAccessController() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: datasourceDataAccessControllerRead,
-		Description: "Find DAC by type, region, cloud provider and unique name.",
+		Description: "Find DAC by type, region and cloud provider.",
 		Schema: map[string]*schema.Schema{
 			"type": {
 				Type:        schema.TypeString,
@@ -19,23 +19,26 @@ func DatasourceDataAccessController() *schema.Resource {
 			},
 			"region": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Description: "DAC's region.",
 			},
 			"cloud_provider": {
 				Type:        schema.TypeString,
-				Required:    true,
-				Description: "DAC's cloud provider.",
-			},
-			"unique_name": {
-				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "DAC's unique name. Provide when the type is PRIVATE or PRIVATE_MANAGED.",
+				Description: "DAC's cloud provider.",
 			},
 			"id": {
 				Type:        schema.TypeString,
-				Computed:    true,
+				Optional:    true,
 				Description: "DAC's ID.",
+			},
+			"ips": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "DAC's IPs list.",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
 		},
 	}
@@ -49,30 +52,61 @@ func datasourceDataAccessControllerRead(ctx context.Context, d *schema.ResourceD
 	dacType := d.Get("type").(string)
 	region := d.Get("region").(string)
 	cloudProvider := d.Get("cloud_provider").(string)
-	uniqueName := d.Get("unique_name").(string)
+	id := d.Get("id").(string)
 
-	if (dacType == "PRIVATE" || dacType == "PRIVATE_MANAGED") && uniqueName == "" {
-		return diag.Errorf("DAC with type of '%s' must include its unique name. region: '%s', cloud provider: '%s'", dacType, region, cloudProvider)
+	if id != "" {
+		d.SetId(id)
+		dac, err := c.QueryDataAccessControllerById(&id)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		err = d.Set("region", dac.Region)
+		if err != nil {
+			return nil
+		}
+		err = d.Set("cloud_provider", dac.CloudProvider)
+		if err != nil {
+			return nil
+		}
+		if len(dac.Ips) > 0 {
+			err := d.Set("ips", dac.Ips)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+		return diags
 	}
 
-	dacs, err := c.QueryDataAccessControllers(&dacType, &region, &cloudProvider, &uniqueName)
+	if dacType == "PRIVATE" || dacType == "PRIVATE_MANAGED" {
+		if id == "" {
+			return diag.Errorf("DAC with type of '%s' must include its ID.", dacType)
+		}
+	}
+
+	if region == "" || cloudProvider == "" {
+		return diag.Errorf("Public DAC must include both region and cloud provider.")
+	}
+
+	dacs, err := c.QueryDataAccessControllers(&dacType, &region, &cloudProvider)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	found := false
-	if len(dacs) > 0 {
-		for _, dac := range dacs {
-			if dac.Type == dacType && dac.Region == region && dac.CloudProvider == cloudProvider && (uniqueName == "" || dac.UniqueName == uniqueName) {
-				d.SetId(dac.Id)
-				found = true
-				break
-			}
-		}
+	if len(dacs) == 0 {
+		return diag.Errorf("No DAC found with type '%s', region '%s', and cloud provider '%s'!", dacType, region, cloudProvider)
 	}
 
-	if !found {
-		return diag.Errorf("No DAC found with type '%s', region '%s', cloud provider '%s' and unique name '%s' !", dacType, region, cloudProvider, uniqueName)
+	if len(dacs) > 1 {
+		return diag.Errorf("Got more than one DAC with the values: type '%s', region '%s' and cloud provider '%s'.", dacType, region, cloudProvider)
+	}
+
+	dac := dacs[0]
+	d.SetId(dac.Id)
+	if len(dac.Ips) > 0 {
+		err := d.Set("ips", dac.Ips)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return diags

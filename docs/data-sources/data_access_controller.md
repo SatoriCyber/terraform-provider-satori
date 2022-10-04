@@ -2,27 +2,35 @@
 layout: ""
 page_title: "satori_data_access_controller (Data Source)"
 description: |-
-satori_data_access_controller data source allows finding DAC ID by its region, cloud provider, type and unique name.
+satori_data_access_controller data source allows finding DAC details by its region, cloud provider, type and ID.
 ---
 
 # satori_data_access_controller (Data Source)
 
-The **satori_data_access_controller** data source allows finding DAC ID by its region, cloud provider, type and unique name.
+The **satori_data_access_controller** data source allows finding DAC details by its region, cloud provider, type and ID.
 
 ## Example Usage
 
 ```terraform
-data "satori_data_access_controller" "dac0" {
-  type = "<assigned type>"
+locals {
+  dataaccess_controller_id = "<assigned dataaccess_controller_id>"
+}
+
+data "satori_data_access_controller" "public_dac" {
+  type = "PUBLIC"
   region = "<assigned region>"
   cloud_provider = "<assigned cloud provider>"
-  unique_name = "<assigned unique name>"
+}
+
+data "satori_data_access_controller" "private_dac" {
+  type = "<assigned type - PRIVATE | PRIVATE_MANAGED>"
+  id = "<assigned id>"
 }
 
 resource "satori_datastore" "datastore0" {
   name                     = "exampleDatastore"
   hostname                 = "data.source.target.hostname"
-  dataaccess_controller_id = data.satori_data_access_controller.dac0.id
+  dataaccess_controller_id = local.dataaccess_controller_id
   type                     = "SNOWFLAKE"
   origin_port              = 8081
   baseline_security_policy {
@@ -42,7 +50,7 @@ resource "satori_datastore" "datastoreWithIgnorePasswordUpdate" {
   // lifecycle.ignore_changes should be used after first time creation in order to ignore password update as API does not return it.
   name                     = "exampleDatastore"
   hostname                 = "data.source.target.hostname"
-  dataaccess_controller_id = data.satori_data_access_controller.dac0.id
+  dataaccess_controller_id = data.satori_data_access_controller.public_dac.id
   type                     = "SNOWFLAKE"
   origin_port              = 8081
   satori_auth_settings {
@@ -52,6 +60,21 @@ resource "satori_datastore" "datastoreWithIgnorePasswordUpdate" {
       username = "adminuser"
     }
   }
+  lifecycle {
+    ignore_changes = [
+      satori_auth_settings.0.credentials.0.password
+    ]
+  }
+  network_policy {}
+}
+
+resource "satori_datastore" "datastoreWithPrivateDac" {
+  // lifecycle.ignore_changes should be used after first time creation in order to ignore password update as API does not return it.
+  name                     = "exampleDatastore"
+  hostname                 = "data.source.target.hostname"
+  dataaccess_controller_id = data.satori_data_access_controller.private_dac.id
+  type                     = "SNOWFLAKE"
+  origin_port              = 8081
   lifecycle {
     ignore_changes = [
       satori_auth_settings.0.credentials.0.password
@@ -71,14 +94,14 @@ output "datastore_created_id" {
 
 ### Required
 
-- **cloud_provider** (String) DAC's cloud provider.
-- **region** (String) DAC's region.
-- **type** (String) DAC's type. Available values are: PRIVATE, PRIVATE_MANAGED or PUBLIC.
+- **type** (String) DAC's type. The available values are: PRIVATE, PRIVATE_MANAGED or PUBLIC.
 
 ### Optional
 
-- **unique_name** (String) DAC's unique name. Need to provide when the type is PRIVATE or PRIVATE_MANAGED
+- **cloud_provider** (String) DAC's cloud provider.
+- **id** (String) DAC's ID.
+- **region** (String) DAC's region.
 
 ### Read-Only
 
-- **id** (String) DAC's ID.
+- **ips** (List of String) DAC's IPs list.
