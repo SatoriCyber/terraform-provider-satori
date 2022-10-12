@@ -33,7 +33,7 @@ var (
 	IdentityType                = "identity_type"
 	NetworkPolicy               = "network_policy"
 	SatoriAuthSettings          = "satori_auth_settings"
-	DataStoreSettings           = "data_store_settings"
+	DataStoreSettings           = "datastore_settings"
 	AllowedRules                = "allowed_rules"
 	BlockedRules                = "blocked_rules"
 	Note                        = "note"
