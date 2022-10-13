@@ -231,6 +231,17 @@ resource "satori_datastore" "datastoreWithPrivateDac" {
   network_policy {}
 }
 
+resource "satori_datastore" "mongodbDatastore" {
+  name                     = "mongoExample"
+  hostname                 = "mongo.example.mongodb.net"
+  dataaccess_controller_id = data.satori_data_access_controller.public_dac.id
+  type                     = "MONGO"
+  datastore_settings {
+    deployment_type = "MONGODB_SRV"
+  }
+  network_policy {}
+}
+
 # output of generated id for newly created datastore
 output "datastore_created_id" {
   value = satori_datastore.datastore0.id
