@@ -17,6 +17,7 @@ var (
 	ProjectIds                  = "project_ids"
 	BaselineSecurityPolicy      = "baseline_security_policy"
 	Type                        = "type"
+	DeploymentType              = "deployment_type"
 	UnassociatedQueriesCategory = "unassociated_queries_category"
 	Credentials                 = "credentials"
 	Enabled                     = "enabled"
@@ -32,6 +33,7 @@ var (
 	IdentityType                = "identity_type"
 	NetworkPolicy               = "network_policy"
 	SatoriAuthSettings          = "satori_auth_settings"
+	DataStoreSettings           = "datastore_settings"
 	AllowedRules                = "allowed_rules"
 	BlockedRules                = "blocked_rules"
 	Note                        = "note"
@@ -97,6 +99,7 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 		SatoriAuthSettings:     GetSatoriAuthSettingsDefinitions(),
 		BaselineSecurityPolicy: GetBaseLinePolicyDefinition(),
 		NetworkPolicy:          GetNetworkPolicyDefinition(),
+		DataStoreSettings:      GetDataStoreSettingsDefinition(),
 	}
 }
 func createDataStore(d *schema.ResourceData, c *api.Client) (*api.DataStoreOutput, error) {
@@ -137,6 +140,11 @@ func resourceToDataStore(d *schema.ResourceData) (*api.DataStore, error) {
 		return nil, err
 	}
 
+	dataStoreSettingsToResource, err := DataStoreSettingsToResource(d.Get(DataStoreSettings).([]interface{}))
+	if err != nil {
+		return nil, err
+	}
+
 	out.Name = d.Get("name").(string)
 	out.Hostname = d.Get("hostname").(string)
 	out.OriginPort = d.Get(OriginPort).(int)
@@ -147,6 +155,7 @@ func resourceToDataStore(d *schema.ResourceData) (*api.DataStore, error) {
 	out.BaselineSecurityPolicy = baselineSecurityPolicyToResource
 	out.NetworkPolicy = networkPolicyToResource
 	out.SatoriAuthSettings = satoriAuthSettingsToResource
+	out.DataStoreSettings = dataStoreSettingsToResource
 	return &out, nil
 }
 

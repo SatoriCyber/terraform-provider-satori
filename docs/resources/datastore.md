@@ -24,6 +24,7 @@ The **satori_datastore** resource allows lifecycle management for the datastores
 
 - **baseline_security_policy** (Block List, Max: 1) Baseline security policy. (see [below for nested schema](#nestedblock--baseline_security_policy))
 - **custom_ingress_port** (Number) Custom ingress port number description.
+- **datastore_settings** (Block List) Settings for a Data Store (may be unique per Data Store) (see [below for nested schema](#nestedblock--datastore_settings))
 - **network_policy** (Block List) A network Policy for a Data Store (see [below for nested schema](#nestedblock--network_policy))
 - **origin_port** (Number) Port number description.
 - **project_ids** (Set of String) ProjectIds list of project IDs
@@ -87,6 +88,14 @@ Required:
 
 - **query_action** (String) Default policy action for unsupported queries and objects, modes supported:  PASS┃REDACT┃BLOCK
 
+
+
+<a id="nestedblock--datastore_settings"></a>
+### Nested Schema for `datastore_settings`
+
+Optional:
+
+- **deployment_type** (String) MongoDB deployment type, for now supports only mongodb+srv and mongodb deployment
 
 
 <a id="nestedblock--network_policy"></a>
@@ -218,6 +227,17 @@ resource "satori_datastore" "datastoreWithPrivateDac" {
     ignore_changes = [
       satori_auth_settings.0.credentials.0.password
     ]
+  }
+  network_policy {}
+}
+
+resource "satori_datastore" "mongodbDatastore" {
+  name                     = "mongoExample"
+  hostname                 = "mongo.example.mongodb.net"
+  dataaccess_controller_id = data.satori_data_access_controller.public_dac.id
+  type                     = "MONGO"
+  datastore_settings {
+    deployment_type = "MONGODB_SRV"
   }
   network_policy {}
 }

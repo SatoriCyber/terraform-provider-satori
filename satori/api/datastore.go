@@ -13,6 +13,7 @@ type DataStore struct {
 	CustomIngressPort      int                     `json:"customIngressPort,omitempty"`
 	NetworkPolicy          *NetworkPolicy          `json:"networkPolicy,omitempty"`
 	SatoriAuthSettings     *SatoriAuthSettings     `json:"satoriAuthSettings,omitempty"`
+	DataStoreSettings      *DataStoreSettings      `json:"dataStoreSettings,omitempty"`
 }
 
 type DataStoreOutput struct {
@@ -28,6 +29,11 @@ type DataStoreOutput struct {
 	ProjectIds             []string                `json:"projectIds,omitempty"`
 	NetworkPolicy          *NetworkPolicy          `json:"networkPolicy,omitempty"`
 	SatoriAuthSettings     *SatoriAuthSettings     `json:"satoriAuthSettings,omitempty"`
+	DataStoreSettings      *DataStoreSettings      `json:"dataStoreSettings,omitempty"`
+}
+
+type DataStoreSettings struct {
+	DeploymentType string `json:"deploymentType,omitempty"`
 }
 
 type UnassociatedQueriesCategory struct {
