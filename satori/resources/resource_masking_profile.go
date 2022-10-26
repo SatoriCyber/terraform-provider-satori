@@ -73,9 +73,9 @@ func ResourceMaskingProfile() *schema.Resource {
 	}
 }
 
-////////////////////////////////////
+// //////////////////////////////////
 // Resource to schema mappers
-////////////////////////////////////
+// //////////////////////////////////
 func resourceToMaskingConditions(d *schema.ResourceData) *[]api.MaskingCondition {
 	var maskConfigs []api.MaskingCondition
 	if v, ok := d.GetOk("condition"); ok {
@@ -100,6 +100,8 @@ func resourceToMaskingConditions(d *schema.ResourceData) *[]api.MaskingCondition
 func resourceToMaskingProfile(d *schema.ResourceData) *api.MaskingProfile {
 	maskingProfile := api.MaskingProfile{}
 	maskingProfile.Name = d.Get("name").(string)
+	description := d.Get("description").(string)
+	maskingProfile.Description = &description
 	maskingProfile.MaskConfigs = *resourceToMaskingConditions(d)
 
 	return &maskingProfile
@@ -123,9 +125,9 @@ func resourceMaskingProfileCreate(ctx context.Context, d *schema.ResourceData, m
 	return diags
 }
 
-////////////////////////////////////
+// //////////////////////////////////
 // Schema to resource mappers
-////////////////////////////////////
+// //////////////////////////////////
 func maskingConditionToResource(conditions []api.MaskingCondition) []map[string]interface{} {
 	out := make([]map[string]interface{}, len(conditions))
 	for i, v := range conditions {
