@@ -8,8 +8,8 @@ import (
 const SecurityPolicyApiPrefix = "/api/v1/security-policies"
 
 type SecurityPolicy struct {
-	Name             string           `json:"name"`
-	SecurityProfiles SecurityProfiles `json:"profiles"`
+	Name             string            `json:"name"`
+	SecurityProfiles *SecurityProfiles `json:"profiles"`
 }
 
 type SecurityProfiles struct {
@@ -22,9 +22,9 @@ type SecurityPolicyOutput struct {
 	Id string `json:"id"`
 }
 
-/////////////////////
+// ///////////////////
 // Masking
-/////////////////////
+// ///////////////////
 type MaskingSecurityProfile struct {
 	Active bool          `json:"active"`
 	Rules  []MaskingRule `json:"rules"`
@@ -48,9 +48,9 @@ type MaskingRule struct {
 	MaskingAction      MaskingAction      `json:"maskingAction"`
 }
 
-/////////////////////
+// ///////////////////
 // Row Level Security
-/////////////////////
+// ///////////////////
 type RowLevelSecurityRuleFilter struct {
 	DataStoreId    string                  `json:"dataStoreId"`
 	LocationPrefix *DataSetGenericLocation `json:"locationPrefix"`
@@ -100,6 +100,8 @@ func (c *Client) CreateSecurityPolicy(input *SecurityPolicy) (*SecurityPolicyOut
 }
 
 func (c *Client) UpdateSecurityPolicy(id string, input *SecurityPolicy) (*SecurityPolicyOutput, error) {
+	jsonInput, _ := json.Marshal(input)
+	log.Printf("Going to update security policy to: %s", jsonInput)
 	output := SecurityPolicyOutput{}
 	return &output, c.putJson(SecurityPolicyApiPrefix, "", id, input, &output)
 }

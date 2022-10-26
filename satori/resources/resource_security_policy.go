@@ -60,7 +60,7 @@ func ResourceSecurityPolicy() *schema.Resource {
 			},
 			SecurityPolicyProfile: {
 				Type:        schema.TypeList,
-				Required:    true,
+				Optional:    true,
 				MaxItems:    1,
 				Description: "Security policy profile.",
 				Elem: &schema.Resource{
@@ -77,7 +77,7 @@ func ResourceSecurityPolicy() *schema.Resource {
 func resourceRowLevelSecurity() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeList,
-		Required:    true,
+		Optional:    true,
 		MaxItems:    1,
 		Description: "Row level security profile",
 		Elem: &schema.Resource{
@@ -262,7 +262,7 @@ func resourceRowLevelSecurityRule() *schema.Schema {
 func resourceMaskingProfile() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeList,
-		Required:    true,
+		Optional:    true,
 		MaxItems:    1,
 		Description: "Masking profile.",
 		Elem: &schema.Resource{
@@ -339,23 +339,27 @@ func resourceMaskingProfile() *schema.Schema {
 	}
 }
 
-////////////////////////////////////
+// //////////////////////////////////
 // Resource to schema mappers
-////////////////////////////////////
+// //////////////////////////////////
 func resourceToSecurityProfiles(d *schema.ResourceData) *api.SecurityProfiles {
+	if _, ok := d.GetOk(SecurityPolicyProfile); !ok {
+		return nil
+	}
+
 	out := api.SecurityProfiles{}
-	if _, ok := d.GetOk(SecurityPolicyProfile); ok {
-		out.Masking = &api.MaskingSecurityProfile{}
+
+	if _, ok := d.GetOk("profile.0.masking"); ok {
 		if m, ok := d.GetOk("profile.0.masking.0"); ok {
+			out.Masking = &api.MaskingSecurityProfile{}
 			resourceToMasking(d, m, &out)
-		} else {
-			out.Masking.Active = false
 		}
+	}
+
+	if _, ok := d.GetOk("profile.0.row_level_security"); ok {
 		if m, ok := d.GetOk("profile.0.row_level_security.0"); ok {
 			out.RowLevelSecurity = &api.RowLevelSecurityProfile{}
 			resourceToRowLevelSecurityProfile(d, m, &out)
-		} else {
-			out.RowLevelSecurity.Active = false
 		}
 	}
 
@@ -525,7 +529,7 @@ func resourceToSecurityPolicy(d *schema.ResourceData) *api.SecurityPolicy {
 	out := api.SecurityPolicy{}
 	out.Name = d.Get(SecurityPolicyName).(string)
 
-	out.SecurityProfiles = *resourceToSecurityProfiles(d)
+	out.SecurityProfiles = resourceToSecurityProfiles(d)
 	return &out
 }
 
@@ -547,21 +551,28 @@ func resourceSecurityPolicyCreate(ctx context.Context, d *schema.ResourceData, m
 	return diags
 }
 
-////////////////////////////////////
+// //////////////////////////////////
 // Schema to resource mappers
-////////////////////////////////////
-func securityProfilesToResource(profiles api.SecurityProfiles) interface{} {
+// //////////////////////////////////
+func securityProfilesToResource(profiles *api.SecurityProfiles) interface{} {
+
+	if profiles == nil {
+		return nil
+	}
 
 	out := make([]map[string]interface{}, 1)
 
 	out[0] = make(map[string]interface{})
 	out[0][MaskingProfile] = maskingToResource(profiles.Masking)
-	out[0][RowLevelSecurity] = rowLevelSecurityToResource(*profiles.RowLevelSecurity)
+	out[0][RowLevelSecurity] = rowLevelSecurityToResource(profiles.RowLevelSecurity)
 
 	return out
 }
 
-func rowLevelSecurityToResource(security api.RowLevelSecurityProfile) interface{} {
+func rowLevelSecurityToResource(security *api.RowLevelSecurityProfile) interface{} {
+	if security == nil {
+		return nil
+	}
 	out := make([]map[string]interface{}, 1)
 	out[0] = make(map[string]interface{})
 
@@ -685,9 +696,9 @@ func maskingToResource(masking *api.MaskingSecurityProfile) interface{} {
 	return out
 }
 
-////////////////////////////////////
+// //////////////////////////////////
 // APIs
-////////////////////////////////////
+// //////////////////////////////////
 func resourceSecurityPolicyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
