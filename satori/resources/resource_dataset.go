@@ -106,7 +106,8 @@ func resourceDataSetCreate(ctx context.Context, d *schema.ResourceData, m interf
 func resourceToCustomPolicy(d *schema.ResourceData) *api.CustomPolicy {
 	out := api.CustomPolicy{}
 	priority := d.Get("custom_policy.0.priority").(int)
-	if priority == 0 {
+	_, ok := d.GetOk("custom_policy")
+	if priority == 0 && !ok {
 		out.Priority = api.CustomPolicyDefaultPriority
 	} else {
 		out.Priority = priority
