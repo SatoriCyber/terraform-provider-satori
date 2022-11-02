@@ -50,7 +50,7 @@ func ResourceDataSet() *schema.Resource {
 			},
 			"custom_policy": {
 				Type:        schema.TypeList,
-				Required:    true,
+				Optional:    true,
 				MaxItems:    1,
 				Description: "Dataset custom policy.",
 				Elem: &schema.Resource{
@@ -105,7 +105,12 @@ func resourceDataSetCreate(ctx context.Context, d *schema.ResourceData, m interf
 
 func resourceToCustomPolicy(d *schema.ResourceData) *api.CustomPolicy {
 	out := api.CustomPolicy{}
-	out.Priority = d.Get("custom_policy.0.priority").(int)
+	priority := d.Get("custom_policy.0.priority").(int)
+	if priority == 0 {
+		out.Priority = api.CustomPolicyDefaultPriority
+	} else {
+		out.Priority = priority
+	}
 	out.RulesYaml = d.Get("custom_policy.0.rules_yaml").(string)
 	out.TagsYaml = d.Get("custom_policy.0.tags_yaml").(string)
 	return &out
@@ -143,8 +148,10 @@ func resourceDataSetRead(ctx context.Context, d *schema.ResourceData, m interfac
 		return diag.FromErr(err)
 	}
 
-	if err := d.Set("custom_policy", []map[string]interface{}{*customPolicyToResource(resultCustomPolicy)}); err != nil {
-		return diag.FromErr(err)
+	if !(checkIfDefaultCustomPolicy(resultCustomPolicy) && checkIfStateCustomPolicyIsDefault(d)) {
+		if err := d.Set("custom_policy", []map[string]interface{}{*customPolicyToResource(resultCustomPolicy)}); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	resultAccessControl, err := c.GetAccessControl(result.DataPolicyId)
@@ -166,6 +173,15 @@ func resourceDataSetRead(ctx context.Context, d *schema.ResourceData, m interfac
 	}
 
 	return diags
+}
+
+func checkIfStateCustomPolicyIsDefault(d *schema.ResourceData) bool {
+	_, ok := d.GetOk("custom_policy")
+	return !ok || checkIfDefaultCustomPolicy(resourceToCustomPolicy(d))
+}
+
+func checkIfDefaultCustomPolicy(policy *api.CustomPolicy) bool {
+	return policy == nil || (policy.Priority == api.CustomPolicyDefaultPriority && policy.RulesYaml == "" && policy.TagsYaml == "")
 }
 
 func customPolicyToResource(in *api.CustomPolicy) *map[string]interface{} {
