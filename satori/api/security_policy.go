@@ -100,8 +100,6 @@ func (c *Client) CreateSecurityPolicy(input *SecurityPolicy) (*SecurityPolicyOut
 }
 
 func (c *Client) UpdateSecurityPolicy(id string, input *SecurityPolicy) (*SecurityPolicyOutput, error) {
-	jsonInput, _ := json.Marshal(input)
-	log.Printf("Going to update security policy to: %s", jsonInput)
 	output := SecurityPolicyOutput{}
 	return &output, c.putJson(SecurityPolicyApiPrefix, "", id, input, &output)
 }
