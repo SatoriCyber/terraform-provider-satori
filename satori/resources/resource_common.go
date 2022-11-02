@@ -9,7 +9,7 @@ import (
 
 // converting API objects back&forth to TF objects
 // the function resolves the limitation that TypeMap can't have the TypeList elements
-// !!! tf resources and api structures have to be similiar !!!
+// !!! tf resources and api structures have to be similar !!!
 func biTfApiConverter(m map[string]interface{}, camelCase bool) map[string]interface{} {
 	currentMap := make(map[string]interface{})
 	for k, v := range m {

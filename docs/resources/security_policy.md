@@ -222,19 +222,19 @@ and:
 ### Required
 
 - **name** (String) Security policy name.
-- **profile** (Block List, Min: 1, Max: 1) Security policy profile. (see [below for nested schema](#nestedblock--profile))
 
 ### Optional
 
 - **id** (String) The ID of this resource.
+- **profile** (Block List, Max: 1) Security policy profile. (see [below for nested schema](#nestedblock--profile))
 
 <a id="nestedblock--profile"></a>
 ### Nested Schema for `profile`
 
-Required:
+Optional:
 
-- **masking** (Block List, Min: 1, Max: 1) Masking profile. (see [below for nested schema](#nestedblock--profile--masking))
-- **row_level_security** (Block List, Min: 1, Max: 1) Row level security profile (see [below for nested schema](#nestedblock--profile--row_level_security))
+- **masking** (Block List, Max: 1) Masking profile. (see [below for nested schema](#nestedblock--profile--masking))
+- **row_level_security** (Block List, Max: 1) Row level security profile (see [below for nested schema](#nestedblock--profile--row_level_security))
 
 <a id="nestedblock--profile--masking"></a>
 ### Nested Schema for `profile.masking`
