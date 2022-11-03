@@ -86,11 +86,11 @@ resource "satori_dataset" "dataset1" {
 ### Required
 
 - **access_control_settings** (Block List, Min: 1, Max: 1) Dataset access controls. (see [below for nested schema](#nestedblock--access_control_settings))
-- **custom_policy** (Block List, Min: 1, Max: 1) Dataset custom policy. (see [below for nested schema](#nestedblock--custom_policy))
 - **definition** (Block List, Min: 1, Max: 1) Parameters for dataset definition. (see [below for nested schema](#nestedblock--definition))
 
 ### Optional
 
+- **custom_policy** (Block List, Max: 1) Dataset custom policy. (see [below for nested schema](#nestedblock--custom_policy))
 - **id** (String) The ID of this resource.
 - **security_policies** (List of String) IDs of security policies to apply to this dataset.
 
@@ -106,16 +106,6 @@ Optional:
 - **enable_access_control** (Boolean) Enforce access control to this dataset. Defaults to `false`.
 - **enable_self_service** (Boolean) Allow users to grant themselves access to this dataset. Defaults to `false`.
 - **enable_user_requests** (Boolean) Allow users to request access to this dataset. Defaults to `false`.
-
-
-<a id="nestedblock--custom_policy"></a>
-### Nested Schema for `custom_policy`
-
-Optional:
-
-- **priority** (Number) Dataset custom policy priority. Defaults to `100`.
-- **rules_yaml** (String) Custom policy rules YAML.
-- **tags_yaml** (String) Custom policy tags YAML.
 
 
 <a id="nestedblock--definition"></a>
@@ -176,3 +166,15 @@ Optional:
 
 - **schema** (String) Schema name.
 - **table** (String) Table name.
+
+
+
+
+<a id="nestedblock--custom_policy"></a>
+### Nested Schema for `custom_policy`
+
+Optional:
+
+- **priority** (Number) Dataset custom policy priority. Defaults to `100`.
+- **rules_yaml** (String) Custom policy rules YAML.
+- **tags_yaml** (String) Custom policy tags YAML.
