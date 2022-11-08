@@ -8,8 +8,6 @@ const DataPolicyPermissionsSuffix = "permissions"
 
 type AccessControl struct {
 	AccessControlEnabled bool `json:"permissionsEnabled"`
-	UserRequestsEnabled  bool `json:"accessRequestsEnabled"`
-	SelfServiceEnabled   bool `json:"selfServiceAccessEnabled"`
 }
 
 type CustomPolicy struct {

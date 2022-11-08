@@ -2,12 +2,12 @@ package api
 
 import "strconv"
 
-const DataAccessPermissionApiPrefix = "/api/v1/data-access-permission"
+const DataAccessPermissionApiPrefix = "/api/v1/data-access-rule/instance-access"
 
 type DataAccessPermission struct {
 	Id               *string                   `json:"id,omitempty"`
 	ParentId         *string                   `json:"parentId,omitempty"`
-	Suspended        *bool                     `json:"suspended,omitempty"`
+	Suspended        bool                      `json:"suspended,omitempty"`
 	Identity         *DataAccessIdentity       `json:"identity,omitempty"`
 	AccessLevel      string                    `json:"accessLevel"`
 	TimeLimit        DataAccessTimeLimit       `json:"timeLimit"`
