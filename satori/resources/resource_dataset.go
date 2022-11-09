@@ -37,12 +37,14 @@ func ResourceDataSet() *schema.Resource {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Default:     false,
+							Deprecated:  "The 'enable_user_requests' field has been deprecated. Please check the Dataset Permissions section in the documentation.",
 							Description: "Allow users to request access to this dataset.",
 						},
 						"enable_self_service": &schema.Schema{
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Default:     false,
+							Deprecated:  "The 'enable_self_service' field has been deprecated. Please check the Dataset Permissions section in the documentation.",
 							Description: "Allow users to grant themselves access to this dataset.",
 						},
 					},
@@ -120,8 +122,6 @@ func resourceToCustomPolicy(d *schema.ResourceData) *api.CustomPolicy {
 func resourceToAccessControl(d *schema.ResourceData) *api.AccessControl {
 	out := api.AccessControl{}
 	out.AccessControlEnabled = d.Get("access_control_settings.0.enable_access_control").(bool)
-	out.UserRequestsEnabled = d.Get("access_control_settings.0.enable_user_requests").(bool)
-	out.SelfServiceEnabled = d.Get("access_control_settings.0.enable_self_service").(bool)
 	return &out
 }
 
@@ -196,8 +196,6 @@ func customPolicyToResource(in *api.CustomPolicy) *map[string]interface{} {
 func accessControlToResource(in *api.AccessControl) *map[string]interface{} {
 	out := make(map[string]interface{})
 	out["enable_access_control"] = in.AccessControlEnabled
-	out["enable_user_requests"] = in.UserRequestsEnabled
-	out["enable_self_service"] = in.SelfServiceEnabled
 	return &out
 }
 

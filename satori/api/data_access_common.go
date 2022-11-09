@@ -14,3 +14,9 @@ type DataAccessUnusedTimeLimit struct {
 	UnusedDaysUntilRevocation int  `json:"unusedDaysUntilRevocation"`
 	ShouldRevoke              bool `json:"shouldRevoke"`
 }
+
+type DataAccessSelfServiceAndRequestTimeLimit struct {
+	ShouldExpire bool   `json:"shouldExpire"`
+	UnitType     string `json:"unitType"`
+	Units        int    `json:"units"`
+}

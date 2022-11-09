@@ -20,6 +20,12 @@ func ResourceDataAccessSelfServiceRule() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"parent_data_policy": resourceDataAccessParent(),
 			"access_level":       resourceDataAccessLevel(),
+			"enabled": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				Description: "Enable the rule.",
+			},
 			"expire_in": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -68,6 +74,7 @@ func resourceToDataAccessSelfServiceRule(d *schema.ResourceData) *api.DataAccess
 	out := api.DataAccessSelfServiceRule{}
 
 	out.AccessLevel = d.Get("access_level").(string)
+	out.Suspended = !d.Get("enabled").(bool)
 
 	if v, ok := d.GetOk("expire_in.0.units"); ok {
 		out.TimeLimit.Units = v.(int)
@@ -105,6 +112,9 @@ func resourceDataAccessSelfServiceRuleRead(ctx context.Context, d *schema.Resour
 	}
 
 	if err := d.Set("access_level", result.AccessLevel); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("enabled", !result.Suspended); err != nil {
 		return diag.FromErr(err)
 	}
 	if err := d.Set("parent_data_policy", *result.ParentId); err != nil {
@@ -145,7 +155,8 @@ func resourceDataAccessSelfServiceRuleUpdate(ctx context.Context, d *schema.Reso
 
 	input := resourceToDataAccessSelfServiceRule(d)
 	input.Identity = nil //not allowed to be updated
-	if _, err := c.UpdateDataAccessSelfServiceRule(d.Id(), input); err != nil {
+	_, err := c.UpdateDataAccessSelfServiceRule(d.Id(), input)
+	if err != nil {
 		return diag.FromErr(err)
 	}
 

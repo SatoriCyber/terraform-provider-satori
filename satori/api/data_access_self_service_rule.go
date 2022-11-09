@@ -1,21 +1,18 @@
 package api
 
-const DataAccessSelfServiceApiPrefix = "/api/v1/data-access-self-service"
+import "strconv"
+
+const DataAccessSelfServiceApiPrefix = "/api/v1/data-access-rule/self-service"
 
 type DataAccessSelfServiceRule struct {
-	Id               *string                        `json:"id,omitempty"`
-	ParentId         *string                        `json:"parentId,omitempty"`
-	Identity         *DataAccessIdentity            `json:"identity,omitempty"`
-	AccessLevel      string                         `json:"accessLevel"`
-	TimeLimit        DataAccessSelfServiceTimeLimit `json:"timeLimit"`
-	UnusedTimeLimit  DataAccessUnusedTimeLimit      `json:"unusedTimeLimit"`
-	SecurityPolicies *[]string                      `json:"securityPolicyIds,omitempty"`
-}
-
-type DataAccessSelfServiceTimeLimit struct {
-	ShouldExpire bool   `json:"shouldExpire"`
-	UnitType     string `json:"unitType"`
-	Units        int    `json:"units"`
+	Id               *string                                  `json:"id,omitempty"`
+	ParentId         *string                                  `json:"parentId,omitempty"`
+	Suspended        bool                                     `json:"suspended,omitempty"`
+	Identity         *DataAccessIdentity                      `json:"identity,omitempty"`
+	AccessLevel      string                                   `json:"accessLevel"`
+	TimeLimit        DataAccessSelfServiceAndRequestTimeLimit `json:"timeLimit"`
+	UnusedTimeLimit  DataAccessUnusedTimeLimit                `json:"unusedTimeLimit"`
+	SecurityPolicies *[]string                                `json:"securityPolicyIds,omitempty"`
 }
 
 func (c *Client) CreateDataAccessSelfServiceRule(parentId string, input *DataAccessSelfServiceRule) (*DataAccessSelfServiceRule, error) {
@@ -28,6 +25,12 @@ func (c *Client) CreateDataAccessSelfServiceRule(parentId string, input *DataAcc
 func (c *Client) UpdateDataAccessSelfServiceRule(id string, input *DataAccessSelfServiceRule) (*DataAccessSelfServiceRule, error) {
 	output := DataAccessSelfServiceRule{}
 	return &output, c.putJson(DataAccessSelfServiceApiPrefix, "", id, input, &output)
+}
+
+func (c *Client) UpdateDataAccessSelfServiceSuspendedStatus(id string, suspend bool) (*DataAccessSelfServiceRule, error) {
+	output := DataAccessSelfServiceRule{}
+	params := map[string]string{"shouldSuspend": strconv.FormatBool(suspend)}
+	return &output, c.putWithParams(DataAccessSelfServiceApiPrefix, "suspend", id, &params, &output)
 }
 
 func (c *Client) GetDataAccessSelfServiceRule(id string) (*DataAccessSelfServiceRule, error, int) {
