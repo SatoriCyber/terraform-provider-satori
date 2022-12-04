@@ -2,7 +2,7 @@ package api
 
 import "strconv"
 
-const DataAccessPermissionApiPrefix = "/api/v1/data-access-rule/instance-access"
+const DataAccessPermissionApiPrefix = "/api/v1/data-access-rule/instant-access"
 
 type DataAccessPermission struct {
 	Id               *string                   `json:"id,omitempty"`
