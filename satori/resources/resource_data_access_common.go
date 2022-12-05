@@ -42,12 +42,14 @@ func resourceDataAccessIdentity() *schema.Schema {
 				"type": &schema.Schema{
 					Type:        schema.TypeString,
 					Required:    true,
-					Description: "Identity type, valid types are: USER, IDP_GROUP, GROUP, EVERYONE.\nCan not be changed after creation.",
+					Description: "Identity type, valid types are: USER, IDP_GROUP, GROUP, CEL, EVERYONE.\nCan not be changed after creation.",
 				},
 				"name": &schema.Schema{
-					Type:        schema.TypeString,
-					Optional:    true,
-					Description: "User/group name for identity types of USER and IDP_GROUP.\nCan not be changed after creation.",
+					Type:     schema.TypeString,
+					Optional: true,
+					Description: "User/group name for identity types of USER and IDP_GROUP.\n" +
+						"Custom expression based on attributes for identity types of CEL.\n" +
+						"Can not be changed after creation.",
 					//ConflictsWith: []string{
 					//	"identity.0.group_id",
 					//},
