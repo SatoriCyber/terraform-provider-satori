@@ -10,6 +10,11 @@ satori_dataset_definition resource allows defining datasets (definition tab only
 Datasets are collections of data store locations that are meant to be governed as a single unit.
 The **satori_dataset_definition** resource allows defining only the definition tab of datasets.
 
+<br />
+<br />
+The resource output includes **data_policy_id** which is mandatory ID for future access rule resources creation.
+See Read-Only section and **satori_request_access_rule** Resource examples.
+
 ## Example Usage
 
 ```terraform

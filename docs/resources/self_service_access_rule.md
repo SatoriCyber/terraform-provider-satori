@@ -91,7 +91,7 @@ resource "satori_self_service_access_rule" "self_service1_dataset_definition1" {
 
 Required:
 
-- **type** (String) Identity type, valid types are: USER, IDP_GROUP, GROUP, EVERYONE.
+- **type** (String) Identity type, valid types are: USER, IDP_GROUP, GROUP, CEL, EVERYONE.
 Can not be changed after creation.
 
 Optional:
@@ -99,6 +99,7 @@ Optional:
 - **group_id** (String) Directory group ID for identity of type GROUP.
 Can not be changed after creation.
 - **name** (String) User/group name for identity types of USER and IDP_GROUP.
+Custom expression based on attributes for identity types of CEL.
 Can not be changed after creation.
 
 
