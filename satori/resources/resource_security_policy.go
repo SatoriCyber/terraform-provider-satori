@@ -238,7 +238,14 @@ func resourceRowLevelSecurityRule() *schema.Schema {
 								Type:        schema.TypeList,
 								Optional:    true,
 								Description: "Location to to be included in the rule.",
+								Deprecated:  "The 'location_prefix' field has been deprecated. Please use the 'location' field instead.",
 								Elem:        getRelationalLocationResource(),
+							},
+							Location: {
+								Type:        schema.TypeList,
+								Optional:    true,
+								Description: "Location to to be included in the rule.",
+								Elem:        getLocationResource(),
 							},
 							RLSRuleFilterAdvanced: {
 								Type:        schema.TypeBool,
@@ -342,9 +349,9 @@ func resourceMaskingProfile() *schema.Schema {
 // //////////////////////////////////
 // Resource to schema mappers
 // //////////////////////////////////
-func resourceToSecurityProfiles(d *schema.ResourceData) *api.SecurityProfiles {
+func resourceToSecurityProfiles(d *schema.ResourceData) (*api.SecurityProfiles, error) {
 	if _, ok := d.GetOk(SecurityPolicyProfile); !ok {
-		return nil
+		return nil, nil
 	}
 
 	out := api.SecurityProfiles{}
@@ -359,11 +366,14 @@ func resourceToSecurityProfiles(d *schema.ResourceData) *api.SecurityProfiles {
 	if _, ok := d.GetOk("profile.0.row_level_security"); ok {
 		if m, ok := d.GetOk("profile.0.row_level_security.0"); ok {
 			out.RowLevelSecurity = &api.RowLevelSecurityProfile{}
-			resourceToRowLevelSecurityProfile(d, m, &out)
+			err := resourceToRowLevelSecurityProfile(d, m, &out)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
-	return &out
+	return &out, nil
 }
 
 // Masking
@@ -419,7 +429,7 @@ func resourceToCriteriaRule(inElement map[string]interface{}, condition *string)
 }
 
 // Row level security
-func resourceToRowLevelSecurityProfile(d *schema.ResourceData, m interface{}, out *api.SecurityProfiles) {
+func resourceToRowLevelSecurityProfile(d *schema.ResourceData, m interface{}, out *api.SecurityProfiles) error {
 	rls := m.(map[string]interface{})
 
 	isActive := rls[Active].(bool)
@@ -428,7 +438,10 @@ func resourceToRowLevelSecurityProfile(d *schema.ResourceData, m interface{}, ou
 	if v, ok := d.GetOk("profile.0.row_level_security.0.rule"); ok {
 		rules := make([]api.RowLevelSecurityRule, len(v.([]interface{})))
 		for i, raw := range v.([]interface{}) {
-			resourceToRowLevelSecurityRule(raw, &rules, i)
+			err := resourceToRowLevelSecurityRule(raw, &rules, i)
+			if err != nil {
+				return err
+			}
 		}
 		out.RowLevelSecurity.Rules = rules
 	}
@@ -439,9 +452,10 @@ func resourceToRowLevelSecurityProfile(d *schema.ResourceData, m interface{}, ou
 		}
 		out.RowLevelSecurity.Maps = mapping
 	}
+	return nil
 }
 
-func resourceToRowLevelSecurityRule(raw interface{}, rules *[]api.RowLevelSecurityRule, i int) {
+func resourceToRowLevelSecurityRule(raw interface{}, rules *[]api.RowLevelSecurityRule, i int) error {
 	inElement := raw.(map[string]interface{})
 	outElement := api.RowLevelSecurityRule{}
 
@@ -455,7 +469,6 @@ func resourceToRowLevelSecurityRule(raw interface{}, rules *[]api.RowLevelSecuri
 	datastoreId := filter[RLSRuleFilterDatastoreId].(string)
 	logicYaml := filter[RLSRuleFilterLogicYaml].(string)
 	advanced := filter[RLSRuleFilterAdvanced].(bool)
-	locationPrefix := filter[RLSRuleFilterLocationPrefix].([]interface{})
 
 	// Masking action
 	outElement.RuleFilter.DataStoreId = datastoreId
@@ -463,10 +476,28 @@ func resourceToRowLevelSecurityRule(raw interface{}, rules *[]api.RowLevelSecuri
 	outElement.RuleFilter.Advanced = advanced
 
 	var location api.DataSetGenericLocation
-	resourceToGenericLocation(&location, locationPrefix, "RELATIONAL_TABLE_LOCATION")
+
+	err := checkThatOnlyOneLocationFormatExists(filter, RLSRuleFilterLocationPrefix, Location, false)
+	if err != nil {
+		return err
+	}
+
+	if len(filter[RLSRuleFilterLocationPrefix].([]interface{})) > 0 { // deprecated field
+		locationPrefix := filter[RLSRuleFilterLocationPrefix].([]interface{})
+		resourceToGenericLocation(&location, locationPrefix, RelationalTableLocationType)
+	} else if len(filter[Location].([]interface{})) > 0 { // new field
+		locationField := filter[Location].([]interface{})
+		err := resourceToLocation(&location, locationField, true)
+		if err != nil {
+			return err
+		}
+	}
+
 	outElement.RuleFilter.LocationPrefix = &location
 
 	(*rules)[i] = outElement
+
+	return nil
 }
 
 func resourceToRowLevelSecurityFilter(raw interface{}, rules *[]api.RowLevelSecurityFilter, i int) {
@@ -525,12 +556,16 @@ func resourceToRowLevelSecurityFilter(raw interface{}, rules *[]api.RowLevelSecu
 	(*rules)[i] = outElement
 }
 
-func resourceToSecurityPolicy(d *schema.ResourceData) *api.SecurityPolicy {
+func resourceToSecurityPolicy(d *schema.ResourceData) (*api.SecurityPolicy, error) {
 	out := api.SecurityPolicy{}
 	out.Name = d.Get(SecurityPolicyName).(string)
 
-	out.SecurityProfiles = resourceToSecurityProfiles(d)
-	return &out
+	securityPolicy, err := resourceToSecurityProfiles(d)
+	if err != nil {
+		return nil, err
+	}
+	out.SecurityProfiles = securityPolicy
+	return &out, nil
 }
 
 func resourceSecurityPolicyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -538,7 +573,11 @@ func resourceSecurityPolicyCreate(ctx context.Context, d *schema.ResourceData, m
 
 	c := m.(*api.Client)
 
-	input := resourceToSecurityPolicy(d)
+	input, err := resourceToSecurityPolicy(d)
+	if err != nil {
+		log.Printf("Recieved error in security policy create: %s", err)
+		return diag.FromErr(err)
+	}
 
 	result, err := c.CreateSecurityPolicy(input)
 	if err != nil {
@@ -554,7 +593,7 @@ func resourceSecurityPolicyCreate(ctx context.Context, d *schema.ResourceData, m
 // //////////////////////////////////
 // Schema to resource mappers
 // //////////////////////////////////
-func securityProfilesToResource(profiles *api.SecurityProfiles) interface{} {
+func securityProfilesToResource(profiles *api.SecurityProfiles, d *schema.ResourceData) interface{} {
 
 	if profiles == nil {
 		return nil
@@ -564,12 +603,12 @@ func securityProfilesToResource(profiles *api.SecurityProfiles) interface{} {
 
 	out[0] = make(map[string]interface{})
 	out[0][MaskingProfile] = maskingToResource(profiles.Masking)
-	out[0][RowLevelSecurity] = rowLevelSecurityToResource(profiles.RowLevelSecurity)
+	out[0][RowLevelSecurity] = rowLevelSecurityToResource(profiles.RowLevelSecurity, d)
 
 	return out
 }
 
-func rowLevelSecurityToResource(security *api.RowLevelSecurityProfile) interface{} {
+func rowLevelSecurityToResource(security *api.RowLevelSecurityProfile, d *schema.ResourceData) interface{} {
 	if security == nil {
 		return nil
 	}
@@ -593,14 +632,19 @@ func rowLevelSecurityToResource(security *api.RowLevelSecurityProfile) interface
 		ruleFilter[0][RLSRuleFilterDatastoreId] = v.RuleFilter.DataStoreId
 		ruleFilter[0][RLSRuleFilterAdvanced] = v.RuleFilter.Advanced
 
-		locationPrefix := make([]map[string]interface{}, 1)
-		locationPrefix[0] = make(map[string]interface{})
+		if _, ok := d.GetOk(fmt.Sprintf("%s.%d.%s.%d.%s", "profile.0.row_level_security.0.rule", i, RLSRuleFilter, 0, RLSRuleFilterLocationPrefix)); ok { // deprecated field
+			locationPrefix := make([]map[string]interface{}, 1)
+			locationPrefix[0] = make(map[string]interface{})
 
-		locationPrefix[0]["schema"] = v.RuleFilter.LocationPrefix.Schema
-		locationPrefix[0]["db"] = v.RuleFilter.LocationPrefix.Db
-		locationPrefix[0]["table"] = v.RuleFilter.LocationPrefix.Table
+			locationPrefix[0][Db] = v.RuleFilter.LocationPrefix.Db
+			locationPrefix[0][Schema] = v.RuleFilter.LocationPrefix.Schema
+			locationPrefix[0][Table] = v.RuleFilter.LocationPrefix.Table
 
-		ruleFilter[0][RLSRuleFilterLocationPrefix] = locationPrefix
+			ruleFilter[0][RLSRuleFilterLocationPrefix] = locationPrefix
+		} else { // new field
+			ruleFilter[0][Location] = []map[string]interface{}{locationToResource(v.RuleFilter.LocationPrefix)}
+		}
+
 		rules[i][RLSRuleFilter] = ruleFilter
 
 	}
@@ -717,7 +761,7 @@ func resourceSecurityPolicyRead(ctx context.Context, d *schema.ResourceData, m i
 		return diag.FromErr(err)
 	}
 
-	if err := d.Set(SecurityPolicyProfile, securityProfilesToResource(securityPolicyOutput.SecurityProfiles)); err != nil {
+	if err := d.Set(SecurityPolicyProfile, securityProfilesToResource(securityPolicyOutput.SecurityProfiles, d)); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -729,8 +773,12 @@ func resourceSecurityPolicyUpdate(ctx context.Context, d *schema.ResourceData, m
 
 	c := m.(*api.Client)
 
-	input := resourceToSecurityPolicy(d)
-	_, err := c.UpdateSecurityPolicy(d.Id(), input)
+	input, err := resourceToSecurityPolicy(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = c.UpdateSecurityPolicy(d.Id(), input)
 	if err != nil {
 		return diag.FromErr(err)
 	}

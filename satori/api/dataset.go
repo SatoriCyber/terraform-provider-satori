@@ -7,11 +7,22 @@ type DataSetLocation struct {
 	Location    *DataSetGenericLocation `json:"location,omitempty"`
 }
 
+//type IDataSetGenericLocation struct { TODO loren
+//}
+//
+//type DataSetRelationalLocation struct {
+//  IDataSetGenericLocation
+//}
+
 type DataSetGenericLocation struct {
-	Type   string  `json:"type"`
-	Db     *string `json:"db,omitempty"`
-	Schema *string `json:"schema,omitempty"`
-	Table  *string `json:"table,omitempty"`
+	Type       string  `json:"type"`
+	Db         *string `json:"db,omitempty"`
+	Schema     *string `json:"schema,omitempty"`
+	Table      *string `json:"table,omitempty"`
+	Catalog    *string `json:"catalog,omitempty"`
+	Collection *string `json:"collection,omitempty"`
+	Bucket     *string `json:"bucket,omitempty"`
+	ObjectKey  *string `json:"objectKey,omitempty"`
 }
 
 type DataSet struct {

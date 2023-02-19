@@ -146,7 +146,7 @@ func ResourceTaxonomyClassifier() *schema.Resource {
 							Type:        schema.TypeList,
 							Optional:    true,
 							Description: "Location to include in the scope.",
-							Elem:        getDatasetLocationResource(true),
+							Elem:        getDatasetLocationResource(),
 						},
 					},
 				},
@@ -155,7 +155,7 @@ func ResourceTaxonomyClassifier() *schema.Resource {
 	}
 }
 
-func resourceToClassifier(d *schema.ResourceData) *api.TaxonomyClassifier {
+func resourceToClassifier(d *schema.ResourceData) (*api.TaxonomyClassifier, error) {
 	out := api.TaxonomyClassifier{}
 	out.Name = d.Get("name").(string)
 	out.ParentNode = d.Get("parent_category").(string)
@@ -202,9 +202,13 @@ func resourceToClassifier(d *schema.ResourceData) *api.TaxonomyClassifier {
 	out.Config.AdditionalCategories = *getStringListProp("additional_satori_categories", d)
 
 	out.Scope.DatasetIds = *getStringListProp("scope.0.datasets", d)
-	out.Scope.IncludeLocations = *resourceToLocations(d, "scope.0.include_location")
+	locationOutput, err := resourceToLocations(d, "scope.0.include_location", false)
+	if err != nil {
+		return nil, err
+	}
+	out.Scope.IncludeLocations = *locationOutput
 
-	return &out
+	return &out, nil
 }
 
 func resourceClassifierCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -212,7 +216,10 @@ func resourceClassifierCreate(ctx context.Context, d *schema.ResourceData, m int
 
 	c := m.(*api.Client)
 
-	input := resourceToClassifier(d)
+	input, err := resourceToClassifier(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	result, err := c.CreateTaxonomyClassifier(input)
 	if err != nil {
@@ -293,7 +300,7 @@ func resourceClassifierRead(ctx context.Context, d *schema.ResourceData, m inter
 		scope["datasets"] = result.Scope.DatasetIds
 	}
 	if len(result.Scope.IncludeLocations) > 0 {
-		scope["include_location"] = locationsToResource(&result.Scope.IncludeLocations)
+		scope["include_location"] = locationsToResource(&result.Scope.IncludeLocations, d, "scope.0.include_location", RelationalLocation)
 	}
 	if err := setMapProp(&scope, "scope", d); err != nil {
 		return diag.FromErr(err)
@@ -307,7 +314,11 @@ func resourceClassifierUpdate(ctx context.Context, d *schema.ResourceData, m int
 
 	c := m.(*api.Client)
 
-	input := resourceToClassifier(d)
+	input, err := resourceToClassifier(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	result, err := c.UpdateTaxonomyClassifier(d.Id(), input)
 	if err != nil {
 		return diag.FromErr(err)

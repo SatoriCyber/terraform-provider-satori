@@ -2,10 +2,37 @@ package resources
 
 import (
 	"context"
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
 	"log"
+)
+
+var (
+	RelationalLocation          = "relational_location"
+	MySqlLocation               = "mysql_location"
+	AthenaLocation              = "athena_location"
+	MongoLocation               = "mongo_location"
+	S3Location                  = "s3_location"
+	RelationalLocationType      = "RELATIONAL_LOCATION"
+	MySqlLocationType           = "MYSQL_LOCATION"
+	AthenaLocationType          = "ATHENA_LOCATION"
+	MongoLocationType           = "MONGO_LOCATION"
+	S3LocationType              = "S3_LOCATION"
+	RelationalTableLocationType = "RELATIONAL_TABLE_LOCATION"
+	MySqlTableLocationType      = "MYSQL_TABLE_LOCATION"
+	AthenaTableLocationType     = "ATHENA_TABLE_LOCATION"
+	MongoTableLocationType      = "MONGO_TABLE_LOCATION"
+	S3TableLocationType         = "S3_TABLE_LOCATION"
+	Db                          = "db"
+	Schema                      = "schema"
+	Table                       = "table"
+	Catalog                     = "catalog"
+	Collection                  = "collection"
+	Bucket                      = "bucket"
+	ObjectKey                   = "object_key"
+	Location                    = "location"
 )
 
 func getDatasetDataPolicyIdSchema() *schema.Schema {
@@ -46,13 +73,13 @@ func getDatasetDefinitionSchema() *schema.Schema {
 					Type:        schema.TypeList,
 					Optional:    true,
 					Description: "Location to include in dataset.",
-					Elem:        getDatasetLocationResource(true),
+					Elem:        getDatasetLocationResource(),
 				},
 				"exclude_location": &schema.Schema{
 					Type:        schema.TypeList,
 					Optional:    true,
 					Description: "Location to exclude from dataset.",
-					Elem:        getDatasetLocationResource(false),
+					Elem:        getDatasetLocationResource(),
 				},
 			},
 		},
@@ -60,7 +87,10 @@ func getDatasetDefinitionSchema() *schema.Schema {
 }
 
 func createDataSet(d *schema.ResourceData, c *api.Client) (*api.DataSetOutput, error) {
-	input := resourceToDataset(d)
+	input, err := resourceToDataset(d)
+	if err != nil {
+		return nil, err
+	}
 
 	result, err := c.CreateDataSet(input)
 	if err != nil {
@@ -76,7 +106,7 @@ func createDataSet(d *schema.ResourceData, c *api.Client) (*api.DataSetOutput, e
 	return result, err
 }
 
-func resourceToDataset(d *schema.ResourceData) *api.DataSet {
+func resourceToDataset(d *schema.ResourceData) (*api.DataSet, error) {
 	out := api.DataSet{}
 	out.Name = d.Get("definition.0.name").(string)
 	out.Description = d.Get("definition.0.description").(string)
@@ -90,38 +120,173 @@ func resourceToDataset(d *schema.ResourceData) *api.DataSet {
 	} else {
 		out.OwnersIds = []string{}
 	}
-
-	out.IncludeLocations = *resourceToLocations(d, "definition.0.include_location")
-	out.ExcludeLocations = *resourceToLocations(d, "definition.0.exclude_location")
-	return &out
+	includeLocationOutput, err := resourceToLocations(d, "definition.0.include_location", false)
+	if err != nil {
+		return nil, err
+	}
+	out.IncludeLocations = *includeLocationOutput
+	excludeLocationOutput, err := resourceToLocations(d, "definition.0.exclude_location", true)
+	if err != nil {
+		return nil, err
+	}
+	out.ExcludeLocations = *excludeLocationOutput
+	return &out, nil
 }
 
-func resourceToLocations(d *schema.ResourceData, mainParamName string) *[]api.DataSetLocation {
+func resourceToLocations(d *schema.ResourceData, mainParamName string, forceLocation bool) (*[]api.DataSetLocation, error) { // convert resource (config) to Location (API)
 	if v, ok := d.GetOk(mainParamName); ok {
 		out := make([]api.DataSetLocation, len(v.([]interface{})))
 		for i, raw := range v.([]interface{}) {
 			inElement := raw.(map[string]interface{})
-			outElement := resourceToDatasetLocation(inElement)
-			out[i] = outElement
+			outElement, err := resourceToDatasetLocation(inElement, d, forceLocation)
+			if err != nil {
+				return nil, err
+			}
+			out[i] = *outElement
 		}
-		return &out
+		return &out, nil
 	}
 	out := make([]api.DataSetLocation, 0)
-	return &out
+	return &out, nil
 }
 
-func resourceToDatasetLocation(inElement map[string]interface{}) api.DataSetLocation {
+func resourceToDatasetLocation(inElement map[string]interface{}, d *schema.ResourceData, forceLocation bool) (*api.DataSetLocation, error) { // convert resource (config) to Location (API)
 	outElement := api.DataSetLocation{}
 	outElement.DataStoreId = inElement["datastore"].(string)
-	if inElement["relational_location"] != nil {
-		inLocations := inElement["relational_location"].([]interface{})
+
+	err := checkThatOnlyOneLocationFormatExists(inElement, RelationalLocation, Location, forceLocation)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(inElement[RelationalLocation].([]interface{})) > 0 { // deprecated field
+		inLocations := inElement[RelationalLocation].([]interface{})
 		if len(inLocations) > 0 {
 			var location api.DataSetGenericLocation
-			resourceToGenericLocation(&location, inLocations, "RELATIONAL_LOCATION")
+			resourceToGenericLocation(&location, inLocations, RelationalLocationType)
+			outElement.Location = &location
+		}
+	} else if len(inElement[Location].([]interface{})) > 0 { // new field
+		inLocations := inElement[Location].([]interface{})
+		if len(inLocations) > 0 {
+			var location api.DataSetGenericLocation
+			err := resourceToLocation(&location, inLocations, false)
+			if err != nil {
+				return nil, err
+			}
 			outElement.Location = &location
 		}
 	}
-	return outElement
+	return &outElement, nil
+}
+
+func checkThatOnlyOneLocationFormatExists(inElement map[string]interface{}, deprecatedField string, newField string, forceLocation bool) error {
+	if len(inElement[deprecatedField].([]interface{})) > 0 && len(inElement[newField].([]interface{})) > 0 {
+		return fmt.Errorf("can not include both fields '%s' and '%s'", deprecatedField, newField)
+	}
+	if forceLocation && len(inElement[deprecatedField].([]interface{})) == 0 && len(inElement[newField].([]interface{})) == 0 {
+		return fmt.Errorf("has to include '%s' field", newField)
+	}
+	return nil
+}
+
+/*
+*
+The input is for example:
+[
+
+	{
+	  relational_location: [
+	    {
+	      db: "db",
+	      schema: "schema"
+	    }
+	  ]
+	}
+
+]
+*/
+func resourceToLocation(location *api.DataSetGenericLocation, locationElem []interface{}, isTableType bool) error {
+	inLocationElem := locationElem[0].(map[string]interface{})
+
+	err := checkThatOnlyOneLocationTypeExists(inLocationElem)
+	if err != nil {
+		return err
+	}
+
+	if len(inLocationElem[RelationalLocation].([]interface{})) > 0 {
+		inLocations := inLocationElem[RelationalLocation].([]interface{})
+		if len(inLocations) > 0 {
+			locationType := RelationalLocationType
+			if isTableType {
+				locationType = RelationalTableLocationType
+			}
+			resourceToGenericLocation(location, inLocations, locationType)
+		}
+	} else if len(inLocationElem[MySqlLocation].([]interface{})) > 0 {
+		inLocations := inLocationElem[MySqlLocation].([]interface{})
+		if len(inLocations) > 0 {
+			locationType := MySqlLocationType
+			if isTableType {
+				locationType = MySqlTableLocationType
+			}
+			resourceToGenericLocation(location, inLocations, locationType)
+		}
+	} else if len(inLocationElem[AthenaLocation].([]interface{})) > 0 {
+		inLocations := inLocationElem[AthenaLocation].([]interface{})
+		if len(inLocations) > 0 {
+			locationType := AthenaLocationType
+			if isTableType {
+				locationType = AthenaTableLocationType
+			}
+			resourceToGenericLocation(location, inLocations, locationType)
+		}
+	} else if len(inLocationElem[MongoLocation].([]interface{})) > 0 {
+		inLocations := inLocationElem[MongoLocation].([]interface{})
+		if len(inLocations) > 0 {
+			locationType := MongoLocationType
+			if isTableType {
+				locationType = MongoTableLocationType
+			}
+			resourceToGenericLocation(location, inLocations, locationType)
+		}
+	} else if len(inLocationElem[S3Location].([]interface{})) > 0 {
+		inLocations := inLocationElem[S3Location].([]interface{})
+		if len(inLocations) > 0 {
+			locationType := S3LocationType
+			if isTableType {
+				locationType = S3TableLocationType
+			}
+			resourceToGenericLocation(location, inLocations, locationType)
+		}
+	}
+	return nil
+}
+
+func checkThatOnlyOneLocationTypeExists(inLocationElem map[string]interface{}) error {
+	countLocationInstances := 0
+
+	if len(inLocationElem[RelationalLocation].([]interface{})) > 0 {
+		countLocationInstances += 1
+	}
+	if len(inLocationElem[MySqlLocation].([]interface{})) > 0 {
+		countLocationInstances += 1
+	}
+	if len(inLocationElem[AthenaLocation].([]interface{})) > 0 {
+		countLocationInstances += 1
+	}
+	if len(inLocationElem[MongoLocation].([]interface{})) > 0 {
+		countLocationInstances += 1
+	}
+	if len(inLocationElem[S3Location].([]interface{})) > 0 {
+		countLocationInstances += 1
+	}
+
+	if countLocationInstances > 1 {
+		return fmt.Errorf("can not include more than one location type from the above: %s, %s, %s, %s, %s", RelationalLocation, MySqlLocation, AthenaLocation, MongoLocation, S3Location)
+	}
+
+	return nil
 }
 
 func resourceToGenericLocation(location *api.DataSetGenericLocation, inLocations []interface{}, locationType string) {
@@ -129,15 +294,57 @@ func resourceToGenericLocation(location *api.DataSetGenericLocation, inLocations
 	inLocation := inLocations[0].(map[string]interface{})
 	log.Printf("In location: %s", inLocation)
 
-	if len(inLocation["db"].(string)) > 0 {
-		db := inLocation["db"].(string)
-		location.Db = &db
-		if len(inLocation["schema"].(string)) > 0 {
-			schema := inLocation["schema"].(string)
-			location.Schema = &schema
+	if locationType == RelationalLocationType || locationType == RelationalTableLocationType {
+		if len(inLocation["db"].(string)) > 0 {
+			db := inLocation["db"].(string)
+			location.Db = &db
+			if len(inLocation["schema"].(string)) > 0 {
+				schema1 := inLocation["schema"].(string)
+				location.Schema = &schema1
+				if len(inLocation["table"].(string)) > 0 {
+					table := inLocation["table"].(string)
+					location.Table = &table
+				}
+			}
+		}
+	} else if locationType == MySqlLocationType || locationType == MySqlTableLocationType {
+		if len(inLocation["db"].(string)) > 0 {
+			db := inLocation["db"].(string)
+			location.Db = &db
 			if len(inLocation["table"].(string)) > 0 {
 				table := inLocation["table"].(string)
 				location.Table = &table
+			}
+		}
+	} else if locationType == AthenaLocationType || locationType == AthenaTableLocationType {
+		if len(inLocation["catalog"].(string)) > 0 {
+			catalog := inLocation["catalog"].(string)
+			location.Catalog = &catalog
+			if len(inLocation["db"].(string)) > 0 {
+				db := inLocation["db"].(string)
+				location.Db = &db
+				if len(inLocation["table"].(string)) > 0 {
+					table := inLocation["table"].(string)
+					location.Table = &table
+				}
+			}
+		}
+	} else if locationType == MongoLocationType || locationType == MongoTableLocationType {
+		if len(inLocation["collection"].(string)) > 0 {
+			collection := inLocation["collection"].(string)
+			location.Collection = &collection
+			if len(inLocation["db"].(string)) > 0 {
+				db := inLocation["db"].(string)
+				location.Db = &db
+			}
+		}
+	} else if locationType == S3LocationType || locationType == S3TableLocationType {
+		if len(inLocation["bucket"].(string)) > 0 {
+			bucket := inLocation["bucket"].(string)
+			location.Bucket = &bucket
+			if len(inLocation[ObjectKey].(string)) > 0 {
+				objectKey := inLocation[ObjectKey].(string)
+				location.ObjectKey = &objectKey
 			}
 		}
 	}
@@ -159,8 +366,8 @@ func getDataSet(c *api.Client, d *schema.ResourceData) (*api.DataSetOutput, erro
 	definition["description"] = result.Description
 	definition["owners"] = result.OwnersIds
 
-	definition["include_location"] = locationsToResource(&result.IncludeLocations)
-	definition["exclude_location"] = locationsToResource(&result.ExcludeLocations)
+	definition["include_location"] = locationsToResource(&result.IncludeLocations, d, "definition.0.include_location", RelationalLocation)
+	definition["exclude_location"] = locationsToResource(&result.ExcludeLocations, d, "definition.0.exclude_location", RelationalLocation)
 
 	if err := d.Set("definition", []map[string]interface{}{definition}); err != nil {
 		return nil, err
@@ -173,31 +380,97 @@ func getDataSet(c *api.Client, d *schema.ResourceData) (*api.DataSetOutput, erro
 	return result, err
 }
 
-func locationsToResource(in *[]api.DataSetLocation) *[]map[string]interface{} {
+func locationsToResource(in *[]api.DataSetLocation, d *schema.ResourceData, prefixFieldName string, deprecatedFieldName string) *[]map[string]interface{} {
 	out := make([]map[string]interface{}, len(*in))
 	for i, v := range *in {
 		outElement := make(map[string]interface{}, 2)
 		outElement["datastore"] = v.DataStoreId
-		if v.Location != nil && v.Location.Type == "RELATIONAL_LOCATION" {
-			location := make(map[string]string, 3)
-			if v.Location.Db != nil {
-				location["db"] = *v.Location.Db
-				if v.Location.Schema != nil {
-					location["schema"] = *v.Location.Schema
-					if v.Location.Table != nil {
-						location["table"] = *v.Location.Table
+		if v.Location != nil {
+			if _, ok := d.GetOk(fmt.Sprintf("%s.%d.%s", prefixFieldName, i, deprecatedFieldName)); ok { // deprecated field format
+				if v.Location != nil && v.Location.Type == RelationalLocationType {
+					location := make(map[string]string, 3)
+					if v.Location.Db != nil {
+						location[Db] = *v.Location.Db
+						if v.Location.Schema != nil {
+							location[Schema] = *v.Location.Schema
+							if v.Location.Table != nil {
+								location[Table] = *v.Location.Table
+							}
+						}
 					}
+					outElement[RelationalLocation] = []map[string]string{location}
 				}
+			} else {
+				outElement[Location] = []map[string]interface{}{locationToResource(v.Location)}
 			}
-			outElement["relational_location"] = []map[string]string{location}
 		}
 		out[i] = outElement
 	}
 	return &out
 }
 
+func locationToResource(genericLocation *api.DataSetGenericLocation) map[string]interface{} {
+	locationWrapper := make(map[string]interface{}, 1)
+	if genericLocation.Type == RelationalLocationType || genericLocation.Type == RelationalTableLocationType {
+		location := make(map[string]string, 3)
+		if genericLocation.Db != nil {
+			location[Db] = *genericLocation.Db
+			if genericLocation.Schema != nil {
+				location[Schema] = *genericLocation.Schema
+				if genericLocation.Table != nil {
+					location[Table] = *genericLocation.Table
+				}
+			}
+		}
+		locationWrapper[RelationalLocation] = []map[string]string{location}
+	} else if genericLocation.Type == MySqlLocationType || genericLocation.Type == MySqlTableLocationType {
+		location := make(map[string]string, 2)
+		if genericLocation.Db != nil {
+			location[Db] = *genericLocation.Db
+			if genericLocation.Table != nil {
+				location[Table] = *genericLocation.Table
+			}
+		}
+		locationWrapper[MySqlLocation] = []map[string]string{location}
+	} else if genericLocation.Type == AthenaLocationType || genericLocation.Type == AthenaTableLocationType {
+		location := make(map[string]string, 3)
+		if genericLocation.Catalog != nil {
+			location[Catalog] = *genericLocation.Catalog
+			if genericLocation.Db != nil {
+				location[Db] = *genericLocation.Db
+				if genericLocation.Table != nil {
+					location[Table] = *genericLocation.Table
+				}
+			}
+		}
+		locationWrapper[AthenaLocation] = []map[string]string{location}
+	} else if genericLocation.Type == MongoLocationType || genericLocation.Type == MongoTableLocationType {
+		location := make(map[string]string, 2)
+		if genericLocation.Db != nil {
+			location[Db] = *genericLocation.Db
+			if genericLocation.Collection != nil {
+				location[Collection] = *genericLocation.Collection
+			}
+		}
+		locationWrapper[MongoLocation] = []map[string]string{location}
+	} else if genericLocation.Type == S3LocationType || genericLocation.Type == S3TableLocationType {
+		location := make(map[string]string, 2)
+		if genericLocation.Bucket != nil {
+			location[Bucket] = *genericLocation.Bucket
+			if genericLocation.ObjectKey != nil {
+				location[ObjectKey] = *genericLocation.ObjectKey
+			}
+		}
+		locationWrapper[S3Location] = []map[string]string{location}
+	}
+	return locationWrapper
+}
+
 func updateDataSet(d *schema.ResourceData, c *api.Client) (*api.DataSetOutput, error) {
-	input := resourceToDataset(d)
+	input, err := resourceToDataset(d)
+	if err != nil {
+		return nil, err
+	}
 	result, err := c.UpdateDataSet(d.Id(), input)
 	return result, err
 }
