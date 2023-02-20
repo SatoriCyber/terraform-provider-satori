@@ -28,6 +28,14 @@ resource "satori_custom_taxonomy_classifier" "cls2" {
   }
   scope {
     datasets = [satori_dataset.dataset1.id]
+    include_location {
+      datastore = satori_datastore.datastore0.id
+      location {
+        relational_location {
+          db = "db1"
+        }
+      }
+    }
   }
 }
 

@@ -148,7 +148,7 @@ func getDatasetLocationResource() *schema.Resource {
 				Optional:    true,
 				MaxItems:    1,
 				Deprecated:  "The 'relational_location' field has been deprecated. Please use the 'location' field instead.",
-				Description: "Location for a relational data store.",
+				Description: "Location for a relational data store. Conflicts with 'location' field.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						Db: &schema.Schema{
@@ -173,7 +173,8 @@ func getDatasetLocationResource() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				MaxItems:    1,
-				Description: "Location for a data store.", // TODO loren add description
+				MinItems:    1,
+				Description: "Location for a data store. Can include only one location type field from the above: relational_location, mysql_location, athena_location, mongo_location and s3_location . Conflicts with 'relational_location' field.",
 				Elem:        getLocationResource(),
 			},
 		},
@@ -187,7 +188,7 @@ func getLocationResource() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				MaxItems:    1,
-				Description: "Location for a relational data store.", // TODO loren add description for which data stores it supports
+				Description: "Location for a relational data store.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						Db: {

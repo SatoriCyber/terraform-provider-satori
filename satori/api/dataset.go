@@ -7,13 +7,6 @@ type DataSetLocation struct {
 	Location    *DataSetGenericLocation `json:"location,omitempty"`
 }
 
-//type IDataSetGenericLocation struct { TODO loren
-//}
-//
-//type DataSetRelationalLocation struct {
-//  IDataSetGenericLocation
-//}
-
 type DataSetGenericLocation struct {
 	Type       string  `json:"type"`
 	Db         *string `json:"db,omitempty"`

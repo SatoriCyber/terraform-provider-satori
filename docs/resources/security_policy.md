@@ -99,10 +99,12 @@ resource "satori_security_policy" "security_policy" {
                             name: '33'
                           filterName: Filter 1
                         EOT
-          location_prefix {
-            db     = "db2"
-            schema = "schema2"
-            table  = "table"
+          location {
+            relational_location {
+              db     = "db2"
+              schema = "schema2"
+              table  = "table"
+            }
           }
         }
       }
@@ -144,7 +146,7 @@ and:
         path: $.a['b']
       filterName: Filter 1
   EOT
-          location_prefix {
+          location_prefix { // usage of the deprecated field 'location_prefix'
             db     = "db2"
             schema = "schema2"
             table  = "table1"
@@ -394,7 +396,82 @@ Required:
 Optional:
 
 - **advanced** (Boolean) Describes if logic yaml contains complex configuration. Defaults to `true`.
-- **location_prefix** (Block List) Location to to be included in the rule. (see [below for nested schema](#nestedblock--profile--row_level_security--rule--id--location_prefix))
+- **location** (Block List) Location to to be included in the rule. (see [below for nested schema](#nestedblock--profile--row_level_security--rule--id--location))
+- **location_prefix** (Block List, Deprecated) Location to to be included in the rule. The 'location_prefix' field has been deprecated. Please use the 'location' field instead. (see [below for nested schema](#nestedblock--profile--row_level_security--rule--id--location_prefix))
+
+<a id="nestedblock--profile--row_level_security--rule--id--location"></a>
+### Nested Schema for `profile.row_level_security.rule.id.location`
+
+Optional:
+
+- **athena_location** (Block List, Max: 1) Location for Athena data store. (see [below for nested schema](#nestedblock--profile--row_level_security--rule--id--location--athena_location))
+- **mongo_location** (Block List, Max: 1) Location for MongoDB data store. (see [below for nested schema](#nestedblock--profile--row_level_security--rule--id--location--mongo_location))
+- **mysql_location** (Block List, Max: 1) Location for MySql and MariaDB data stores. (see [below for nested schema](#nestedblock--profile--row_level_security--rule--id--location--mysql_location))
+- **relational_location** (Block List, Max: 1) Location for a relational data store. (see [below for nested schema](#nestedblock--profile--row_level_security--rule--id--location--relational_location))
+- **s3_location** (Block List, Max: 1) Location for S3 data store. (see [below for nested schema](#nestedblock--profile--row_level_security--rule--id--location--s3_location))
+
+<a id="nestedblock--profile--row_level_security--rule--id--location--athena_location"></a>
+### Nested Schema for `profile.row_level_security.rule.id.location.s3_location`
+
+Required:
+
+- **catalog** (String) Catalog name.
+
+Optional:
+
+- **db** (String) Database name.
+- **table** (String) Table name.
+
+
+<a id="nestedblock--profile--row_level_security--rule--id--location--mongo_location"></a>
+### Nested Schema for `profile.row_level_security.rule.id.location.s3_location`
+
+Required:
+
+- **db** (String) Database name.
+
+Optional:
+
+- **collection** (String) Collection name.
+
+
+<a id="nestedblock--profile--row_level_security--rule--id--location--mysql_location"></a>
+### Nested Schema for `profile.row_level_security.rule.id.location.s3_location`
+
+Required:
+
+- **db** (String) Database name.
+
+Optional:
+
+- **table** (String) Table name.
+
+
+<a id="nestedblock--profile--row_level_security--rule--id--location--relational_location"></a>
+### Nested Schema for `profile.row_level_security.rule.id.location.s3_location`
+
+Required:
+
+- **db** (String) Database name.
+
+Optional:
+
+- **schema** (String) Schema name.
+- **table** (String) Table name.
+
+
+<a id="nestedblock--profile--row_level_security--rule--id--location--s3_location"></a>
+### Nested Schema for `profile.row_level_security.rule.id.location.s3_location`
+
+Required:
+
+- **bucket** (String) Bucket name.
+
+Optional:
+
+- **object_key** (String) Object Key name.
+
+
 
 <a id="nestedblock--profile--row_level_security--rule--id--location_prefix"></a>
 ### Nested Schema for `profile.row_level_security.rule.id.location_prefix`
