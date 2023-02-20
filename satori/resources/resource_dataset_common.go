@@ -133,7 +133,7 @@ func resourceToDataset(d *schema.ResourceData) (*api.DataSet, error) {
 	return &out, nil
 }
 
-func resourceToLocations(d *schema.ResourceData, mainParamName string, forceLocation bool) (*[]api.DataSetLocation, error) { // convert resource (config) to Location (API)
+func resourceToLocations(d *schema.ResourceData, mainParamName string, forceLocation bool) (*[]api.DataSetLocation, error) {
 	if v, ok := d.GetOk(mainParamName); ok {
 		out := make([]api.DataSetLocation, len(v.([]interface{})))
 		for i, raw := range v.([]interface{}) {
@@ -150,7 +150,7 @@ func resourceToLocations(d *schema.ResourceData, mainParamName string, forceLoca
 	return &out, nil
 }
 
-func resourceToDatasetLocation(inElement map[string]interface{}, d *schema.ResourceData, forceLocation bool) (*api.DataSetLocation, error) { // convert resource (config) to Location (API)
+func resourceToDatasetLocation(inElement map[string]interface{}, d *schema.ResourceData, forceLocation bool) (*api.DataSetLocation, error) {
 	outElement := api.DataSetLocation{}
 	outElement.DataStoreId = inElement["datastore"].(string)
 
@@ -295,52 +295,52 @@ func resourceToGenericLocation(location *api.DataSetGenericLocation, inLocations
 	log.Printf("In location: %s", inLocation)
 
 	if locationType == RelationalLocationType || locationType == RelationalTableLocationType {
-		if len(inLocation["db"].(string)) > 0 {
-			db := inLocation["db"].(string)
+		if len(inLocation[Db].(string)) > 0 {
+			db := inLocation[Db].(string)
 			location.Db = &db
-			if len(inLocation["schema"].(string)) > 0 {
-				schema1 := inLocation["schema"].(string)
+			if len(inLocation[Schema].(string)) > 0 {
+				schema1 := inLocation[Schema].(string)
 				location.Schema = &schema1
-				if len(inLocation["table"].(string)) > 0 {
-					table := inLocation["table"].(string)
+				if len(inLocation[Table].(string)) > 0 {
+					table := inLocation[Table].(string)
 					location.Table = &table
 				}
 			}
 		}
 	} else if locationType == MySqlLocationType || locationType == MySqlTableLocationType {
-		if len(inLocation["db"].(string)) > 0 {
-			db := inLocation["db"].(string)
+		if len(inLocation[Db].(string)) > 0 {
+			db := inLocation[Db].(string)
 			location.Db = &db
-			if len(inLocation["table"].(string)) > 0 {
-				table := inLocation["table"].(string)
+			if len(inLocation[Table].(string)) > 0 {
+				table := inLocation[Table].(string)
 				location.Table = &table
 			}
 		}
 	} else if locationType == AthenaLocationType || locationType == AthenaTableLocationType {
-		if len(inLocation["catalog"].(string)) > 0 {
-			catalog := inLocation["catalog"].(string)
+		if len(inLocation[Catalog].(string)) > 0 {
+			catalog := inLocation[Catalog].(string)
 			location.Catalog = &catalog
-			if len(inLocation["db"].(string)) > 0 {
-				db := inLocation["db"].(string)
+			if len(inLocation[Db].(string)) > 0 {
+				db := inLocation[Db].(string)
 				location.Db = &db
-				if len(inLocation["table"].(string)) > 0 {
-					table := inLocation["table"].(string)
+				if len(inLocation[Table].(string)) > 0 {
+					table := inLocation[Table].(string)
 					location.Table = &table
 				}
 			}
 		}
 	} else if locationType == MongoLocationType || locationType == MongoTableLocationType {
-		if len(inLocation["collection"].(string)) > 0 {
-			collection := inLocation["collection"].(string)
+		if len(inLocation[Collection].(string)) > 0 {
+			collection := inLocation[Collection].(string)
 			location.Collection = &collection
-			if len(inLocation["db"].(string)) > 0 {
-				db := inLocation["db"].(string)
+			if len(inLocation[Db].(string)) > 0 {
+				db := inLocation[Db].(string)
 				location.Db = &db
 			}
 		}
 	} else if locationType == S3LocationType || locationType == S3TableLocationType {
-		if len(inLocation["bucket"].(string)) > 0 {
-			bucket := inLocation["bucket"].(string)
+		if len(inLocation[Bucket].(string)) > 0 {
+			bucket := inLocation[Bucket].(string)
 			location.Bucket = &bucket
 			if len(inLocation[ObjectKey].(string)) > 0 {
 				objectKey := inLocation[ObjectKey].(string)
