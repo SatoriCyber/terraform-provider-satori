@@ -386,6 +386,8 @@ func locationsToResource(in *[]api.DataSetLocation, d *schema.ResourceData, pref
 		outElement := make(map[string]interface{}, 2)
 		outElement["datastore"] = v.DataStoreId
 		if v.Location != nil {
+			// Checks if the state already contains the deprecated field, if so, convert the output to the deprecated format,
+			// otherwise convert to the new format
 			if _, ok := d.GetOk(fmt.Sprintf("%s.%d.%s", prefixFieldName, i, deprecatedFieldName)); ok { // deprecated field format
 				if v.Location != nil && v.Location.Type == RelationalLocationType {
 					location := make(map[string]string, 3)
@@ -400,7 +402,7 @@ func locationsToResource(in *[]api.DataSetLocation, d *schema.ResourceData, pref
 					}
 					outElement[RelationalLocation] = []map[string]string{location}
 				}
-			} else {
+			} else { // new field format
 				outElement[Location] = []map[string]interface{}{locationToResource(v.Location)}
 			}
 		}

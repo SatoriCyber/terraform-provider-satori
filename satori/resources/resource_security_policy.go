@@ -30,6 +30,7 @@ var (
 	RLSRuleFilter                      = "filter"
 	RLSRuleFilterDatastoreId           = "datastore_id"
 	RLSRuleFilterLocationPrefix        = "location_prefix"
+	RLSRuleFilterLocationPrefixV2      = "location"
 	RLSRuleFilterAdvanced              = "advanced"
 	RLSRuleFilterLogicYaml             = "logic_yaml"
 	RLSMapping                         = "mapping"
@@ -241,10 +242,10 @@ func resourceRowLevelSecurityRule() *schema.Schema {
 								Deprecated:  "The 'location_prefix' field has been deprecated. Please use the 'location' field instead.",
 								Elem:        getRelationalLocationResource(),
 							},
-							Location: {
+							RLSRuleFilterLocationPrefixV2: {
 								Type:        schema.TypeList,
 								Optional:    true,
-								Description: "Location to to be included in the rule.",
+								Description: "Location to be included in the rule.",
 								Elem:        getLocationResource(),
 							},
 							RLSRuleFilterAdvanced: {
@@ -632,6 +633,8 @@ func rowLevelSecurityToResource(security *api.RowLevelSecurityProfile, d *schema
 		ruleFilter[0][RLSRuleFilterDatastoreId] = v.RuleFilter.DataStoreId
 		ruleFilter[0][RLSRuleFilterAdvanced] = v.RuleFilter.Advanced
 
+		// Checks if the state already contains the deprecated field, if so, convert the output to the deprecated format,
+		// otherwise convert to the new format
 		if _, ok := d.GetOk(fmt.Sprintf("%s.%d.%s.%d.%s", "profile.0.row_level_security.0.rule", i, RLSRuleFilter, 0, RLSRuleFilterLocationPrefix)); ok { // deprecated field
 			locationPrefix := make([]map[string]interface{}, 1)
 			locationPrefix[0] = make(map[string]interface{})
