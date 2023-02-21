@@ -135,7 +135,7 @@ func getStringListProp(prop string, d *schema.ResourceData) *[]string {
 	return &list
 }
 
-func getDatasetLocationResource(locationOptional bool) *schema.Resource {
+func getDatasetLocationResource() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"datastore": &schema.Schema{
@@ -143,28 +143,153 @@ func getDatasetLocationResource(locationOptional bool) *schema.Resource {
 				Required:    true,
 				Description: "Data store ID.",
 			},
-			"relational_location": &schema.Schema{
+			RelationalLocation: &schema.Schema{
 				Type:        schema.TypeList,
-				Optional:    locationOptional,
-				Required:    !locationOptional,
+				Optional:    true,
 				MaxItems:    1,
-				Description: "Location for a relational data store.",
+				Deprecated:  "The 'relational_location' field has been deprecated. Please use the 'location' field instead.",
+				Description: "Location for a relational data store. Conflicts with 'location' field.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"db": &schema.Schema{
+						Db: &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "Database name.",
 						},
-						"schema": &schema.Schema{
+						Schema: &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "Schema name.",
 						},
-						"table": &schema.Schema{
+						Table: &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "Table name.",
+						},
+					},
+				},
+			},
+			Location: {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				MinItems:    1,
+				Description: "Location for a data store. Can include only one location type field from the above: relational_location, mysql_location, athena_location, mongo_location and s3_location . Conflicts with 'relational_location' field.",
+				Elem:        getLocationResource(),
+			},
+		},
+	}
+}
+
+func getLocationResource() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			RelationalLocation: &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Location for a relational data store.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						Db: {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Database name.",
+						},
+						Schema: {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Schema name.",
+						},
+						Table: {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Table name.",
+						},
+					},
+				},
+			},
+			MySqlLocation: {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Location for MySql and MariaDB data stores.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						Db: {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Database name.",
+						},
+						Table: {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Table name.",
+						},
+					},
+				},
+			},
+			AthenaLocation: {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Location for Athena data store.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						Catalog: {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Catalog name.",
+						},
+						Db: {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Database name.",
+						},
+						Table: {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Table name.",
+						},
+					},
+				},
+			},
+			MongoLocation: {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Location for MongoDB data store.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						Db: {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Database name.",
+						},
+						Collection: {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Collection name.",
+						},
+					},
+				},
+			},
+			S3Location: {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Location for S3 data store.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						Bucket: {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Bucket name.",
+						},
+						ObjectKey: {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Object Key name.",
 						},
 					},
 				},

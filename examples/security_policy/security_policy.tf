@@ -82,10 +82,12 @@ resource "satori_security_policy" "security_policy" {
                             name: '33'
                           filterName: Filter 1
                         EOT
-          location_prefix {
-            db     = "db2"
-            schema = "schema2"
-            table  = "table"
+          location {
+            relational_location {
+              db     = "db2"
+              schema = "schema2"
+              table  = "table"
+            }
           }
         }
       }
@@ -127,7 +129,7 @@ and:
         path: $.a['b']
       filterName: Filter 1
   EOT
-          location_prefix {
+          location_prefix { // usage of the deprecated field 'location_prefix'
             db     = "db2"
             schema = "schema2"
             table  = "table1"

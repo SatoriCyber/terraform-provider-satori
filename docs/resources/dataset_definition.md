@@ -35,6 +35,49 @@ resource "satori_dataset_definition" "dataset_definition1" {
 
     include_location {
       datastore = "80f33ff5-95cf-474f-a1d6-d5084810dd95"
+      location {
+        relational_location {
+          db = "db1"
+          schema = "schema1"
+        }
+      }
+    }
+
+    include_location {
+      datastore = "3go33ff5-95cf-474f-a1d6-d5084810dd5k"
+      location {
+        mongo_location {
+          db = "db1"
+          collection = "collection1"
+        }
+      }
+    }
+
+    include_location {
+      datastore = "8kl43ff5-95cf-474f-a1d6-d508481049lw"
+      location {
+        s3_location {
+          bucket = "bucket1"
+          object_key = "a/b/c"
+        }
+      }
+    }
+  }
+}
+
+// Example with deprecated usage of relational_location field
+resource "satori_dataset_definition" "dataset_definition2" {
+  definition {
+    name = "satori_dataset_definition terraform test"
+    description = "from satori terraform provider"
+    owners = [ "12345678-8d7b-4498-b39d-6911e2839253", data.satori_user.data_steward1.id ]
+
+    include_location {
+      datastore = "12345678-95cf-474f-a1d6-d5084810dd95"
+    }
+
+    include_location {
+      datastore = "80f33ff5-95cf-474f-a1d6-d5084810dd95"
       relational_location {
         db = "db1"
       }
@@ -104,7 +147,85 @@ Optional:
 Required:
 
 - **datastore** (String) Data store ID.
-- **relational_location** (Block List, Min: 1, Max: 1) Location for a relational data store. (see [below for nested schema](#nestedblock--definition--exclude_location--relational_location))
+
+Optional:
+
+- **location** (Block List, Max: 1) Location for a data store. Can include only one location type field from the above: relational_location, mysql_location, athena_location, mongo_location and s3_location . Conflicts with 'relational_location' field. (see [below for nested schema](#nestedblock--definition--exclude_location--location))
+- **relational_location** (Block List, Max: 1, Deprecated) Location for a relational data store. Conflicts with 'location' field. The 'relational_location' field has been deprecated. Please use the 'location' field instead. (see [below for nested schema](#nestedblock--definition--exclude_location--relational_location))
+
+<a id="nestedblock--definition--exclude_location--location"></a>
+### Nested Schema for `definition.exclude_location.location`
+
+Optional:
+
+- **athena_location** (Block List, Max: 1) Location for Athena data store. (see [below for nested schema](#nestedblock--definition--exclude_location--location--athena_location))
+- **mongo_location** (Block List, Max: 1) Location for MongoDB data store. (see [below for nested schema](#nestedblock--definition--exclude_location--location--mongo_location))
+- **mysql_location** (Block List, Max: 1) Location for MySql and MariaDB data stores. (see [below for nested schema](#nestedblock--definition--exclude_location--location--mysql_location))
+- **relational_location** (Block List, Max: 1) Location for a relational data store. (see [below for nested schema](#nestedblock--definition--exclude_location--location--relational_location))
+- **s3_location** (Block List, Max: 1) Location for S3 data store. (see [below for nested schema](#nestedblock--definition--exclude_location--location--s3_location))
+
+<a id="nestedblock--definition--exclude_location--location--athena_location"></a>
+### Nested Schema for `definition.exclude_location.location.s3_location`
+
+Required:
+
+- **catalog** (String) Catalog name.
+
+Optional:
+
+- **db** (String) Database name.
+- **table** (String) Table name.
+
+
+<a id="nestedblock--definition--exclude_location--location--mongo_location"></a>
+### Nested Schema for `definition.exclude_location.location.s3_location`
+
+Required:
+
+- **db** (String) Database name.
+
+Optional:
+
+- **collection** (String) Collection name.
+
+
+<a id="nestedblock--definition--exclude_location--location--mysql_location"></a>
+### Nested Schema for `definition.exclude_location.location.s3_location`
+
+Required:
+
+- **db** (String) Database name.
+
+Optional:
+
+- **table** (String) Table name.
+
+
+<a id="nestedblock--definition--exclude_location--location--relational_location"></a>
+### Nested Schema for `definition.exclude_location.location.s3_location`
+
+Required:
+
+- **db** (String) Database name.
+
+Optional:
+
+- **schema** (String) Schema name.
+- **table** (String) Table name.
+
+
+<a id="nestedblock--definition--exclude_location--location--s3_location"></a>
+### Nested Schema for `definition.exclude_location.location.s3_location`
+
+Required:
+
+- **bucket** (String) Bucket name.
+
+Optional:
+
+- **object_key** (String) Object Key name.
+
+
 
 <a id="nestedblock--definition--exclude_location--relational_location"></a>
 ### Nested Schema for `definition.exclude_location.relational_location`
@@ -129,7 +250,82 @@ Required:
 
 Optional:
 
-- **relational_location** (Block List, Max: 1) Location for a relational data store. (see [below for nested schema](#nestedblock--definition--include_location--relational_location))
+- **location** (Block List, Max: 1) Location for a data store. Can include only one location type field from the above: relational_location, mysql_location, athena_location, mongo_location and s3_location . Conflicts with 'relational_location' field. (see [below for nested schema](#nestedblock--definition--include_location--location))
+- **relational_location** (Block List, Max: 1, Deprecated) Location for a relational data store. Conflicts with 'location' field. The 'relational_location' field has been deprecated. Please use the 'location' field instead. (see [below for nested schema](#nestedblock--definition--include_location--relational_location))
+
+<a id="nestedblock--definition--include_location--location"></a>
+### Nested Schema for `definition.include_location.location`
+
+Optional:
+
+- **athena_location** (Block List, Max: 1) Location for Athena data store. (see [below for nested schema](#nestedblock--definition--include_location--location--athena_location))
+- **mongo_location** (Block List, Max: 1) Location for MongoDB data store. (see [below for nested schema](#nestedblock--definition--include_location--location--mongo_location))
+- **mysql_location** (Block List, Max: 1) Location for MySql and MariaDB data stores. (see [below for nested schema](#nestedblock--definition--include_location--location--mysql_location))
+- **relational_location** (Block List, Max: 1) Location for a relational data store. (see [below for nested schema](#nestedblock--definition--include_location--location--relational_location))
+- **s3_location** (Block List, Max: 1) Location for S3 data store. (see [below for nested schema](#nestedblock--definition--include_location--location--s3_location))
+
+<a id="nestedblock--definition--include_location--location--athena_location"></a>
+### Nested Schema for `definition.include_location.location.s3_location`
+
+Required:
+
+- **catalog** (String) Catalog name.
+
+Optional:
+
+- **db** (String) Database name.
+- **table** (String) Table name.
+
+
+<a id="nestedblock--definition--include_location--location--mongo_location"></a>
+### Nested Schema for `definition.include_location.location.s3_location`
+
+Required:
+
+- **db** (String) Database name.
+
+Optional:
+
+- **collection** (String) Collection name.
+
+
+<a id="nestedblock--definition--include_location--location--mysql_location"></a>
+### Nested Schema for `definition.include_location.location.s3_location`
+
+Required:
+
+- **db** (String) Database name.
+
+Optional:
+
+- **table** (String) Table name.
+
+
+<a id="nestedblock--definition--include_location--location--relational_location"></a>
+### Nested Schema for `definition.include_location.location.s3_location`
+
+Required:
+
+- **db** (String) Database name.
+
+Optional:
+
+- **schema** (String) Schema name.
+- **table** (String) Table name.
+
+
+<a id="nestedblock--definition--include_location--location--s3_location"></a>
+### Nested Schema for `definition.include_location.location.s3_location`
+
+Required:
+
+- **bucket** (String) Bucket name.
+
+Optional:
+
+- **object_key** (String) Object Key name.
+
+
 
 <a id="nestedblock--definition--include_location--relational_location"></a>
 ### Nested Schema for `definition.include_location.relational_location`

@@ -76,7 +76,82 @@ Required:
 
 Optional:
 
-- **relational_location** (Block List, Max: 1) Location for a relational data store. (see [below for nested schema](#nestedblock--scope--include_location--relational_location))
+- **location** (Block List, Max: 1) Location for a data store. Can include only one location type field from the above: relational_location, mysql_location, athena_location, mongo_location and s3_location . Conflicts with 'relational_location' field. (see [below for nested schema](#nestedblock--scope--include_location--location))
+- **relational_location** (Block List, Max: 1, Deprecated) Location for a relational data store. Conflicts with 'location' field. The 'relational_location' field has been deprecated. Please use the 'location' field instead. (see [below for nested schema](#nestedblock--scope--include_location--relational_location))
+
+<a id="nestedblock--scope--include_location--location"></a>
+### Nested Schema for `scope.include_location.location`
+
+Optional:
+
+- **athena_location** (Block List, Max: 1) Location for Athena data store. (see [below for nested schema](#nestedblock--scope--include_location--location--athena_location))
+- **mongo_location** (Block List, Max: 1) Location for MongoDB data store. (see [below for nested schema](#nestedblock--scope--include_location--location--mongo_location))
+- **mysql_location** (Block List, Max: 1) Location for MySql and MariaDB data stores. (see [below for nested schema](#nestedblock--scope--include_location--location--mysql_location))
+- **relational_location** (Block List, Max: 1) Location for a relational data store. (see [below for nested schema](#nestedblock--scope--include_location--location--relational_location))
+- **s3_location** (Block List, Max: 1) Location for S3 data store. (see [below for nested schema](#nestedblock--scope--include_location--location--s3_location))
+
+<a id="nestedblock--scope--include_location--location--athena_location"></a>
+### Nested Schema for `scope.include_location.location.s3_location`
+
+Required:
+
+- **catalog** (String) Catalog name.
+
+Optional:
+
+- **db** (String) Database name.
+- **table** (String) Table name.
+
+
+<a id="nestedblock--scope--include_location--location--mongo_location"></a>
+### Nested Schema for `scope.include_location.location.s3_location`
+
+Required:
+
+- **db** (String) Database name.
+
+Optional:
+
+- **collection** (String) Collection name.
+
+
+<a id="nestedblock--scope--include_location--location--mysql_location"></a>
+### Nested Schema for `scope.include_location.location.s3_location`
+
+Required:
+
+- **db** (String) Database name.
+
+Optional:
+
+- **table** (String) Table name.
+
+
+<a id="nestedblock--scope--include_location--location--relational_location"></a>
+### Nested Schema for `scope.include_location.location.s3_location`
+
+Required:
+
+- **db** (String) Database name.
+
+Optional:
+
+- **schema** (String) Schema name.
+- **table** (String) Table name.
+
+
+<a id="nestedblock--scope--include_location--location--s3_location"></a>
+### Nested Schema for `scope.include_location.location.s3_location`
+
+Required:
+
+- **bucket** (String) Bucket name.
+
+Optional:
+
+- **object_key** (String) Object Key name.
+
+
 
 <a id="nestedblock--scope--include_location--relational_location"></a>
 ### Nested Schema for `scope.include_location.relational_location`

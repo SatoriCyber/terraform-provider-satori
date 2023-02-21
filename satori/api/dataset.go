@@ -7,11 +7,23 @@ type DataSetLocation struct {
 	Location    *DataSetGenericLocation `json:"location,omitempty"`
 }
 
+// DataSetGenericLocation
+// Location types with their parts:
+// Relational - Db, Schema, Table
+// MySql - Db, Table
+// Athena - Catalog, Db, Table
+// Mongo - Db, Collection
+// S3 - Bucket, ObjectKey
+// /**
 type DataSetGenericLocation struct {
-	Type   string  `json:"type"`
-	Db     *string `json:"db,omitempty"`
-	Schema *string `json:"schema,omitempty"`
-	Table  *string `json:"table,omitempty"`
+	Type       string  `json:"type"`
+	Db         *string `json:"db,omitempty"`
+	Schema     *string `json:"schema,omitempty"`
+	Table      *string `json:"table,omitempty"`
+	Catalog    *string `json:"catalog,omitempty"`
+	Collection *string `json:"collection,omitempty"`
+	Bucket     *string `json:"bucket,omitempty"`
+	ObjectKey  *string `json:"objectKey,omitempty"`
 }
 
 type DataSet struct {
