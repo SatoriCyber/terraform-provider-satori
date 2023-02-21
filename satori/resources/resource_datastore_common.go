@@ -191,7 +191,9 @@ func getDataStore(c *api.Client, d *schema.ResourceData) (*api.DataStoreOutput, 
 	if err != nil {
 		return nil, err
 	}
-	d.Set(NetworkPolicy, []map[string]interface{}{npMap})
+	if len(npMap) > 0 { // empty result, skip it.
+		d.Set(NetworkPolicy, []map[string]interface{}{npMap})
+	}
 
 	sasMap, err := GetSatoriAuthSettingsDatastoreOutput(result, err)
 	if err != nil {
