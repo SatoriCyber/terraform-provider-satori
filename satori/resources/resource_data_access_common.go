@@ -39,7 +39,7 @@ func resourceDataAccessIdentity(isCelSupported bool) *schema.Schema {
 
 	var identityNameDescription = "User/group name for identity types of USER and IDP_GROUP"
 	if isCelSupported {
-		identityNameDescription += " or a custom expression based on attributes of the identity"
+		identityNameDescription += " or a custom expression based on attributes of the identity for CEL identity type"
 	}
 	identityNameDescription += ".\nCan not be changed after creation."
 

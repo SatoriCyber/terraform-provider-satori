@@ -292,7 +292,7 @@ Optional:
 
 - **group_id** (String) Directory group ID for identity of type GROUP.
 Can not be changed after creation.
-- **name** (String) User/group name for identity types of USER and IDP_GROUP or a custom expression based on attributes of the identity.
+- **name** (String) User/group name for identity types of USER and IDP_GROUP or a custom expression based on attributes of the identity for CEL identity type.
 Can not be changed after creation.
 
 
@@ -357,7 +357,7 @@ Optional:
 
 - **group_id** (String) Directory group ID for identity of type GROUP.
 Can not be changed after creation.
-- **name** (String) User/group name for identity types of USER and IDP_GROUP or a custom expression based on attributes of the identity.
+- **name** (String) User/group name for identity types of USER and IDP_GROUP or a custom expression based on attributes of the identity for CEL identity type.
 Can not be changed after creation.
 
 
