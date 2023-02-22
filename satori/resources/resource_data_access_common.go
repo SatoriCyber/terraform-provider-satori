@@ -30,7 +30,19 @@ func resourceDataAccessRevokeIfNotUsed() *schema.Schema {
 	}
 }
 
-func resourceDataAccessIdentity() *schema.Schema {
+func resourceDataAccessIdentity(isCelSupported bool) *schema.Schema {
+	var identityTypeDescription = "Identity type, valid types are: USER, IDP_GROUP, GROUP"
+	if isCelSupported {
+		identityTypeDescription += ", CEL"
+	}
+	identityTypeDescription += ", EVERYONE.\nCan not be changed after creation."
+
+	var identityNameDescription = "User/group name for identity types of USER and IDP_GROUP"
+	if isCelSupported {
+		identityNameDescription += " or a custom expression based on attributes of the identity"
+	}
+	identityNameDescription += ".\nCan not be changed after creation."
+
 	return &schema.Schema{
 		Type:        schema.TypeList,
 		Required:    true,
@@ -42,14 +54,12 @@ func resourceDataAccessIdentity() *schema.Schema {
 				"type": &schema.Schema{
 					Type:        schema.TypeString,
 					Required:    true,
-					Description: "Identity type, valid types are: USER, IDP_GROUP, GROUP, CEL, EVERYONE.\nCan not be changed after creation.",
+					Description: identityTypeDescription,
 				},
 				"name": &schema.Schema{
-					Type:     schema.TypeString,
-					Optional: true,
-					Description: "User/group name for identity types of USER and IDP_GROUP.\n" +
-						"Custom expression based on attributes for identity types of CEL.\n" +
-						"Can not be changed after creation.",
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: identityNameDescription,
 					//ConflictsWith: []string{
 					//	"identity.0.group_id",
 					//},
@@ -138,7 +148,7 @@ func dataAccessIdentityToResource(in *api.DataAccessIdentity) *map[string]interf
 	out := make(map[string]interface{})
 	out["type"] = in.IdentityType
 	switch in.IdentityType {
-	case "IDP_GROUP", "USER":
+	case "IDP_GROUP", "USER", "CEL":
 		out["name"] = in.Identity
 	case "GROUP":
 		out["group_id"] = in.Identity

@@ -292,8 +292,7 @@ Optional:
 
 - **group_id** (String) Directory group ID for identity of type GROUP.
 Can not be changed after creation.
-- **name** (String) User/group name for identity types of USER and IDP_GROUP or
-custom expression based on attributes for identity types of CEL.  
+- **name** (String) User/group name for identity types of USER and IDP_GROUP or a custom expression based on attributes of the identity.
 Can not be changed after creation.
 
 
@@ -358,8 +357,7 @@ Optional:
 
 - **group_id** (String) Directory group ID for identity of type GROUP.
 Can not be changed after creation.
-- **name** (String) User/group name for identity types of USER and IDP_GROUP
-or custom expression based on attributes for identity types of CEL.  
+- **name** (String) User/group name for identity types of USER and IDP_GROUP or a custom expression based on attributes of the identity.
 Can not be changed after creation.
 
 
@@ -396,7 +394,7 @@ Required:
 Optional:
 
 - **advanced** (Boolean) Describes if logic yaml contains complex configuration. Defaults to `true`.
-- **location** (Block List) Location to to be included in the rule. (see [below for nested schema](#nestedblock--profile--row_level_security--rule--id--location))
+- **location** (Block List) Location to be included in the rule. (see [below for nested schema](#nestedblock--profile--row_level_security--rule--id--location))
 - **location_prefix** (Block List, Deprecated) Location to to be included in the rule. The 'location_prefix' field has been deprecated. Please use the 'location' field instead. (see [below for nested schema](#nestedblock--profile--row_level_security--rule--id--location_prefix))
 
 <a id="nestedblock--profile--row_level_security--rule--id--location"></a>

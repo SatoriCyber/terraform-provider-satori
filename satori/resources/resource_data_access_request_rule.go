@@ -47,7 +47,7 @@ func ResourceDataAccessRequestRule() *schema.Resource {
 				},
 			},
 			"revoke_if_not_used_in_days": resourceDataAccessRevokeIfNotUsed(),
-			"identity":                   resourceDataAccessIdentity(),
+			"identity":                   resourceDataAccessIdentity(false),
 			"security_policies":          resourceDataAccessSecurityPolicies(),
 		},
 	}

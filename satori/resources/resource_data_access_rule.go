@@ -33,7 +33,7 @@ func ResourceDataAccessPermission() *schema.Resource {
 				Description: "Expire the rule on the given date and time. RFC3339 date format is expected. Time must be in UTC (i.e. YYYY-MM-DD***T***HH:MM:SS***Z***). Empty value = never expire.",
 			},
 			"revoke_if_not_used_in_days": resourceDataAccessRevokeIfNotUsed(),
-			"identity":                   resourceDataAccessIdentity(),
+			"identity":                   resourceDataAccessIdentity(false),
 			"security_policies":          resourceDataAccessSecurityPolicies(),
 		},
 	}
