@@ -330,12 +330,12 @@ func resourceToGenericLocation(location *api.DataSetGenericLocation, inLocations
 			}
 		}
 	} else if locationType == MongoLocationType || locationType == MongoTableLocationType {
-		if len(inLocation[Collection].(string)) > 0 {
-			collection := inLocation[Collection].(string)
-			location.Collection = &collection
-			if len(inLocation[Db].(string)) > 0 {
-				db := inLocation[Db].(string)
-				location.Db = &db
+		if len(inLocation[Db].(string)) > 0 {
+			db := inLocation[Db].(string)
+			location.Db = &db
+			if len(inLocation[Collection].(string)) > 0 {
+				collection := inLocation[Collection].(string)
+				location.Collection = &collection
 			}
 		}
 	} else if locationType == S3LocationType || locationType == S3TableLocationType {
