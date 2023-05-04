@@ -133,10 +133,10 @@ func (c *Client) getJsonById(path string, suffix string, id string, output inter
 	return nil, statusCode
 }
 
-func (c *Client) getJsonForAccount(path string, search *string, output interface{}) error {
+func (c *Client) getJsonForAccount(path string, search *string, output interface{}) (error, int) {
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s%s", c.HostURL, path), nil)
 	if err != nil {
-		return err
+		return err, 0
 	}
 
 	q := req.URL.Query()
@@ -148,17 +148,17 @@ func (c *Client) getJsonForAccount(path string, search *string, output interface
 	}
 	req.URL.RawQuery = q.Encode()
 
-	body, err, _ := c.doRequest(req)
+	body, err, responseStatus := c.doRequest(req)
 	if err != nil {
-		return err
+		return err, responseStatus
 	}
 
 	err = json.Unmarshal(body, output)
 	if err != nil {
-		return err
+		return err, responseStatus
 	}
 
-	return nil
+	return nil, responseStatus
 }
 
 func (c *Client) getJsonForAccountWithParams(path string, params *map[string]string, output interface{}) error {

@@ -70,6 +70,7 @@ func NewProvider(version string) *schema.Provider {
 			"satori_dataset_definition":         resources.ResourceDataSetDefinition(),
 			"satori_directory_group":            resources.ResourceDirectoryGroup(),
 			"satori_access_rule":                resources.ResourceDataAccessPermission(),
+			"satori_user_attributes":            resources.ResourceUserCustomAttributes(),
 			"satori_self_service_access_rule":   resources.ResourceDataAccessSelfServiceRule(),
 			"satori_request_access_rule":        resources.ResourceDataAccessRequestRule(),
 			"satori_custom_taxonomy_category":   resources.ResourceTaxonomyCategory(),

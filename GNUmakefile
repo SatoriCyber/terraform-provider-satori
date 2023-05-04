@@ -5,6 +5,7 @@ VERSION=1.0.0
 BINARY=terraform-provider-${NAME}
 OS_ARCH=darwin_amd64
 # Switch between the two OS architecture according to own computer's architecture when working locally (if needed)
+# arm64 is the OS_ARCH for m1 or m2 apple processor
 # OS_ARCH=darwin_arm64
 LOCAL_INSTALL_DIR=~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
 
