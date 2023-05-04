@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
+	"os"
 )
 
 func ResourceUserCustomAttributes() *schema.Resource {
@@ -65,6 +66,12 @@ func resourceToUserAttribute(d *schema.ResourceData) (*api.SatoriAttributes, err
 
 	attrRawJson := d.Get(Attributes).(string)
 	attrDto.UserId = d.Get(UserId).(string)
+
+	fileContent, readFileErr := os.ReadFile(attrRawJson)
+
+	if readFileErr == nil {
+		attrRawJson = string(fileContent)
+	}
 
 	err := json.Unmarshal([]byte(attrRawJson), &attrDto.Attributes)
 
@@ -140,6 +147,13 @@ func mergeUserAndConfiguredAttributesMap(userAttrMap map[string]interface{}, d *
 	changeMap := make(map[string]interface{})
 	currAttributesMap := make(map[string]interface{})
 	rawAttributes := d.Get(Attributes).(string)
+
+	fileContent, readFileErr := os.ReadFile(rawAttributes)
+
+	if readFileErr == nil {
+		rawAttributes = string(fileContent)
+	}
+
 	err := json.Unmarshal([]byte(rawAttributes), &currAttributesMap)
 	if err != nil {
 		return nil, err

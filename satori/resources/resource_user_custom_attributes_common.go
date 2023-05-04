@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"os"
 	"reflect"
 	"strings"
 )
@@ -33,6 +34,12 @@ func getUserCustomAttributesDefinitionSchema() map[string]*schema.Schema {
 
 				if !ok {
 					return diag.Errorf("Expected type %s to be string", k)
+				}
+
+				fileContent, readFileErr := os.ReadFile(v)
+
+				if readFileErr == nil {
+					v = string(fileContent)
 				}
 
 				// Validate that the user enters a map format and not just a json node e.g. string/number/boolean...
