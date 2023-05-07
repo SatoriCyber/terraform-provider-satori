@@ -20,7 +20,7 @@ func ResourceUserCustomAttributes() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Description: "User Satori Attributes.",
+		Description: "Satori user settings allows to config existing user's configuration. Currently supports only user's attributes configuration",
 		Schema:      getUserCustomAttributesDefinitionSchema(),
 	}
 }
@@ -40,7 +40,7 @@ func resourceUserCustomAttributesCreate(ctx context.Context, d *schema.ResourceD
 	return diags
 }
 
-func createUserAttributes(d *schema.ResourceData, c *api.Client) (*api.SatoriAttributes, error) {
+func createUserAttributes(d *schema.ResourceData, c *api.Client) (*api.UserWithCustomAttributes, error) {
 	input, err := resourceToUserAttribute(d)
 
 	if err != nil {
@@ -57,8 +57,8 @@ func createUserAttributes(d *schema.ResourceData, c *api.Client) (*api.SatoriAtt
 	return result, err
 }
 
-func resourceToUserAttribute(d *schema.ResourceData) (*api.SatoriAttributes, error) {
-	attrDto := api.SatoriAttributes{}
+func resourceToUserAttribute(d *schema.ResourceData) (*api.UserWithCustomAttributes, error) {
+	attrDto := api.UserWithCustomAttributes{}
 
 	if d == nil {
 		return nil, nil
@@ -73,13 +73,13 @@ func resourceToUserAttribute(d *schema.ResourceData) (*api.SatoriAttributes, err
 		attrRawJson = string(fileContent)
 	}
 
-	err := json.Unmarshal([]byte(attrRawJson), &attrDto.Attributes)
+	err := json.Unmarshal([]byte(attrRawJson), &attrDto.CustomAttributes)
 
 	if err != nil {
 		return nil, err
 	}
 
-	if !validMapElementsAttributesType(attrDto.Attributes) {
+	if !validMapElementsAttributesType(attrDto.CustomAttributes) {
 		errMsg := fmt.Sprintf("Each attribute element in the list must be one of the following list: { string, int, float, bool, []string, []number } where number is int|float. This is not the case for the resource defined for user with ID '%s'", d.Get(UserId))
 		return nil, errors.New(errMsg)
 	}
@@ -100,13 +100,13 @@ func resourceUserCustomAttributesRead(ctx context.Context, d *schema.ResourceDat
 	return diags
 }
 
-func getUserAttributes(c *api.Client, d *schema.ResourceData) (*api.SatoriAttributes, error) {
+func getUserAttributes(c *api.Client, d *schema.ResourceData) (*api.UserWithCustomAttributes, error) {
 
 	userId := (*d).Get(UserId).(string)
 
 	result, err, responseStatus := c.GetUserProfile(&userId)
 
-	if responseStatus == 404 || result.Attr == nil {
+	if responseStatus == 404 || (*result).CustomAttributes == nil {
 		return nil, errors.New(fmt.Sprintf("User with id '%s' does not exists.", userId))
 	}
 
@@ -114,7 +114,7 @@ func getUserAttributes(c *api.Client, d *schema.ResourceData) (*api.SatoriAttrib
 		return nil, err
 	}
 
-	mergedAttributes, err := mergeUserAndConfiguredAttributesMap(result.Attr, d)
+	mergedAttributes, err := mergeUserAndConfiguredAttributesMap((*result).CustomAttributes, d)
 	if err != nil {
 		return nil, err
 	}
@@ -128,16 +128,16 @@ func getUserAttributes(c *api.Client, d *schema.ResourceData) (*api.SatoriAttrib
 	if err != nil {
 		return nil, err
 	}
-	d.SetId(result.Id)
+	d.SetId((*result).UserId)
 
 	if err != nil {
 		return nil, err
 	}
 
-	attr := api.SatoriAttributes{}
+	attr := api.UserWithCustomAttributes{}
 
 	attr.UserId = d.Get(UserId).(string)
-	attr.Attributes = mergedAttributes
+	attr.CustomAttributes = mergedAttributes
 
 	return &attr, err
 }
@@ -192,7 +192,7 @@ func resourceUserCustomAttributesUpdate(ctx context.Context, d *schema.ResourceD
 	return diags
 }
 
-func updateSatoriAttributes(d *schema.ResourceData, c *api.Client) (*api.SatoriAttributes, error) {
+func updateSatoriAttributes(d *schema.ResourceData, c *api.Client) (*api.UserWithCustomAttributes, error) {
 	input, err := resourceToUserAttribute(d)
 
 	if err != nil {
@@ -217,13 +217,11 @@ func resourceUserCustomAttributesDelete(ctx context.Context, d *schema.ResourceD
 	return diags
 }
 
-func deleteUserSatoriAttributes(d *schema.ResourceData, c *api.Client) (*api.SatoriAttributes, error) {
-	input, err := resourceToUserAttribute(d)
+func deleteUserSatoriAttributes(d *schema.ResourceData, c *api.Client) (*api.UserWithCustomAttributes, error) {
+	input := api.UserWithCustomAttributes{}
+	input.UserId = d.Get(UserId).(string)
 
-	if err != nil {
-		return nil, err
-	}
-	result, err := c.DeleteUserCustomAttributes(input)
+	result, err := c.DeleteUserCustomAttributes(&input)
 
 	// Setting terraform-id from the empty string ---> triggers delete
 	d.SetId("")

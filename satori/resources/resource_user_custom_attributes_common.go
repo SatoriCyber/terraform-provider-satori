@@ -21,12 +21,12 @@ func getUserCustomAttributesDefinitionSchema() map[string]*schema.Schema {
 		UserId: {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "User ID to manage Satori attributes for.",
+			Description: "User ID to manage settings for.",
 		},
 		Attributes: {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "User's set of attributes in raw JSON object format. may include the following types: int, string, float, boolean, string[], number[], where number may be float/int  for example:  \"{\"company\": \"SatoriCyber\",\"age\": 30.5,\"cities\": [\"Washington\", \"Lisbon\"],\"kids_age\": [1, 3.14759, 7], \"isActive\": true}\" ",
+			Description: "User's set of attributes in JSON object format. may include the following types: int, string, float, boolean, string[], number[], where number may be float/int. The value may be a path to a json file that contains the attributes for a user or a raw JSON string, for example: \"./attribute_files/user_a.json\" OR \"{\"company\": \"SatoriCyber\",\"age\": 30.5,\"cities\": [\"Washington\", \"Lisbon\"],\"kids_age\": [1, 3.14759, 7], \"isActive\": true}\" ",
 			ValidateDiagFunc: func(i interface{}, k cty.Path) diag.Diagnostics {
 				var unparsedJsonString map[string]interface{}
 
