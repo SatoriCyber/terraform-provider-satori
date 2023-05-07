@@ -3,6 +3,7 @@ HOSTNAME=satoricyber.com
 NAMESPACE=terraform
 VERSION=1.0.0
 BINARY=terraform-provider-${NAME}
+# This piece of code defines the OS for the machines that installs the provider.
 UNAME_P := $(shell uname -p)
 ifeq ($(filter %86,$(UNAME_P)),)
   OS_ARCH=darwin_amd64
@@ -11,10 +12,6 @@ ifneq ($(filter arm%,$(UNAME_P)),)
   OS_ARCH=darwin_arm64
 endif
 $(info Current architecture (OS_ARCH) is $(OS_ARCH))
-# OS_ARCH=darwin_amd64
-# Switch between' the two OS architecture according to own computer's architecture when working locally (if needed)
-# arm64 is the OS_ARCH for m1 or m2 apple processor
-# OS_ARCH=darwin_arm64
 LOCAL_INSTALL_DIR=~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
 
 default: testacc
