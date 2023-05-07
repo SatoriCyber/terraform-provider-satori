@@ -30,13 +30,12 @@ func resourceUserCustomAttributesCreate(ctx context.Context, d *schema.ResourceD
 
 	c := m.(*api.Client)
 
-	result, err := createUserAttributes(d, c)
+	_, err := createUserAttributes(d, c)
 
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	fmt.Println("In the CREATE function with response result --->", result)
 	return diags
 }
 
@@ -91,11 +90,10 @@ func resourceUserCustomAttributesRead(ctx context.Context, d *schema.ResourceDat
 	var diags diag.Diagnostics
 	c := m.(*api.Client)
 
-	res, err := getUserAttributes(c, d)
+	_, err := getUserAttributes(c, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	fmt.Println(res)
 
 	return diags
 }
@@ -142,7 +140,7 @@ func getUserAttributes(c *api.Client, d *schema.ResourceData) (*api.UserWithCust
 	return &attr, err
 }
 
-// This function merges the attributes from the
+// This function merges the attributes from the user resource retrieved from backend and the ResourceData schema.
 func mergeUserAndConfiguredAttributesMap(userAttrMap map[string]interface{}, d *schema.ResourceData) (map[string]interface{}, error) {
 	changeMap := make(map[string]interface{})
 	currAttributesMap := make(map[string]interface{})
@@ -183,11 +181,10 @@ func resourceUserCustomAttributesUpdate(ctx context.Context, d *schema.ResourceD
 
 	c := m.(*api.Client)
 
-	result, err := updateSatoriAttributes(d, c)
+	_, err := updateSatoriAttributes(d, c)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	fmt.Println(result)
 
 	return diags
 }
@@ -207,12 +204,10 @@ func resourceUserCustomAttributesDelete(ctx context.Context, d *schema.ResourceD
 
 	c := m.(*api.Client)
 
-	result, err := deleteUserSatoriAttributes(d, c)
+	_, err := deleteUserSatoriAttributes(d, c)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	fmt.Println(result)
 
 	return diags
 }

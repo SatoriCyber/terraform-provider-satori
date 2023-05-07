@@ -48,7 +48,6 @@ func getUserCustomAttributesDefinitionSchema() map[string]*schema.Schema {
 				if err != nil {
 					return diag.Errorf("Failed to parse rawJSON string at path %s, with err %s", k, err)
 				}
-				// TODO: change the validation method to the appropriate 1
 				if !validateMapType(unparsedJsonString) {
 					return diag.Errorf("raw JSON format is not valid OR not a json object, should be an attributes map, for example: \"{\"age\": 30, ...}\"")
 				}
