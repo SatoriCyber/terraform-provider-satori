@@ -104,7 +104,15 @@ func getUserAttributes(c *api.Client, d *schema.ResourceData) (*api.UserWithCust
 
 	result, err, responseStatus := c.GetUserProfile(&userId)
 
-	if responseStatus == 404 || (*result).CustomAttributes == nil {
+	if responseStatus == 404 {
+		// This will delete the user_settings resource, the reason is that the user is deleted in
+		// our backend. (resource_not_found)
+		d.SetId("")
+		return nil, errors.New(fmt.Sprintf("User with id '%s' does not exists.", userId))
+	}
+
+	// This should be removed if the 'attributes' is changed to 'Optional'
+	if (*result).CustomAttributes == nil {
 		return nil, errors.New(fmt.Sprintf("User with id '%s' does not exists.", userId))
 	}
 
@@ -218,8 +226,9 @@ func deleteUserSatoriAttributes(d *schema.ResourceData, c *api.Client) (*api.Use
 
 	result, err := c.DeleteUserCustomAttributes(&input)
 
-	// Setting terraform-id from the empty string ---> triggers delete
-	d.SetId("")
+	if err != nil {
+		return nil, err
+	}
 
 	return result, err
 }

@@ -60,10 +60,6 @@ func getUserCustomAttributesDefinitionSchema() map[string]*schema.Schema {
 			},
 			StateFunc: normalizeDataJSON,
 			DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-				if new == "" {
-					return true
-				}
-
 				var oldCustomAttrs map[string]interface{}
 				_ = json.Unmarshal([]byte(old), &oldCustomAttrs)
 
@@ -113,7 +109,8 @@ func validListTypeElement(in []interface{}, t string) bool {
 	}
 
 	if !strings.HasPrefix(t, "[]interface") {
-		return false
+		// If we got here it is []string or []int or []float
+		return true
 	}
 
 	allNumbers := true
