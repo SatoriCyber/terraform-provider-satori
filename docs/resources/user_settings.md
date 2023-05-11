@@ -29,8 +29,11 @@ resource "satori_user_settings" "settings_for_user_raw_json" {
 
   // You may define the attributes in a raw JSON object using terraform's jsoncode({}).
   attributes = jsonencode({
-    a = 1
-    b = "hello"
+    name      = "William"
+    age       = 30.5
+    cities    = ["Tel Aviv", "London", "Lisbon"]
+    is_active  = true
+    kids_ages = [1, 5, 6.5]
   })
 }
 ```
