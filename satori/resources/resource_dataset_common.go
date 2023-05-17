@@ -130,6 +130,11 @@ func resourceToDataset(d *schema.ResourceData) (*api.DataSet, error) {
 		return nil, err
 	}
 	out.ExcludeLocations = *excludeLocationOutput
+
+	out.CustomPolicy = *resourceToCustomPolicy(d)
+	out.SecurityPolicies = *resourceToSecurityPolicies(d)
+	out.PermissionsEnabled = (*resourceToAccessControl(d)).AccessControlEnabled
+
 	return &out, nil
 }
 
@@ -372,7 +377,6 @@ func getDataSet(c *api.Client, d *schema.ResourceData) (*api.DataSetOutput, erro
 	if err := d.Set("definition", []map[string]interface{}{definition}); err != nil {
 		return nil, err
 	}
-
 	if err := d.Set("data_policy_id", result.DataPolicyId); err != nil {
 		return nil, err
 	}

@@ -39,6 +39,7 @@ var (
 	Note                        = "note"
 	IpRanges                    = "ip_ranges"
 	IpRange                     = "ip_range"
+	SatoriHostname              = "satori_hostname"
 )
 var TreatAsMap = map[string]bool{
 	Exclusions:                  true,
@@ -70,6 +71,11 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 			Type:        schema.TypeInt,
 			Optional:    true,
 			Description: "Port number description.",
+		},
+		SatoriHostname: &schema.Schema{
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Satori Hostname.",
 		},
 		DataAccessControllerId: &schema.Schema{
 			Type:        schema.TypeString,
@@ -173,6 +179,7 @@ func getDataStore(c *api.Client, d *schema.ResourceData) (*api.DataStoreOutput, 
 	d.Set(Id, result.Id)
 	d.Set(Name, result.Name)
 	d.Set(Hostname, result.Hostname)
+	d.Set(SatoriHostname, result.SatoriHostname)
 	d.Set(Type, result.Type)
 	d.Set(OriginPort, result.OriginPort)
 	d.Set(CustomIngressPort, result.CustomIngressPort)

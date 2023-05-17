@@ -46,6 +46,11 @@ func ResourceDirectoryGroup() *schema.Resource {
 							Optional:    true,
 							Description: "Member name for types: USERNAME, IDP_GROUP and DB_ROLE.",
 						},
+						"email": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Member email available for types: USERNAME.",
+						},
 						"group_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
@@ -102,6 +107,10 @@ func resourceToDirectoryGroup(d *schema.ResourceData) *api.DirectoryGroup {
 				name := v.(string)
 				members[i].Name = &name
 			}
+			if v, ok := d.GetOk(fmt.Sprintf("member.%d.email", i)); ok {
+				email := v.(string)
+				members[i].Email = &email
+			}
 			if v, ok := d.GetOk(fmt.Sprintf("member.%d.identity_provider", i)); ok {
 				provider := v.(string)
 				members[i].Provider = &provider
@@ -154,6 +163,9 @@ func directoryGroupMembersToResource(members []api.DirectoryGroupMember) []map[s
 		out[i]["type"] = v.Type
 		if v.Name != nil && v.Type != "DIRECTORY_GROUP" {
 			out[i]["name"] = *v.Name
+		}
+		if v.Email != nil && v.Type == "USERNAME" {
+			out[i]["email"] = *v.Email
 		}
 		if v.Provider != nil {
 			out[i]["identity_provider"] = *v.Provider

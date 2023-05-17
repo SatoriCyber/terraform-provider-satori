@@ -33,20 +33,6 @@ func ResourceDataSet() *schema.Resource {
 							Default:     false,
 							Description: "Enforce access control to this dataset.",
 						},
-						"enable_user_requests": &schema.Schema{
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Default:     false,
-							Deprecated:  "The 'enable_user_requests' field has been deprecated. Please check the Dataset Permissions section in the documentation.",
-							Description: "Allow users to request access to this dataset.",
-						},
-						"enable_self_service": &schema.Schema{
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Default:     false,
-							Deprecated:  "The 'enable_self_service' field has been deprecated. Please check the Dataset Permissions section in the documentation.",
-							Description: "Allow users to grant themselves access to this dataset.",
-						},
 					},
 				},
 			},
@@ -93,12 +79,8 @@ func resourceDataSetCreate(ctx context.Context, d *schema.ResourceData, m interf
 
 	c := m.(*api.Client)
 
-	result, err := createDataSet(d, c)
+	_, err := createDataSet(d, c)
 	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if err = updateDataPolicy(err, c, result.DataPolicyId, d); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -144,31 +126,22 @@ func resourceDataSetRead(ctx context.Context, d *schema.ResourceData, m interfac
 		return diag.FromErr(err)
 	}
 
-	resultCustomPolicy, err := c.GetCustomPolicy(result.DataPolicyId)
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	resultCustomPolicy := result.CustomPolicy
 
-	if !(checkIfDefaultCustomPolicy(resultCustomPolicy) && checkIfStateCustomPolicyIsDefault(d)) {
-		if err := d.Set("custom_policy", []map[string]interface{}{*customPolicyToResource(resultCustomPolicy)}); err != nil {
+	if !(checkIfDefaultCustomPolicy(&resultCustomPolicy) && checkIfStateCustomPolicyIsDefault(d)) {
+		if err := d.Set("custom_policy", []map[string]interface{}{*customPolicyToResource(&resultCustomPolicy)}); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	resultAccessControl, err := c.GetAccessControl(result.DataPolicyId)
-	if err != nil {
+	resultAccessControl := api.AccessControl{}
+	resultAccessControl.AccessControlEnabled = result.PermissionsEnabled
+
+	if err := d.Set("access_control_settings", []map[string]interface{}{*accessControlToResource(&resultAccessControl)}); err != nil {
 		return diag.FromErr(err)
 	}
 
-	if err := d.Set("access_control_settings", []map[string]interface{}{*accessControlToResource(resultAccessControl)}); err != nil {
-		return diag.FromErr(err)
-	}
-
-	resultSecurityPolicies, err := c.GetSecurityPolicies(result.DataPolicyId)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
+	resultSecurityPolicies := result.SecurityPolicies
 	if err := setStringListProp(&resultSecurityPolicies.Ids, "security_policies", d); err != nil {
 		return diag.FromErr(err)
 	}
@@ -204,30 +177,10 @@ func resourceDataSetUpdate(ctx context.Context, d *schema.ResourceData, m interf
 
 	c := m.(*api.Client)
 
-	result, err := updateDataSet(d, c)
+	_, err := updateDataSet(d, c)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if err = updateDataPolicy(err, c, result.DataPolicyId, d); err != nil {
-		return diag.FromErr(err)
-	}
-
 	return diags
-}
-
-func updateDataPolicy(err error, c *api.Client, id string, d *schema.ResourceData) error {
-	if _, err = c.UpdateCustomPolicy(id, resourceToCustomPolicy(d)); err != nil {
-		return err
-	}
-
-	if _, err = c.UpdateAccessControl(id, resourceToAccessControl(d)); err != nil {
-		return err
-	}
-
-	if _, err = c.UpdateSecurityPolicies(id, resourceToSecurityPolicies(d)); err != nil {
-		return err
-	}
-
-	return nil
 }

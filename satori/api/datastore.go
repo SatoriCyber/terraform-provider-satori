@@ -30,6 +30,7 @@ type DataStoreOutput struct {
 	NetworkPolicy          *NetworkPolicy          `json:"networkPolicy,omitempty"`
 	SatoriAuthSettings     *SatoriAuthSettings     `json:"satoriAuthSettings,omitempty"`
 	DataStoreSettings      *DataStoreSettings      `json:"dataStoreSettings,omitempty"`
+	SatoriHostname         string                  `json:"satoriHostname"`
 }
 
 type DataStoreSettings struct {

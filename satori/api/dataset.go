@@ -32,16 +32,16 @@ type DataSet struct {
 	OwnersIds        []string          `json:"ownersIds"`
 	IncludeLocations []DataSetLocation `json:"includeLocations"`
 	ExcludeLocations []DataSetLocation `json:"excludeLocations"`
+	// data policy
+	PermissionsEnabled bool             `json:"permissionsEnabled"`
+	CustomPolicy       CustomPolicy     `json:"customPolicy"`
+	SecurityPolicies   SecurityPolicies `json:"defaultSecurityPolicies"`
 }
 
 type DataSetOutput struct {
-	Id               string            `json:"id"`
-	Name             string            `json:"name"`
-	Description      string            `json:"description"`
-	OwnersIds        []string          `json:"ownersIds"`
-	IncludeLocations []DataSetLocation `json:"includeLocations"`
-	ExcludeLocations []DataSetLocation `json:"excludeLocations"`
-	DataPolicyId     string            `json:"dataPolicyId"`
+	DataSet
+	Id           string `json:"id"`
+	DataPolicyId string `json:"dataPolicyId"`
 }
 
 func (c *Client) CreateDataSet(input *DataSet) (*DataSetOutput, error) {
