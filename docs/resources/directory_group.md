@@ -80,6 +80,7 @@ Required:
 Optional:
 
 - **data_store_type** (String) Data store type for member of type DB_ROLE, valid types are: SNOWFLAKE, REDSHIFT, BIGQUERY, POSTGRESQL, ATHENA, MSSQL, SYNAPSE
+- **email** (String) Member email available for types: USERNAME.
 - **group_id** (String) Directory group ID for member of type DIRECTORY_GROUP.
 - **identity_provider** (String) Identity provider type for member of type IDP_GROUP, valid identity providers are: OKTA, AZURE, ONELOGIN
 - **name** (String) Member name for types: USERNAME, IDP_GROUP and DB_ROLE.

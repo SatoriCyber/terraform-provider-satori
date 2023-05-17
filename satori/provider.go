@@ -67,7 +67,6 @@ func NewProvider(version string) *schema.Provider {
 		ResourcesMap: map[string]*schema.Resource{
 			"satori_datastore":                  resources.ResourceDataStore(),
 			"satori_dataset":                    resources.ResourceDataSet(),
-			"satori_dataset_definition":         resources.ResourceDataSetDefinition(),
 			"satori_directory_group":            resources.ResourceDirectoryGroup(),
 			"satori_access_rule":                resources.ResourceDataAccessPermission(),
 			"satori_user_settings":              resources.ResourceUserCustomAttributes(),

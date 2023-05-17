@@ -249,8 +249,6 @@ resource "satori_dataset" "dataset3" {
 Optional:
 
 - **enable_access_control** (Boolean) Enforce access control to this dataset. Defaults to `false`.
-- **enable_self_service** (Boolean, Deprecated) Allow users to grant themselves access to this dataset. Defaults to `false`. The 'enable_self_service' field has been deprecated. Please check the Dataset Permissions section in the documentation.
-- **enable_user_requests** (Boolean, Deprecated) Allow users to request access to this dataset. Defaults to `false`. The 'enable_user_requests' field has been deprecated. Please check the Dataset Permissions section in the documentation.
 
 
 <a id="nestedblock--definition"></a>

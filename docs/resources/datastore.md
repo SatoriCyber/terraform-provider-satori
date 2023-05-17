@@ -33,6 +33,7 @@ The **satori_datastore** resource allows lifecycle management for the datastores
 ### Read-Only
 
 - **id** (String) DataStore resource id.
+- **satori_hostname** (String) Satori Hostname.
 
 <a id="nestedblock--baseline_security_policy"></a>
 ### Nested Schema for `baseline_security_policy`
