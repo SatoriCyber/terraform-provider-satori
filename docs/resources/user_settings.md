@@ -20,7 +20,7 @@ resource "satori_user_settings" "settings_for_user_json_path" {
   user_id  = local.user_id_to_configure_settings_on
 
   // You may define a path to a json file containing a JSON object with the attributes for the user.
-  attributes = "${path.module}/attributes/user_a.json"
+  attributes = file("${path.module}/attributes/user_a.json")
 }
 
 

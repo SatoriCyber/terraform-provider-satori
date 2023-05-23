@@ -8,24 +8,23 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
-	"os"
 )
 
-func ResourceUserCustomAttributes() *schema.Resource {
+func ResourceUserSettings() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceUserCustomAttributesCreate,
-		ReadContext:   resourceUserCustomAttributesRead,
-		UpdateContext: resourceUserCustomAttributesUpdate,
-		DeleteContext: resourceUserCustomAttributesDelete,
+		CreateContext: resourceUserSettingsCreate,
+		ReadContext:   resourceUserSettingsRead,
+		UpdateContext: resourceUserSettingsUpdate,
+		DeleteContext: resourceUserSettingsDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Description: "Satori user settings allows to config existing user's configuration. Currently supports only user's attributes configuration",
-		Schema:      getUserCustomAttributesDefinitionSchema(),
+		Schema:      getUserSettingsDefinitionSchema(),
 	}
 }
 
-func resourceUserCustomAttributesCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserSettingsCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	c := m.(*api.Client)
@@ -66,12 +65,6 @@ func resourceToUserAttribute(d *schema.ResourceData) (*api.UserWithCustomAttribu
 	attrRawJson := d.Get(Attributes).(string)
 	attrDto.UserId = d.Get(UserId).(string)
 
-	fileContent, readFileErr := os.ReadFile(attrRawJson)
-
-	if readFileErr == nil {
-		attrRawJson = string(fileContent)
-	}
-
 	err := json.Unmarshal([]byte(attrRawJson), &attrDto.CustomAttributes)
 
 	if err != nil {
@@ -86,7 +79,7 @@ func resourceToUserAttribute(d *schema.ResourceData) (*api.UserWithCustomAttribu
 	return &attrDto, nil
 }
 
-func resourceUserCustomAttributesRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserSettingsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	c := m.(*api.Client)
 
@@ -154,12 +147,6 @@ func mergeUserAndConfiguredAttributesMap(userAttrMap map[string]interface{}, d *
 	currAttributesMap := make(map[string]interface{})
 	rawAttributes := d.Get(Attributes).(string)
 
-	fileContent, readFileErr := os.ReadFile(rawAttributes)
-
-	if readFileErr == nil {
-		rawAttributes = string(fileContent)
-	}
-
 	err := json.Unmarshal([]byte(rawAttributes), &currAttributesMap)
 	if err != nil {
 		return nil, err
@@ -184,7 +171,7 @@ func mergeUserAndConfiguredAttributesMap(userAttrMap map[string]interface{}, d *
 	return changeMap, nil
 }
 
-func resourceUserCustomAttributesUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserSettingsUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	c := m.(*api.Client)
@@ -207,7 +194,7 @@ func updateSatoriAttributes(d *schema.ResourceData, c *api.Client) (*api.UserWit
 	return result, err
 }
 
-func resourceUserCustomAttributesDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceUserSettingsDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	c := m.(*api.Client)

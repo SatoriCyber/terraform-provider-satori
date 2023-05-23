@@ -6,7 +6,6 @@ import (
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"os"
 	"reflect"
 	"strings"
 )
@@ -16,7 +15,7 @@ var (
 	UserId     = "user_id"
 )
 
-func getUserCustomAttributesDefinitionSchema() map[string]*schema.Schema {
+func getUserSettingsDefinitionSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		UserId: {
 			Type:        schema.TypeString,
@@ -33,13 +32,7 @@ func getUserCustomAttributesDefinitionSchema() map[string]*schema.Schema {
 				v, ok := i.(string)
 
 				if !ok {
-					return diag.Errorf("Expected type %s to be string", k)
-				}
-
-				fileContent, readFileErr := os.ReadFile(v)
-
-				if readFileErr == nil {
-					v = string(fileContent)
+					return diag.Errorf("attributes value must be of type string!")
 				}
 
 				// Validate that the user enters a map format and not just a json node e.g. string/number/boolean...
