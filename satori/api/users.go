@@ -4,7 +4,7 @@ const UsersV1ApiPrefix = "/api/v1/users"
 
 const UsersApiPrefix = "/api/users"
 const UserProfileSuffix = "/profile"
-const UserAttributesApiSuffix = "/attributes/custom"
+const UserAttributesApiSuffix = "attributes/custom"
 
 type User struct {
 	Id    string `json:"id"`
