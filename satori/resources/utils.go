@@ -2,7 +2,6 @@ package resources
 
 import (
 	"encoding/json"
-	"os"
 )
 
 // This function makes a consistent string that represents json.
@@ -12,11 +11,6 @@ import (
 // {"name": ron,       age:30} and {age:30,"name:ron}
 func normalizeDataJSON(val interface{}) string {
 	dataMap := map[string]interface{}{}
-	fileContent, readFileErr := os.ReadFile(val.(string))
-
-	if readFileErr == nil {
-		val = string(fileContent)
-	}
 
 	// Ignoring errors since we know it is valid
 	_ = json.Unmarshal([]byte(val.(string)), &dataMap)
