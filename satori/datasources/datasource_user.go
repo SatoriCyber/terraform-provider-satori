@@ -5,6 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
+	"strings"
 )
 
 func DatasourceUser() *schema.Resource {
@@ -41,7 +42,7 @@ func datasourceUserRead(ctx context.Context, d *schema.ResourceData, m interface
 	found := false
 	if len(users) > 0 {
 		for _, user := range users {
-			if user.Email == email {
+			if strings.EqualFold(user.Email, email) {
 				d.SetId(user.Id)
 				found = true
 				break
