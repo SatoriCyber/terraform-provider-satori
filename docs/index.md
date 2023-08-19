@@ -37,3 +37,23 @@ provider "satori" {
 - **service_account_key** (String, Sensitive) Service account key. Can be specified with the `SATORI_SA_KEY` environment variable.
 - **url** (String) Defaults to `https://app.satoricyber.com`.
 - **verify_tls** (Boolean) Defaults to `true`.
+
+## Resource Dependency Notes
+
+Some of Satori resources have references to other resources, for example, `satori_dataset` dependent on `satori_datastore`.
+In this case, the `satori_dataset` resource must be created after the `satori_datastore` resource and destroyed before the `satori_datastore` resource.
+
+In some cases, when the dependent resource should be replaced, for example, replace `satori_datastore` `A` with `satori_datastore` `B` while the `satori_datastore` `A` should be destroyed in the same cycle,
+additional `lifecycle` attribute should be added to the `satori_dataset` resource to ensure that the `satori_dataset` resource is updated before the `satori_datastore` `A` resource is destroyed.
+
+For example:
+```terraform
+  lifecycle {
+    create_before_destroy = true
+  }
+```
+
+More info can be found here: https://github.com/hashicorp/terraform/blob/main/docs/destroying.md#resource-replacement
+
+**Note:**
+Pay attention that lifecycle attribute should be applied to the dependent resource, and it has to be applied prior to actual change.
