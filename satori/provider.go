@@ -78,8 +78,9 @@ func NewProvider(version string) *schema.Provider {
 			"satori_security_policy":            resources.ResourceSecurityPolicy(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"satori_user":                   datasources.DatasourceUser(),
-			"satori_data_access_controller": datasources.DatasourceDataAccessController(),
+			"satori_user":                    datasources.DatasourceUser(),
+			"satori_dac_deployment_settings": datasources.DatasourceDeploymentSettings(),
+			"satori_data_access_controller":  datasources.DatasourceDataAccessController(),
 		},
 	}
 
