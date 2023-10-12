@@ -183,7 +183,6 @@ func (c *Client) getJsonForAccountWithParams(path string, params *map[string]str
 
 	err = json.Unmarshal(body, output)
 	if err != nil {
-		//fmt.Println("Failed to parse the response to the output var")
 		return err
 	}
 

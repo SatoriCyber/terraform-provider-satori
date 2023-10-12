@@ -29,9 +29,6 @@ func (c *Client) QueryDeploymentSettings(dacId *string) (*DeploymentSettings, er
 		return nil, err
 	}
 
-	fmt.Println("This is the SA output")
-	fmt.Println(output)
-
 	deploymentSettings.DacId = *dacId
 	deploymentSettings.GSA = output.GSA
 
