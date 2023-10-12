@@ -12,12 +12,12 @@ func DatasourceDeploymentSettings() *schema.Resource {
 		ReadContext: datasourceDeploymentSettingsRead,
 		Description: "Get deployment settings by DAC id",
 		Schema: map[string]*schema.Schema{
-			"dac_id": {
+			"id": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "DAC's id.",
 			},
-			"deployment_service_account": {
+			"service_account": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The DAC's deployments service account",
@@ -31,7 +31,7 @@ func datasourceDeploymentSettingsRead(ctx context.Context, d *schema.ResourceDat
 
 	c := m.(*api.Client)
 
-	dacId := d.Get("dac_id").(string)
+	dacId := d.Get("id").(string)
 
 	if dacId != "" {
 		d.SetId(dacId)
@@ -39,7 +39,7 @@ func datasourceDeploymentSettingsRead(ctx context.Context, d *schema.ResourceDat
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		err = d.Set("deployment_service_account", deploymentSettings.GSA)
+		err = d.Set("service_account", deploymentSettings.GSA)
 		if err != nil {
 			return nil
 		}
