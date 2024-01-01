@@ -52,7 +52,7 @@ func ResourceDataAccessRequestRule() *schema.Resource {
 			"require_approver_note": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Description: "Require from the approver an `approver note` when approving the request created from the defined rule",
+				Description: "Require from the approver an `approver note` when approving the request created from the defined rule.",
 				Default:     false,
 			},
 		},
