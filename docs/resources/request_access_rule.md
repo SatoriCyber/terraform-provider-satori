@@ -27,6 +27,7 @@ resource "satori_request_access_rule" "request_access1_dataset1" {
     units = 3
   }
   revoke_if_not_used_in_days = 90
+  require_approver_note = true //default is false
 }
 
 resource "satori_request_access_rule" "request_access2_dataset1" {
@@ -43,6 +44,7 @@ resource "satori_request_access_rule" "request_access2_dataset1" {
   revoke_if_not_used_in_days = 90
   //dataset default security policies
   security_policies = [ ]
+  require_approver_note = false //optional, as default is false
 }
 
 resource "satori_request_access_rule" "request_access3_dataset1" {
@@ -83,6 +85,7 @@ resource "satori_request_access_rule" "request_access1_dataset_definition1" {
 - **enabled** (Boolean) Enable the rule. Defaults to `true`.
 - **expire_in** (Block List, Max: 1) Rule expiration settings. (see [below for nested schema](#nestedblock--expire_in))
 - **id** (String) The ID of this resource.
+- **require_approver_note** (Boolean) Require from the approver an `approver note` when approving the request  Defaults to `false`.
 - **revoke_if_not_used_in_days** (Number) Revoke access if rule not used in the last given days. Zero = do not revoke. Max value is 180. Defaults to `0`.
 - **security_policies** (List of String) IDs of security policies to apply to this rule. Empty list for default dataset security policies. [ "none" ] list for no policies.
 

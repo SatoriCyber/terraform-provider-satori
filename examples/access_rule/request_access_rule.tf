@@ -13,6 +13,7 @@ resource "satori_request_access_rule" "request_access1_dataset1" {
     units = 3
   }
   revoke_if_not_used_in_days = 90
+  require_approver_note = true //default is false
 }
 
 resource "satori_request_access_rule" "request_access2_dataset1" {
@@ -29,6 +30,7 @@ resource "satori_request_access_rule" "request_access2_dataset1" {
   revoke_if_not_used_in_days = 90
   //dataset default security policies
   security_policies = [ ]
+  require_approver_note = false //optional, as default is false
 }
 
 resource "satori_request_access_rule" "request_access3_dataset1" {

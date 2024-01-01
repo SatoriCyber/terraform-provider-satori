@@ -49,6 +49,12 @@ func ResourceDataAccessRequestRule() *schema.Resource {
 			"revoke_if_not_used_in_days": resourceDataAccessRevokeIfNotUsed(),
 			"identity":                   resourceDataAccessIdentity(false),
 			"security_policies":          resourceDataAccessSecurityPolicies(),
+			"require_approver_note": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Require from the approver an `approver note` when approving the request ",
+				Default:     false,
+			},
 		},
 	}
 }
@@ -93,6 +99,8 @@ func resourceToDataAccessRequestRule(d *schema.ResourceData) *api.DataAccessRequ
 	out.Identity = resourceToIdentity(resourceIdentity)
 
 	out.SecurityPolicies = resourceToDataAccessSecurityPolicies(d)
+
+	out.RequireApproverNote = d.Get("require_approver_note").(bool)
 
 	return &out
 }
