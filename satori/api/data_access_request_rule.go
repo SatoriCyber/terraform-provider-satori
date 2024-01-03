@@ -5,14 +5,15 @@ import "strconv"
 const DataAccessRequestApiPrefix = "/api/v1/data-access-rule/access-request"
 
 type DataAccessRequestRule struct {
-	Id               *string                                  `json:"id,omitempty"`
-	ParentId         *string                                  `json:"parentId,omitempty"`
-	Suspended        bool                                     `json:"suspended,omitempty"`
-	Identity         *DataAccessIdentity                      `json:"identity,omitempty"`
-	AccessLevel      string                                   `json:"accessLevel"`
-	TimeLimit        DataAccessSelfServiceAndRequestTimeLimit `json:"timeLimit"`
-	UnusedTimeLimit  DataAccessUnusedTimeLimit                `json:"unusedTimeLimit"`
-	SecurityPolicies *[]string                                `json:"securityPolicyIds,omitempty"`
+	Id                  *string                                  `json:"id,omitempty"`
+	ParentId            *string                                  `json:"parentId,omitempty"`
+	Suspended           bool                                     `json:"suspended,omitempty"`
+	Identity            *DataAccessIdentity                      `json:"identity,omitempty"`
+	AccessLevel         string                                   `json:"accessLevel"`
+	TimeLimit           DataAccessSelfServiceAndRequestTimeLimit `json:"timeLimit"`
+	UnusedTimeLimit     DataAccessUnusedTimeLimit                `json:"unusedTimeLimit"`
+	SecurityPolicies    *[]string                                `json:"securityPolicyIds,omitempty"`
+	RequireApproverNote bool                                     `json:"requireApproverNote"`
 }
 
 func (c *Client) CreateDataAccessRequestRule(parentId string, input *DataAccessRequestRule) (*DataAccessRequestRule, error) {
