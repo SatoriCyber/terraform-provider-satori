@@ -33,15 +33,21 @@ type DataSet struct {
 	IncludeLocations []DataSetLocation `json:"includeLocations"`
 	ExcludeLocations []DataSetLocation `json:"excludeLocations"`
 	// data policy
-	PermissionsEnabled bool             `json:"permissionsEnabled"`
-	CustomPolicy       CustomPolicy     `json:"customPolicy"`
-	SecurityPolicies   SecurityPolicies `json:"defaultSecurityPolicies"`
+	PermissionsEnabled bool               `json:"permissionsEnabled"`
+	CustomPolicy       CustomPolicy       `json:"customPolicy"`
+	SecurityPolicies   SecurityPolicies   `json:"defaultSecurityPolicies"`
+	Approvers          []ApproverIdentity `json:"approvers"`
 }
 
 type DataSetOutput struct {
 	DataSet
 	Id           string `json:"id"`
 	DataPolicyId string `json:"dataPolicyId"`
+}
+
+type ApproverIdentity struct {
+	Id   string `json:"id"`
+	Type string `json:"type"`
 }
 
 func (c *Client) CreateDataSet(input *DataSet) (*DataSetOutput, error) {

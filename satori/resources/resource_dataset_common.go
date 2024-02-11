@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
@@ -69,6 +70,26 @@ func getDatasetDefinitionSchema() *schema.Schema {
 						Type: schema.TypeString,
 					},
 				},
+				"approvers": &schema.Schema{
+					Type:        schema.TypeList,
+					Optional:    true,
+					Description: "Identities of Satori users/groups that will be set as dataset approvers.",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"type": &schema.Schema{
+								Type:             schema.TypeString,
+								ValidateDiagFunc: ValidateApproverType,
+								Required:         true,
+								Description:      "Approver type, can be either GROUP or USER",
+							},
+							"id": &schema.Schema{
+								Type:        schema.TypeString,
+								Required:    true,
+								Description: "The ID of the approver entity",
+							},
+						},
+					},
+				},
 				"include_location": &schema.Schema{
 					Type:        schema.TypeList,
 					Optional:    true,
@@ -82,6 +103,21 @@ func getDatasetDefinitionSchema() *schema.Schema {
 					Elem:        getDatasetLocationResource(),
 				},
 			},
+		},
+	}
+}
+
+func ValidateApproverType(i interface{}, p cty.Path) diag.Diagnostics {
+
+	if i == "USER" || i == "GROUP" {
+		return diag.Diagnostics{}
+	}
+
+	return diag.Diagnostics{
+		diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Invalid value.",
+			Detail:   "Approver type MUST be either 'USER' or 'GROUP'",
 		},
 	}
 }
@@ -109,6 +145,22 @@ func createDataSet(d *schema.ResourceData, c *api.Client) (*api.DataSetOutput, e
 func resourceToDataset(d *schema.ResourceData) (*api.DataSet, error) {
 	out := api.DataSet{}
 	out.Name = d.Get("definition.0.name").(string)
+
+	if v, ok := d.GetOk("definition.0.approvers"); ok {
+		approversDefinition := v.([]interface{})
+		approversOutput := make([]api.ApproverIdentity, len(approversDefinition))
+		for i, approver := range approversDefinition {
+			tmp := approver.(map[string]interface{})
+			var mappedApprover api.ApproverIdentity
+			mappedApprover.Id = tmp["id"].(string)
+			mappedApprover.Type = tmp["type"].(string)
+			approversOutput[i] = mappedApprover
+		}
+		out.Approvers = approversOutput
+	} else {
+		out.Approvers = []api.ApproverIdentity{}
+	}
+
 	out.Description = d.Get("definition.0.description").(string)
 	if v, ok := d.GetOk("definition.0.owners"); ok {
 		owners := v.([]interface{})
@@ -370,6 +422,16 @@ func getDataSet(c *api.Client, d *schema.ResourceData) (*api.DataSetOutput, erro
 	definition["name"] = result.Name
 	definition["description"] = result.Description
 	definition["owners"] = result.OwnersIds
+
+	mappedApprovers := make([]interface{}, len(result.Approvers))
+
+	for i, approver := range result.Approvers {
+		approverMap := make(map[string]string)
+		approverMap["id"] = approver.Id
+		approverMap["type"] = approver.Type
+		mappedApprovers[i] = approverMap
+	}
+	definition["approvers"] = mappedApprovers
 
 	definition["include_location"] = locationsToResource(&result.IncludeLocations, d, "definition.0.include_location", RelationalLocation)
 	definition["exclude_location"] = locationsToResource(&result.ExcludeLocations, d, "definition.0.exclude_location", RelationalLocation)
