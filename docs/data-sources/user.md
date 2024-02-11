@@ -24,6 +24,18 @@ resource "satori_dataset" "dataset1" {
     #the service account must also be an owner to be able to modify settings beyond definition
     owners = [ "522fb8ab-8d7b-4498-b39d-6911e2839253", data.satori_user.data_steward1.id ]
 
+
+    approvers {
+        # Currently can be only IdP groups
+        type = "GROUP"
+        id   = "788680b7-461d-493a-a3d6-86e71fd01ff2"
+    }
+
+    approvers {
+        type = "USER"
+        id   = "3d174db4-4526-4469-2fda-46d0dd2a7f7d"
+    }
+
     include_location {
       datastore = "12345678-95cf-474f-a1d6-d5084810dd95"
     }
