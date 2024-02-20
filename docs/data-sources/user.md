@@ -36,6 +36,11 @@ resource "satori_dataset" "dataset1" {
         id   = "3d174db4-4526-4469-2fda-46d0dd2a7f7d"
     }
 
+    approvers {
+            type = "USER"
+            id   = data.satori_user.data_steward1.id
+        }
+
     include_location {
       datastore = "12345678-95cf-474f-a1d6-d5084810dd95"
     }
