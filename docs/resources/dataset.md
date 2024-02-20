@@ -30,6 +30,23 @@ resource "satori_dataset" "dataset1" {
     #the service account must also be an owner to be able to modify settings beyond definition
     owners = [ "522fb8ab-8d7b-4498-b39d-6911e2839253", data.satori_user.data_steward1.id ]
 
+
+    approvers {
+        # Currently can be only IdP groups
+        type = "GROUP"
+        id   = "788680b7-461d-493a-a3d6-86e71fd01ff2"
+    }
+
+    approvers {
+        type = "USER"
+        id   = "3d174db4-4526-4469-2fda-46d0dd2a7f7d"
+    }
+
+    approvers {
+            type = "USER"
+            id   = data.satori_user.data_steward1.id
+        }
+
     include_location {
       datastore = "12345678-95cf-474f-a1d6-d5084810dd95"
     }
@@ -260,10 +277,20 @@ Required:
 
 Optional:
 
+- **approvers** (Block List) Identities of Satori users/groups that will be set as dataset approvers. (see [below for nested schema](#nestedblock--definition--approvers))
 - **description** (String) Dataset description.
 - **exclude_location** (Block List) Location to exclude from dataset. (see [below for nested schema](#nestedblock--definition--exclude_location))
 - **include_location** (Block List) Location to include in dataset. (see [below for nested schema](#nestedblock--definition--include_location))
 - **owners** (List of String) IDs of Satori users that will be set as dataset owners.
+
+<a id="nestedblock--definition--approvers"></a>
+### Nested Schema for `definition.approvers`
+
+Required:
+
+- **id** (String) The ID of the approver entity
+- **type** (String) Approver type, can be either IdP GROUP or USER
+
 
 <a id="nestedblock--definition--exclude_location"></a>
 ### Nested Schema for `definition.exclude_location`
