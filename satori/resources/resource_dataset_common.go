@@ -80,7 +80,7 @@ func getDatasetDefinitionSchema() *schema.Schema {
 								Type:             schema.TypeString,
 								ValidateDiagFunc: ValidateApproverType,
 								Required:         true,
-								Description:      "Approver type, can be either GROUP or USER",
+								Description:      "Approver type, can be either IdP GROUP or USER",
 							},
 							"id": &schema.Schema{
 								Type:        schema.TypeString,
