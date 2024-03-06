@@ -148,6 +148,7 @@ Required:
 Optional:
 
 - **credentials** (Block List, Max: 1) Root user credentials (see [below for nested schema](#nestedblock--satori_auth_settings--credentials))
+- **enable_personal_access_token** (Boolean) Enables Satori Personal Access Token authentication. Defaults to `false`.
 - **enabled** (Boolean) Enables Satori Data Store authentication. Defaults to `false`.
 
 <a id="nestedblock--satori_auth_settings--credentials"></a>

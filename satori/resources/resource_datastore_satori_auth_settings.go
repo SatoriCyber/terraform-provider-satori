@@ -39,7 +39,14 @@ func GetSatoriAuthSettingsDefinitions() *schema.Schema {
 								Description: "Password of root user. This property is sensitive, and API does not return it in output. " +
 									"In order to bypass terraform update, use lifecycle.ignore_changes, see example.",
 							},
-						}}},
+						}},
+				},
+				EnablePersonalAccessToken: &schema.Schema{
+					Type:        schema.TypeBool,
+					Optional:    true,
+					Description: "Enables Satori Personal Access Token authentication.",
+					Default:     false,
+				},
 			},
 		},
 	}
