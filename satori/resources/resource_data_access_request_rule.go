@@ -55,6 +55,26 @@ func ResourceDataAccessRequestRule() *schema.Resource {
 				Description: "Require from the approver an `approver note` when approving the request created from the defined rule.",
 				Default:     false,
 			},
+			"approvers": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Identities of Satori users/IdP groups that will be set as access rule approvers. Once an access rule approver is defined, it is the ONLY entity that can approve the request generated from this access rule",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": &schema.Schema{
+							Type:             schema.TypeString,
+							ValidateDiagFunc: ValidateApproverType,
+							Required:         true,
+							Description:      "Approver type, can be either `GROUP` (IdP Group alone) or `USER`",
+						},
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The ID of the approver entity",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -101,6 +121,12 @@ func resourceToDataAccessRequestRule(d *schema.ResourceData) *api.DataAccessRequ
 	out.SecurityPolicies = resourceToDataAccessSecurityPolicies(d)
 
 	out.RequireApproverNote = d.Get("require_approver_note").(bool)
+
+	if v, ok := d.GetOk("approvers"); ok {
+		out.Approvers = approversInputToResource(v.([]interface{}))
+	} else {
+		out.Approvers = []api.ApproverIdentity{}
+	}
 
 	return &out
 }

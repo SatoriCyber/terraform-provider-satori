@@ -14,6 +14,17 @@ resource "satori_request_access_rule" "request_access1_dataset1" {
   }
   revoke_if_not_used_in_days = 90
   require_approver_note = true //default is false
+
+  // Optional to add approvers on an access-rule.
+  approvers {
+    type = "GROUP"
+    id   = "781246b7-461d-493a-a2d6-86f2e5w01ff2"
+  }
+
+  approvers {
+    type = "USER"
+    id   = "78dc2cb7-461d-493a-a2d6-86e71fv4v5d2"
+  }
 }
 
 resource "satori_request_access_rule" "request_access2_dataset1" {
@@ -30,7 +41,7 @@ resource "satori_request_access_rule" "request_access2_dataset1" {
   revoke_if_not_used_in_days = 90
   //dataset default security policies
   security_policies = [ ]
-  require_approver_note = false //optional, as default is false
+  require_approver_note = false // Optional, as default is false
 }
 
 resource "satori_request_access_rule" "request_access3_dataset1" {

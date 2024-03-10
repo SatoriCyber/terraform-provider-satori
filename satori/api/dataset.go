@@ -45,11 +45,6 @@ type DataSetOutput struct {
 	DataPolicyId string `json:"dataPolicyId"`
 }
 
-type ApproverIdentity struct {
-	Id   string `json:"id"`
-	Type string `json:"type"`
-}
-
 func (c *Client) CreateDataSet(input *DataSet) (*DataSetOutput, error) {
 	output := DataSetOutput{}
 	return &output, c.postJsonForAccount(DataSetApiPrefix, input, &output)
