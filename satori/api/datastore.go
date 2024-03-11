@@ -68,7 +68,7 @@ type NetworkPolicy struct {
 type SatoriAuthSettings struct {
 	Enabled                   bool        `json:"enabled,omitempty"`
 	Credentials               Credentials `json:"credentials,omitempty"`
-	EnablePersonalAccessToken bool        `json:"enablePersonalAccessToken"`
+	EnablePersonalAccessToken bool        `json:"enablePersonalAccessToken,omitempty"`
 }
 type Credentials struct {
 	Username string `json:"username,omitempty"`

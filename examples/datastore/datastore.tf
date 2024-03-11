@@ -54,6 +54,31 @@ resource "satori_datastore" "datastoreWithIgnorePasswordUpdate" {
   network_policy {}
 }
 
+// Example of creating a datastore with personal access token enabled
+// Personal access token is used to authenticate with the datastore using a personal access token instead of temporary credentials.
+// The personal access token requires the satori_auth_settings to be enabled. and also requires the Personal Access Token feature to be enabled for the account (Account Setting page on Satori platform).
+resource "satori_datastore" "datastoreWithPersonalAccessToken" {
+  name                     = "exampleDatastore"
+  hostname                 = "data.source.target.hostname"
+  dataaccess_controller_id = data.satori_data_access_controller.public_dac.id
+  type                     = "SNOWFLAKE"
+  origin_port              = 8081
+  satori_auth_settings {
+    enabled = true
+    credentials {
+      password = "*********"
+      username = "adminuser"
+    }
+    enable_personal_access_token = true
+  }
+  lifecycle {
+    ignore_changes = [
+      satori_auth_settings.0.credentials.0.password
+    ]
+  }
+  network_policy {}
+}
+
 resource "satori_datastore" "datastoreWithPrivateDac" {
   // lifecycle.ignore_changes should be used after first time creation in order to ignore password update as API does not return it.
   name                     = "exampleDatastore"

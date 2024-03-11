@@ -148,7 +148,7 @@ Required:
 Optional:
 
 - **credentials** (Block List, Max: 1) Root user credentials (see [below for nested schema](#nestedblock--satori_auth_settings--credentials))
-- **enable_personal_access_token** (Boolean) Enables Satori Personal Access Token authentication. Defaults to `false`.
+- **enable_personal_access_token** (Boolean) Enables Satori Personal Access Token authentication for this data store. to be able using personal access token for authentication to this data store - data store temporary credentials must be enabled and the current account should enabled the personal access token (see Account setting page in Satori application). Defaults to `false`.
 - **enabled** (Boolean) Enables Satori Data Store authentication. Defaults to `false`.
 
 <a id="nestedblock--satori_auth_settings--credentials"></a>
@@ -209,6 +209,31 @@ resource "satori_datastore" "datastoreWithIgnorePasswordUpdate" {
       password = "*********"
       username = "adminuser"
     }
+  }
+  lifecycle {
+    ignore_changes = [
+      satori_auth_settings.0.credentials.0.password
+    ]
+  }
+  network_policy {}
+}
+
+// Example of creating a datastore with personal access token enabled
+// Personal access token is used to authenticate with the datastore using a personal access token instead of temporary credentials.
+// The personal access token requires the satori_auth_settings to be enabled. and also requires the Personal Access Token feature to be enabled for the account (Account Setting page on Satori platform).
+resource "satori_datastore" "datastoreWithPersonalAccessToken" {
+  name                     = "exampleDatastore"
+  hostname                 = "data.source.target.hostname"
+  dataaccess_controller_id = data.satori_data_access_controller.public_dac.id
+  type                     = "SNOWFLAKE"
+  origin_port              = 8081
+  satori_auth_settings {
+    enabled = true
+    credentials {
+      password = "*********"
+      username = "adminuser"
+    }
+    enable_personal_access_token = true
   }
   lifecycle {
     ignore_changes = [

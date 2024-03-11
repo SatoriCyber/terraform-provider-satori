@@ -44,7 +44,7 @@ func GetSatoriAuthSettingsDefinitions() *schema.Schema {
 				EnablePersonalAccessToken: &schema.Schema{
 					Type:        schema.TypeBool,
 					Optional:    true,
-					Description: "Enables Satori Personal Access Token authentication.",
+					Description: "Enables Satori Personal Access Token authentication for this data store. to be able using personal access token for authentication to this data store - data store temporary credentials must be enabled and the current account should enabled the personal access token (see Account setting page in Satori application).",
 					Default:     false,
 				},
 			},
