@@ -148,7 +148,7 @@ Required:
 Optional:
 
 - **credentials** (Block List, Max: 1) Root user credentials (see [below for nested schema](#nestedblock--satori_auth_settings--credentials))
-- **enable_personal_access_token** (Boolean) Enables Satori Personal Access Token authentication for this data store. to be able using personal access token for authentication to this data store - data store temporary credentials must be enabled and the current account should enabled the personal access token (see Account setting page in Satori application). Defaults to `false`.
+- **enable_personal_access_token** (Boolean) Enables Satori Personal Access Token authentication for this data store. to be able using personal access token for authentication on this data store - data store temporary credentials must be enabled and personal access token feature should be enabled for the current account (see Account setting page in Satori platform). Defaults to `false`.
 - **enabled** (Boolean) Enables Satori Data Store authentication. Defaults to `false`.
 
 <a id="nestedblock--satori_auth_settings--credentials"></a>
@@ -196,7 +196,7 @@ resource "satori_datastore" "datastore0" {
   network_policy {}
 }
 
-resource "satori_datastore" "datastoreWithIgnorePasswordUpdate" {
+resource "satori_datastore" "datastore_with_ignore_password_update" {
   // lifecycle.ignore_changes should be used after first time creation in order to ignore password update as API does not return it.
   name                     = "exampleDatastore"
   hostname                 = "data.source.target.hostname"
@@ -221,8 +221,8 @@ resource "satori_datastore" "datastoreWithIgnorePasswordUpdate" {
 // Example of creating a datastore with personal access token enabled
 // Personal access token is used to authenticate with the datastore using a personal access token instead of temporary credentials.
 // The personal access token requires the satori_auth_settings to be enabled. and also requires the Personal Access Token feature to be enabled for the account (Account Setting page on Satori platform).
-resource "satori_datastore" "datastoreWithPersonalAccessToken" {
-  name                     = "exampleDatastore"
+resource "satori_datastore" "datastore_with_personal_access_token_enabled" {
+  name                     = "example_datastore_pat_enabled"
   hostname                 = "data.source.target.hostname"
   dataaccess_controller_id = data.satori_data_access_controller.public_dac.id
   type                     = "SNOWFLAKE"
@@ -243,7 +243,7 @@ resource "satori_datastore" "datastoreWithPersonalAccessToken" {
   network_policy {}
 }
 
-resource "satori_datastore" "datastoreWithPrivateDac" {
+resource "satori_datastore" "datastore_with_private_dac" {
   // lifecycle.ignore_changes should be used after first time creation in order to ignore password update as API does not return it.
   name                     = "exampleDatastore"
   hostname                 = "data.source.target.hostname"
@@ -258,7 +258,7 @@ resource "satori_datastore" "datastoreWithPrivateDac" {
   network_policy {}
 }
 
-resource "satori_datastore" "mongodbDatastore" {
+resource "satori_datastore" "mongodb_datastore" {
   name                     = "mongoExample"
   hostname                 = "mongo.example.mongodb.net"
   dataaccess_controller_id = data.satori_data_access_controller.public_dac.id
