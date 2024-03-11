@@ -40,6 +40,7 @@ var (
 	IpRanges                    = "ip_ranges"
 	IpRange                     = "ip_range"
 	SatoriHostname              = "satori_hostname"
+	EnablePersonalAccessToken   = "enable_personal_access_token"
 )
 var TreatAsMap = map[string]bool{
 	Exclusions:                  true,
