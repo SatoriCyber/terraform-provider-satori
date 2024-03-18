@@ -289,7 +289,7 @@ Optional:
 Required:
 
 - **id** (String) The ID of the approver entity
-- **type** (String) Approver type, can be either IdP GROUP or USER
+- **type** (String) Approver type, can be either `GROUP` (IdP Group alone) or `USER`
 
 
 <a id="nestedblock--definition--exclude_location"></a>

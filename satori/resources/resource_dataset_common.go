@@ -80,7 +80,7 @@ func getDatasetDefinitionSchema() *schema.Schema {
 								Type:             schema.TypeString,
 								ValidateDiagFunc: ValidateApproverType,
 								Required:         true,
-								Description:      "Approver type, can be either IdP GROUP or USER",
+								Description:      "Approver type, can be either `GROUP` (IdP Group alone) or `USER`",
 							},
 							"id": &schema.Schema{
 								Type:        schema.TypeString,
@@ -147,16 +147,7 @@ func resourceToDataset(d *schema.ResourceData) (*api.DataSet, error) {
 	out.Name = d.Get("definition.0.name").(string)
 
 	if v, ok := d.GetOk("definition.0.approvers"); ok {
-		approversDefinition := v.([]interface{})
-		approversOutput := make([]api.ApproverIdentity, len(approversDefinition))
-		for i, approver := range approversDefinition {
-			tmp := approver.(map[string]interface{})
-			var mappedApprover api.ApproverIdentity
-			mappedApprover.Id = tmp["id"].(string)
-			mappedApprover.Type = tmp["type"].(string)
-			approversOutput[i] = mappedApprover
-		}
-		out.Approvers = approversOutput
+		out.Approvers = approversInputToResource(v.([]interface{}))
 	} else {
 		out.Approvers = []api.ApproverIdentity{}
 	}

@@ -2,6 +2,7 @@ package resources
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/satoricyber/terraform-provider-satori/satori/api"
 	"regexp"
 	"sort"
 	"strings"
@@ -318,4 +319,16 @@ func getRelationalLocationResource() *schema.Resource {
 			},
 		},
 	}
+}
+
+func approversInputToResource(approvers []interface{}) []api.ApproverIdentity {
+	approversOutput := make([]api.ApproverIdentity, len(approvers))
+	for i, approver := range approvers {
+		tmp := approver.(map[string]interface{})
+		var mappedApprover api.ApproverIdentity
+		mappedApprover.Id = tmp["id"].(string)
+		mappedApprover.Type = tmp["type"].(string)
+		approversOutput[i] = mappedApprover
+	}
+	return approversOutput
 }

@@ -14,6 +14,7 @@ type DataAccessRequestRule struct {
 	UnusedTimeLimit     DataAccessUnusedTimeLimit                `json:"unusedTimeLimit"`
 	SecurityPolicies    *[]string                                `json:"securityPolicyIds,omitempty"`
 	RequireApproverNote bool                                     `json:"requireApproverNote"`
+	Approvers           []ApproverIdentity                       `json:"approvers"`
 }
 
 func (c *Client) CreateDataAccessRequestRule(parentId string, input *DataAccessRequestRule) (*DataAccessRequestRule, error) {
