@@ -25,6 +25,15 @@ resource "satori_request_access_rule" "request_access1_dataset1" {
     type = "USER"
     id   = "78dc2cb7-461d-493a-a2d6-86e71fv4v5d2"
   }
+
+  approvers {
+    type = "MANAGER"
+
+    // The MANAGER approver type does not manage ID vs Satori internal ID
+    // This is a placeholder as part of the schema required ID field
+    // Recommended: "" or "manager"
+    id   = "irrelevant value"
+  }
 }
 
 resource "satori_request_access_rule" "request_access2_dataset1" {

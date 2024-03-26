@@ -422,15 +422,9 @@ func getDataSet(c *api.Client, d *schema.ResourceData) (*api.DataSetOutput, erro
 	definition["description"] = result.Description
 	definition["owners"] = result.OwnersIds
 
-	mappedApprovers := make([]interface{}, len(result.Approvers))
+	resourceDataApprovers := d.Get("definition.0.approvers").([]interface{})
 
-	for i, approver := range result.Approvers {
-		approverMap := make(map[string]string)
-		approverMap["id"] = approver.Id
-		approverMap["type"] = approver.Type
-		mappedApprovers[i] = approverMap
-	}
-	definition["approvers"] = mappedApprovers
+	definition["approvers"] = approversToResource(&result.Approvers, &resourceDataApprovers, false)
 
 	definition["include_location"] = locationsToResource(&result.IncludeLocations, d, "definition.0.include_location", RelationalLocation)
 	definition["exclude_location"] = locationsToResource(&result.ExcludeLocations, d, "definition.0.exclude_location", RelationalLocation)

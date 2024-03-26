@@ -179,6 +179,19 @@ func resourceDataAccessRequestRuleRead(ctx context.Context, d *schema.ResourceDa
 		diag.FromErr(err)
 	}
 
+	resourceDataApprovers := make([]interface{}, 0)
+
+	if currentConfigurationApprovers, ok := d.GetOk("approvers"); ok {
+		currentConfigurationApproversAsMap := currentConfigurationApprovers.([]interface{})
+		resourceDataApprovers = approversToResource(&result.Approvers, &currentConfigurationApproversAsMap, true)
+	} else {
+		resourceDataApprovers = approversToResource(&result.Approvers, &resourceDataApprovers, false)
+	}
+
+	if err = d.Set("approvers", resourceDataApprovers); err != nil {
+		diag.FromErr(err)
+	}
+
 	return diags
 }
 

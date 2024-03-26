@@ -332,3 +332,39 @@ func approversInputToResource(approvers []interface{}) []api.ApproverIdentity {
 	}
 	return approversOutput
 }
+
+func approversToResource(approvers *[]api.ApproverIdentity, resourceDataApprovers *[]interface{}, shouldValidateManager bool) []interface{} {
+	mappedApprovers := make([]interface{}, len(*approvers))
+
+	hasManager := false
+	managerId := ""
+
+	if shouldValidateManager && resourceDataApprovers != nil && *resourceDataApprovers != nil {
+		// Extracting if the current defined resourceData has a manager
+		// If it has, we will use the managerId to set the approver id
+		// (managerId in terraform configuration file should NOT affect changes because it is being ignored in our implementation)
+
+		for _, approver := range *resourceDataApprovers {
+			approverAsMap := approver.(map[string]interface{})
+			if approverAsMap["type"] == "MANAGER" {
+				hasManager = true
+				managerId = approverAsMap["id"].(string)
+				break
+			}
+		}
+
+	}
+
+	for i, approver := range *approvers {
+		approverMap := make(map[string]string)
+		approverMap["type"] = approver.Type
+		if approver.Type == "MANAGER" && hasManager {
+			approverMap["id"] = managerId
+		} else {
+			approverMap["id"] = approver.Id
+		}
+		mappedApprovers[i] = approverMap
+	}
+
+	return mappedApprovers
+}
