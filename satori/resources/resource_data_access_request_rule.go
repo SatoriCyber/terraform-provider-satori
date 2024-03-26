@@ -62,8 +62,8 @@ func ResourceDataAccessRequestRule() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"type": &schema.Schema{
+							ValidateDiagFunc: ValidateApproverType(true),
 							Type:             schema.TypeString,
-							ValidateDiagFunc: ValidateApproverType,
 							Required:         true,
 							Description:      "Approver type, can be either `GROUP` (IdP Group alone) or `USER`",
 						},
