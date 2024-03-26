@@ -62,8 +62,8 @@ func ResourceDataAccessRequestRule() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"type": &schema.Schema{
+							ValidateDiagFunc: ValidateApproverType(true),
 							Type:             schema.TypeString,
-							ValidateDiagFunc: ValidateApproverType,
 							Required:         true,
 							Description:      "Approver type, can be either `GROUP` (IdP Group alone) or `USER`",
 						},
@@ -176,6 +176,19 @@ func resourceDataAccessRequestRuleRead(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if err := dataAccessSecurityPoliciesToResource(result.SecurityPolicies, d); err != nil {
+		diag.FromErr(err)
+	}
+
+	resourceDataApprovers := make([]interface{}, 0)
+
+	if currentConfigurationApprovers, ok := d.GetOk("approvers"); ok {
+		currentConfigurationApproversAsMap := currentConfigurationApprovers.([]interface{})
+		resourceDataApprovers = approversToResource(&result.Approvers, &currentConfigurationApproversAsMap, true)
+	} else {
+		resourceDataApprovers = approversToResource(&result.Approvers, &resourceDataApprovers, false)
+	}
+
+	if err = d.Set("approvers", resourceDataApprovers); err != nil {
 		diag.FromErr(err)
 	}
 
