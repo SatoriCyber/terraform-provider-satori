@@ -69,7 +69,7 @@ func ResourceDataAccessRequestRule() *schema.Resource {
 						},
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Optional:    true,
 							Description: "The ID of the approver entity",
 						},
 					},
@@ -179,14 +179,7 @@ func resourceDataAccessRequestRuleRead(ctx context.Context, d *schema.ResourceDa
 		diag.FromErr(err)
 	}
 
-	resourceDataApprovers := make([]interface{}, 0)
-
-	if currentConfigurationApprovers, ok := d.GetOk("approvers"); ok {
-		currentConfigurationApproversAsMap := currentConfigurationApprovers.([]interface{})
-		resourceDataApprovers = approversToResource(&result.Approvers, &currentConfigurationApproversAsMap, true)
-	} else {
-		resourceDataApprovers = approversToResource(&result.Approvers, &resourceDataApprovers, false)
-	}
+	resourceDataApprovers := approversToResource(&result.Approvers)
 
 	if err = d.Set("approvers", resourceDataApprovers); err != nil {
 		diag.FromErr(err)
