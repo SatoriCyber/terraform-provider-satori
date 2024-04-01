@@ -41,12 +41,8 @@ resource "satori_request_access_rule" "request_access1_dataset1" {
   }
 
   approvers {
+    // The MANAGER approver type should not have `id` field set for it.
     type = "MANAGER"
-
-    // The MANAGER approver type does not manage ID vs Satori internal ID
-    // This is a placeholder as part of the schema required ID field
-    // Recommended: "" or "manager"
-    id   = "irrelevant value"
   }
 }
 
