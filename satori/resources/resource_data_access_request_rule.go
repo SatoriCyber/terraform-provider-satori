@@ -70,7 +70,7 @@ func ResourceDataAccessRequestRule() *schema.Resource {
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "The ID of the approver entity",
+							Description: "The ID of the approver entity, when type is `MANAGER` this field must not be set.",
 						},
 					},
 				},

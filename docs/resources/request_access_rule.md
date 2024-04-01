@@ -131,8 +131,11 @@ Can not be changed after creation.
 
 Required:
 
-- **id** (String) The ID of the approver entity
 - **type** (String) Approver type, can be either `GROUP` (IdP Group alone) or `USER`
+
+Optional:
+
+- **id** (String) The ID of the approver entity, when type is `MANAGER` this field must not be set.
 
 
 <a id="nestedblock--expire_in"></a>
