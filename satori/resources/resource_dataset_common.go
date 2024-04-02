@@ -110,21 +110,23 @@ func getDatasetDefinitionSchema() *schema.Schema {
 func ValidateApproverType(enableManager bool) func(interface{}, cty.Path) diag.Diagnostics {
 	return func(i interface{}, p cty.Path) diag.Diagnostics {
 
-		if i == "USER" || i == "GROUP" || (enableManager && i == "MANAGER") {
+		if i == "USER" || i == "GROUP" || i == "DIRECTORY" || (enableManager && i == "MANAGER") {
 			return diag.Diagnostics{}
 		}
 
-		managerMessage := ""
+		message := "Approver type MUST be either 'USER', 'GROUP'"
 
 		if enableManager {
-			managerMessage = " or 'MANAGER'"
+			message = ", 'DIRECTORY' or 'MANAGER'"
+		} else {
+			message = message + " or 'DIRECTORY'"
 		}
 
 		return diag.Diagnostics{
 			diag.Diagnostic{
 				Severity: diag.Error,
 				Summary:  "Invalid value.",
-				Detail:   fmt.Sprintf("Approver type MUST be either 'USER' or 'GROUP'%s", managerMessage),
+				Detail:   message,
 			},
 		}
 	}
