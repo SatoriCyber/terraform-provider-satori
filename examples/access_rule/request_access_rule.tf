@@ -25,6 +25,11 @@ resource "satori_request_access_rule" "request_access1_dataset1" {
     type = "USER"
     id   = "78dc2cb7-461d-493a-a2d6-86e71fv4v5d2"
   }
+
+  approvers {
+    // The MANAGER approver type should not have `id` field set for it.
+    type = "MANAGER"
+  }
 }
 
 resource "satori_request_access_rule" "request_access2_dataset1" {

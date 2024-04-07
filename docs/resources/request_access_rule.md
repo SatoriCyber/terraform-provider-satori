@@ -39,6 +39,11 @@ resource "satori_request_access_rule" "request_access1_dataset1" {
     type = "USER"
     id   = "78dc2cb7-461d-493a-a2d6-86e71fv4v5d2"
   }
+
+  approvers {
+    // The MANAGER approver type should not have `id` field set for it.
+    type = "MANAGER"
+  }
 }
 
 resource "satori_request_access_rule" "request_access2_dataset1" {
@@ -122,8 +127,11 @@ Can not be changed after creation.
 
 Required:
 
-- **id** (String) The ID of the approver entity
 - **type** (String) Approver type, can be either `GROUP` (IdP Group alone) or `USER`
+
+Optional:
+
+- **id** (String) The ID of the approver entity, when type is `MANAGER` this field must not be set.
 
 
 <a id="nestedblock--expire_in"></a>

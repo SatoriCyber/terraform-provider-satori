@@ -78,7 +78,7 @@ func getDatasetDefinitionSchema() *schema.Schema {
 						Schema: map[string]*schema.Schema{
 							"type": &schema.Schema{
 								Type:             schema.TypeString,
-								ValidateDiagFunc: ValidateApproverType,
+								ValidateDiagFunc: ValidateApproverType(false),
 								Required:         true,
 								Description:      "Approver type, can be either `GROUP` (IdP Group alone) or `USER`",
 							},
@@ -107,18 +107,28 @@ func getDatasetDefinitionSchema() *schema.Schema {
 	}
 }
 
-func ValidateApproverType(i interface{}, p cty.Path) diag.Diagnostics {
+func ValidateApproverType(enableManager bool) func(interface{}, cty.Path) diag.Diagnostics {
+	return func(i interface{}, p cty.Path) diag.Diagnostics {
 
-	if i == "USER" || i == "GROUP" {
-		return diag.Diagnostics{}
-	}
+		if i == "USER" || i == "GROUP" || i == "DIRECTORY" || (enableManager && i == "MANAGER") {
+			return diag.Diagnostics{}
+		}
 
-	return diag.Diagnostics{
-		diag.Diagnostic{
-			Severity: diag.Error,
-			Summary:  "Invalid value.",
-			Detail:   "Approver type MUST be either 'USER' or 'GROUP'",
-		},
+		message := "Approver type MUST be either 'USER', 'GROUP'"
+
+		if enableManager {
+			message = ", 'DIRECTORY' or 'MANAGER'"
+		} else {
+			message = message + " or 'DIRECTORY'"
+		}
+
+		return diag.Diagnostics{
+			diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  "Invalid value.",
+				Detail:   message,
+			},
+		}
 	}
 }
 
@@ -414,15 +424,7 @@ func getDataSet(c *api.Client, d *schema.ResourceData) (*api.DataSetOutput, erro
 	definition["description"] = result.Description
 	definition["owners"] = result.OwnersIds
 
-	mappedApprovers := make([]interface{}, len(result.Approvers))
-
-	for i, approver := range result.Approvers {
-		approverMap := make(map[string]string)
-		approverMap["id"] = approver.Id
-		approverMap["type"] = approver.Type
-		mappedApprovers[i] = approverMap
-	}
-	definition["approvers"] = mappedApprovers
+	definition["approvers"] = approversToResource(&result.Approvers)
 
 	definition["include_location"] = locationsToResource(&result.IncludeLocations, d, "definition.0.include_location", RelationalLocation)
 	definition["exclude_location"] = locationsToResource(&result.ExcludeLocations, d, "definition.0.exclude_location", RelationalLocation)

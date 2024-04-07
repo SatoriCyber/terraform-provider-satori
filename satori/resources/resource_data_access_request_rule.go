@@ -62,15 +62,15 @@ func ResourceDataAccessRequestRule() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"type": &schema.Schema{
+							ValidateDiagFunc: ValidateApproverType(true),
 							Type:             schema.TypeString,
-							ValidateDiagFunc: ValidateApproverType,
 							Required:         true,
 							Description:      "Approver type, can be either `GROUP` (IdP Group alone) or `USER`",
 						},
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The ID of the approver entity",
+							Optional:    true,
+							Description: "The ID of the approver entity, when type is `MANAGER` this field must not be set.",
 						},
 					},
 				},
@@ -176,6 +176,12 @@ func resourceDataAccessRequestRuleRead(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if err := dataAccessSecurityPoliciesToResource(result.SecurityPolicies, d); err != nil {
+		diag.FromErr(err)
+	}
+
+	resourceDataApprovers := approversToResource(&result.Approvers)
+
+	if err = d.Set("approvers", resourceDataApprovers); err != nil {
 		diag.FromErr(err)
 	}
 

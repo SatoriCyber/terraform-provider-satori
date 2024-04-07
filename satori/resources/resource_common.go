@@ -327,8 +327,25 @@ func approversInputToResource(approvers []interface{}) []api.ApproverIdentity {
 		tmp := approver.(map[string]interface{})
 		var mappedApprover api.ApproverIdentity
 		mappedApprover.Id = tmp["id"].(string)
-		mappedApprover.Type = tmp["type"].(string)
+		if mappedApprover.Id != "MANAGER" {
+			mappedApprover.Type = tmp["type"].(string)
+		}
 		approversOutput[i] = mappedApprover
 	}
 	return approversOutput
+}
+
+func approversToResource(approvers *[]api.ApproverIdentity) []interface{} {
+	mappedApprovers := make([]interface{}, len(*approvers))
+
+	for i, approver := range *approvers {
+		approverMap := make(map[string]string)
+		approverMap["type"] = approver.Type
+		if approver.Type != "MANAGER" {
+			approverMap["id"] = approver.Id
+		}
+		mappedApprovers[i] = approverMap
+	}
+
+	return mappedApprovers
 }
