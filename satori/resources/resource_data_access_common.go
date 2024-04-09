@@ -1,6 +1,9 @@
 package resources
 
 import (
+	"fmt"
+	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
 )
@@ -31,11 +34,7 @@ func resourceDataAccessRevokeIfNotUsed() *schema.Schema {
 }
 
 func resourceDataAccessIdentity(isCelSupported bool) *schema.Schema {
-	var identityTypeDescription = "Identity type, valid types are: USER, IDP_GROUP, GROUP"
-	if isCelSupported {
-		identityTypeDescription += ", CEL"
-	}
-	identityTypeDescription += ", EVERYONE.\nCan not be changed after creation."
+	var identityTypeDescription = fmt.Sprintf("Identity type, valid types are: %s", validIdentityTypeList(isCelSupported))
 
 	var identityNameDescription = "User/group name for identity types of USER and IDP_GROUP"
 	if isCelSupported {
@@ -52,9 +51,10 @@ func resourceDataAccessIdentity(isCelSupported bool) *schema.Schema {
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"type": &schema.Schema{
-					Type:        schema.TypeString,
-					Required:    true,
-					Description: identityTypeDescription,
+					ValidateDiagFunc: validateIdentityType(isCelSupported),
+					Type:             schema.TypeString,
+					Required:         true,
+					Description:      identityTypeDescription,
 				},
 				"name": &schema.Schema{
 					Type:        schema.TypeString,
@@ -77,6 +77,43 @@ func resourceDataAccessIdentity(isCelSupported bool) *schema.Schema {
 	}
 }
 
+func validateIdentityType(isCelSupported bool) func(interface{}, cty.Path) diag.Diagnostics {
+	return func(i interface{}, p cty.Path) diag.Diagnostics {
+
+		if i == "USER" ||
+			i == "DB_USER" ||
+			i == "GROUP" ||
+			i == "IDP_GROUP" ||
+			i == "DATABRICKS_GROUP" ||
+			i == "DATABRICKS_SERVICE_PRINCIPAL" ||
+			i == "SNOWFLAKE_ROLE" ||
+			i == "EVERYONE" ||
+			(isCelSupported && i == "CEL") {
+			return diag.Diagnostics{}
+		}
+
+		identityTypeErrMsg := fmt.Sprintf("Invalid identity type, `%s`,valid types are: %s", i, validIdentityTypeList(isCelSupported))
+
+		return diag.Diagnostics{
+			diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  "Invalid value.",
+				Detail:   identityTypeErrMsg,
+			},
+		}
+	}
+}
+
+func validIdentityTypeList(isCelSupported bool) string {
+	identityTypeList := "USER, DB_USER, IDP_GROUP, GROUP, DATABRICKS_GROUP, DATABRICKS_SERVICE_PRINCIPAL, SNOWFLAKE_ROLE"
+	if isCelSupported {
+		identityTypeList += ", CEL"
+	}
+	identityTypeList += ", EVERYONE.\n"
+
+	return identityTypeList
+}
+
 func resourceDataAccessSecurityPolicies() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeList,
@@ -91,7 +128,6 @@ func resourceDataAccessSecurityPolicies() *schema.Schema {
 func resourceToIdentity(resourceIdentity map[string]interface{}) *api.DataAccessIdentity {
 	var identity api.DataAccessIdentity
 
-	identity.IdentityType = resourceIdentity["type"].(string)
 	identity.IdentityType = resourceIdentity["type"].(string)
 	identityName := resourceIdentity["name"].(string)
 	identityGroupId := resourceIdentity["group_id"].(string)
@@ -147,6 +183,7 @@ func dataAccessUnusedTimeLimitToResource(unusedTimeLimit *api.DataAccessUnusedTi
 func dataAccessIdentityToResource(in *api.DataAccessIdentity) *map[string]interface{} {
 	out := make(map[string]interface{})
 	out["type"] = in.IdentityType
+	out["name"] = in.Identity
 	switch in.IdentityType {
 	case "IDP_GROUP", "USER", "CEL":
 		out["name"] = in.Identity
