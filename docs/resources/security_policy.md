@@ -285,7 +285,7 @@ Required:
 
 Required:
 
-- **type** (String) Identity type, valid types are: USER, IDP_GROUP, GROUP, CEL, EVERYONE.
+- **type** (String) Identity type, valid types are: USER, DB_USER, IDP_GROUP, GROUP, DATABRICKS_GROUP, DATABRICKS_SERVICE_PRINCIPAL, SNOWFLAKE_ROLE, CEL, EVERYONE.
 Can not be changed after creation.
 
 Optional:
@@ -350,7 +350,7 @@ Required:
 
 Required:
 
-- **type** (String) Identity type, valid types are: USER, IDP_GROUP, GROUP, CEL, EVERYONE.
+- **type** (String) Identity type, valid types are: USER, DB_USER, IDP_GROUP, GROUP, DATABRICKS_GROUP, DATABRICKS_SERVICE_PRINCIPAL, SNOWFLAKE_ROLE, CEL, EVERYONE.
 Can not be changed after creation.
 
 Optional:

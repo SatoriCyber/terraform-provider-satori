@@ -109,7 +109,7 @@ func validIdentityTypeList(isCelSupported bool) string {
 	if isCelSupported {
 		identityTypeList += ", CEL"
 	}
-	identityTypeList += ", EVERYONE.\n"
+	identityTypeList += ", EVERYONE.\nCan not be changed after creation."
 
 	return identityTypeList
 }
