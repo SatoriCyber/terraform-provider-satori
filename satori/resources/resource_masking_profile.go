@@ -54,7 +54,7 @@ func ResourceMaskingProfile() *schema.Resource {
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Type. Can be one of [TRUNCATE, REPLACE_CHAR, REPLACE_STRING, HASH, EMAIL_PREFIX, EMAIL_SUFFIX, EMAIL_FULL, EMAIL_HASH, CREDIT_CARD_PREFIX, CREDIT_CARD_FULL, CREDIT_CARD_HASH, IP_SUFFIX, IP_FULL, IP_HASH, DATE_YEAR_ONLY, DATE_1970_AGAIN, NO_ACTION, REDACT, NUMBER_ZERO, NUMBER_ROUND, ...]",
+							Description: "Type. Can be one of [TRUNCATE, TRUNCATE_END, REPLACE_CHAR, REPLACE_STRING, HASH, EMAIL_PREFIX, EMAIL_SUFFIX, EMAIL_FULL, EMAIL_HASH, CREDIT_CARD_PREFIX, CREDIT_CARD_FULL, CREDIT_CARD_HASH, IP_SUFFIX, IP_FULL, IP_HASH, DATE_YEAR_ONLY, DATE_1970_AGAIN, NO_ACTION, REDACT, NUMBER_ZERO, NUMBER_ROUND, ...]",
 						},
 						"replacement": &schema.Schema{
 							Type:        schema.TypeString,
@@ -64,7 +64,7 @@ func ResourceMaskingProfile() *schema.Resource {
 						"truncate": &schema.Schema{
 							Type:        schema.TypeInt,
 							Optional:    true,
-							Description: "Truncate, relevant for: TRUNCATE.",
+							Description: "Truncate, relevant for: TRUNCATE, TRUNCATE_END.",
 						},
 					},
 				},
