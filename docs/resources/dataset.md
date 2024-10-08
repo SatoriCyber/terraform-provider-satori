@@ -501,3 +501,5 @@ Optional:
 - **priority** (Number) Dataset custom policy priority. Defaults to `100`.
 - **rules_yaml** (String) Custom policy rules YAML.
 - **tags_yaml** (String) Custom policy tags YAML.
+
+~> **Note: The dataset resource is stateful:** The dataset resource is stateful, deletion or terraform resource name change should be avoided.
