@@ -10,6 +10,7 @@
 # in `goreleaser` to indicate this is being used in a non-interactive mode.
 #
 name: release
+version: 2
 on:
   push:
     tags:
