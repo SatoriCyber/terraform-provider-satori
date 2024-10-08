@@ -20,3 +20,5 @@ See Read-Only section and **satori_request_access_rule** Resource examples.
 {{tffile "examples/dataset/dataset.tf"}}
 
 {{ .SchemaMarkdown | trimspace }}
+
+~> **Note: The dataset resource is stateful:** The dataset resource is stateful, deletion or terraform resource name change should be avoided.
