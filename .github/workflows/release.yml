@@ -10,7 +10,6 @@
 # in `goreleaser` to indicate this is being used in a non-interactive mode.
 #
 name: release
-version: 2
 on:
   push:
     tags:
@@ -42,7 +41,7 @@ jobs:
         name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2.5.0
         with:
-          version: latest
+          version: ~> "~> v2"
           args: release --clean
         env:
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
