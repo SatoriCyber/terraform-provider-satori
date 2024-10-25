@@ -1,0 +1,7 @@
+users:
+  - name: Jerry Seinfeld
+    email: jerry.seinfeld@acme.com
+    schema: jseinfeld
+  - name: George Costanza
+    email: george.costanza@acme.com
+    schema: gcostanza
