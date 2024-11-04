@@ -34,7 +34,9 @@ type DataStoreOutput struct {
 }
 
 type DataStoreSettings struct {
-	DeploymentType string `json:"deploymentType,omitempty"`
+	DeploymentType   string `json:"deploymentType,omitempty"`
+	AwsHostedZoneId  string `json:"awsHostedZoneId,omitempty"`
+	AwsServerRoleArn string `json:"awsServiceRoleArn,omitempty"`
 }
 
 type UnassociatedQueriesCategory struct {

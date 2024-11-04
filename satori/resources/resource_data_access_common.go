@@ -183,13 +183,12 @@ func dataAccessUnusedTimeLimitToResource(unusedTimeLimit *api.DataAccessUnusedTi
 func dataAccessIdentityToResource(in *api.DataAccessIdentity) *map[string]interface{} {
 	out := make(map[string]interface{})
 	out["type"] = in.IdentityType
-	out["name"] = in.Identity
+
 	switch in.IdentityType {
-	case "IDP_GROUP", "USER", "CEL":
-		out["name"] = in.Identity
 	case "GROUP":
 		out["group_id"] = in.Identity
-	default:
+	default: // "IDP_GROUP", "USER", "CEL" and others
+		out["name"] = in.Identity
 	}
 	return &out
 }

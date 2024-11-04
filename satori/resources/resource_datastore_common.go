@@ -18,6 +18,8 @@ var (
 	BaselineSecurityPolicy      = "baseline_security_policy"
 	Type                        = "type"
 	DeploymentType              = "deployment_type"
+	AwsHostedZoneId             = "aws_hosted_zone_id"
+	AwsServerRoleArn            = "aws_service_role_arn"
 	UnassociatedQueriesCategory = "unassociated_queries_category"
 	Credentials                 = "credentials"
 	Enabled                     = "enabled"
@@ -210,6 +212,15 @@ func getDataStore(c *api.Client, d *schema.ResourceData) (*api.DataStoreOutput, 
 	if len(sasMap) > 0 { // empty result, skip it.
 		d.Set(SatoriAuthSettings, []map[string]interface{}{sasMap})
 	}
+
+	dsSettingsMap, err := GetSatoriDatastoreSettingsDatastoreOutput(result, err)
+	if err != nil {
+		return nil, err
+	}
+	if len(dsSettingsMap) > 0 { // empty result, skip it.
+		d.Set(DataStoreSettings, []map[string]interface{}{dsSettingsMap})
+	}
+
 	return result, err
 }
 
