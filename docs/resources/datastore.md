@@ -96,6 +96,8 @@ Required:
 
 Optional:
 
+- **aws_hosted_zone_id** (String) MongoDB AWS Hosted Zone ID, The Hosted AWS DNS Zone created for mapping MongoDB SRV records to Satori.
+- **aws_service_role_arn** (String) MongoDB AWS Service Role ARN, The IAM role ARN assumed by the DAC and used for updating records in the hosted DNS zone.
 - **deployment_type** (String) MongoDB deployment type, for now supports only mongodb+srv and mongodb deployment
 
 

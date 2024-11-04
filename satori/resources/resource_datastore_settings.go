@@ -18,6 +18,16 @@ func GetDataStoreSettingsDefinition() *schema.Schema {
 					Optional:    true,
 					Description: "MongoDB deployment type, for now supports only mongodb+srv and mongodb deployment",
 				},
+				AwsHostedZoneId: {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "MongoDB AWS Hosted Zone ID, The Hosted AWS DNS Zone created for mapping MongoDB SRV records to Satori.",
+				},
+				AwsServerRoleArn: {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "MongoDB AWS Service Role ARN, The IAM role ARN assumed by the DAC and used for updating records in the hosted DNS zone.",
+				},
 			},
 		},
 	}
@@ -35,4 +45,15 @@ func DataStoreSettingsToResource(in []interface{}) (*api.DataStoreSettings, erro
 		}
 	}
 	return &dataStoreSettings, nil
+}
+
+func GetSatoriDatastoreSettingsDatastoreOutput(result *api.DataStoreOutput, err error) (map[string]interface{}, error) {
+	var inInterface map[string]interface{}
+	inJson, _ := json.Marshal(result.DataStoreSettings)
+	err = json.Unmarshal(inJson, &inInterface)
+	if err != nil {
+		return nil, err
+	}
+	tfMap := biTfApiConverter(inInterface, false)
+	return tfMap, nil
 }
