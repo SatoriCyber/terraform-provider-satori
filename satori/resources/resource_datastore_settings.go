@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
-	"log"
 )
 
 func GetDataStoreSettingsDefinition() *schema.Schema {
@@ -91,7 +90,6 @@ func DataStoreSettingsToResource(in []interface{}) (*api.DataStoreSettings, erro
 	if mapDataStoreSettings != nil {
 		tfMap := biTfApiConverter(mapDataStoreSettings, true)
 		jsonOutput, _ := json.Marshal(tfMap)
-		log.Printf("jsonOutput: %s", jsonOutput)
 		err := json.Unmarshal(jsonOutput, &dataStoreSettings)
 		if err != nil {
 			return nil, err
