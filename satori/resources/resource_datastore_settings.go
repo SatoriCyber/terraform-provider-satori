@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
+	"log"
 )
 
 func GetDataStoreSettingsDefinition() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeList,
 		Optional:    true,
-		Description: "Settings for a Data Store (may be unique per Data Store)",
+		Description: "Settings for a MongoDB Data Store type",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				DeploymentType: {
@@ -33,12 +34,64 @@ func GetDataStoreSettingsDefinition() *schema.Schema {
 	}
 }
 
+func GetDatabricksSettingsDefinition() *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeList,
+		Optional:    true,
+		Description: "Settings for a Databricks Data Store type",
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				DatabricksAccountId: {
+					Type:        schema.TypeString,
+					Required:    true,
+					Description: "Account ID",
+				},
+				DatabricksWarehouseId: {
+					Type:        schema.TypeString,
+					Required:    true,
+					Description: "SQL Warehouse ID",
+				},
+				Credentials: GetDatabricksCredentialsDefinition(),
+			},
+		},
+	}
+}
+
+func GetDatabricksCredentialsDefinition() *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeList,
+		Required:    true,
+		Description: "Credentials for Databricks Data Store type",
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				Type: {
+					Type:        schema.TypeString,
+					Required:    true,
+					Description: "Credentials type, user `AWS_SERVICE_PRINCIPAL_TOKEN` for AWS Service Principal Authentication",
+				},
+				DatabricksClientId: {
+					Type:        schema.TypeString,
+					Required:    true,
+					Description: "Application (client) ID",
+				},
+				DatabricksClientSecret: {
+					Type:        schema.TypeString,
+					Sensitive:   true,
+					Required:    true,
+					Description: "Client secret value",
+				},
+			},
+		},
+	}
+}
+
 func DataStoreSettingsToResource(in []interface{}) (*api.DataStoreSettings, error) {
 	var dataStoreSettings api.DataStoreSettings
 	mapDataStoreSettings := extractMapFromInterface(in)
 	if mapDataStoreSettings != nil {
 		tfMap := biTfApiConverter(mapDataStoreSettings, true)
 		jsonOutput, _ := json.Marshal(tfMap)
+		log.Printf("jsonOutput: %s", jsonOutput)
 		err := json.Unmarshal(jsonOutput, &dataStoreSettings)
 		if err != nil {
 			return nil, err
