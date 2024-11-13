@@ -36,6 +36,7 @@ var (
 	NetworkPolicy               = "network_policy"
 	SatoriAuthSettings          = "satori_auth_settings"
 	DataStoreSettings           = "datastore_settings"
+	DatabricksSettings          = "databricks_settings"
 	AllowedRules                = "allowed_rules"
 	BlockedRules                = "blocked_rules"
 	Note                        = "note"
@@ -43,6 +44,10 @@ var (
 	IpRange                     = "ip_range"
 	SatoriHostname              = "satori_hostname"
 	EnablePersonalAccessToken   = "enable_personal_access_token"
+	DatabricksAccountId         = "account_id"
+	DatabricksWarehouseId       = "warehouse_id"
+	DatabricksClientId          = "client_id"
+	DatabricksClientSecret      = "client_secret"
 )
 var TreatAsMap = map[string]bool{
 	Exclusions:                  true,
@@ -109,6 +114,7 @@ func getDataStoreDefinitionSchema() map[string]*schema.Schema {
 		BaselineSecurityPolicy: GetBaseLinePolicyDefinition(),
 		NetworkPolicy:          GetNetworkPolicyDefinition(),
 		DataStoreSettings:      GetDataStoreSettingsDefinition(),
+		DatabricksSettings:     GetDatabricksSettingsDefinition(),
 	}
 }
 func createDataStore(d *schema.ResourceData, c *api.Client) (*api.DataStoreOutput, error) {
@@ -133,6 +139,7 @@ func createDataStore(d *schema.ResourceData, c *api.Client) (*api.DataStoreOutpu
 // convert terraform resource defs into datastore type //
 func resourceToDataStore(d *schema.ResourceData) (*api.DataStore, error) {
 	out := api.DataStore{}
+	dataStoreType := d.Get("type").(string)
 
 	baselineSecurityPolicyToResource, err := BaselineSecurityPolicyToResource(d.Get("baseline_security_policy").([]interface{}))
 	if err != nil {
@@ -149,9 +156,18 @@ func resourceToDataStore(d *schema.ResourceData) (*api.DataStore, error) {
 		return nil, err
 	}
 
-	dataStoreSettingsToResource, err := DataStoreSettingsToResource(d.Get(DataStoreSettings).([]interface{}))
-	if err != nil {
-		return nil, err
+	var dataStoreSettingsToResource *api.DataStoreSettings
+
+	if dataStoreType == "DATABRICKS" {
+		dataStoreSettingsToResource, err = DataStoreSettingsToResource(d.Get(DatabricksSettings).([]interface{}))
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		dataStoreSettingsToResource, err = DataStoreSettingsToResource(d.Get(DataStoreSettings).([]interface{}))
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	out.Name = d.Get("name").(string)
@@ -160,7 +176,8 @@ func resourceToDataStore(d *schema.ResourceData) (*api.DataStore, error) {
 	out.CustomIngressPort = d.Get("custom_ingress_port").(int)
 	out.DataAccessControllerId = d.Get("dataaccess_controller_id").(string)
 	out.ProjectIds = convertStringSet(d.Get("project_ids").(*schema.Set))
-	out.Type = d.Get("type").(string)
+
+	out.Type = dataStoreType
 	out.BaselineSecurityPolicy = baselineSecurityPolicyToResource
 	out.NetworkPolicy = networkPolicyToResource
 	out.SatoriAuthSettings = satoriAuthSettingsToResource
@@ -183,7 +200,8 @@ func getDataStore(c *api.Client, d *schema.ResourceData) (*api.DataStoreOutput, 
 	d.Set(Name, result.Name)
 	d.Set(Hostname, result.Hostname)
 	d.Set(SatoriHostname, result.SatoriHostname)
-	d.Set(Type, result.Type)
+	datastoreType := result.Type
+	d.Set(Type, datastoreType)
 	d.Set(OriginPort, result.OriginPort)
 	d.Set(CustomIngressPort, result.CustomIngressPort)
 	d.Set(DataAccessControllerId, result.DataAccessControllerId)
@@ -218,9 +236,13 @@ func getDataStore(c *api.Client, d *schema.ResourceData) (*api.DataStoreOutput, 
 		return nil, err
 	}
 	if len(dsSettingsMap) > 0 { // empty result, skip it.
-		d.Set(DataStoreSettings, []map[string]interface{}{dsSettingsMap})
-	}
+		if datastoreType == "DATABRICKS" {
+			d.Set(DatabricksSettings, []map[string]interface{}{dsSettingsMap})
+		} else {
+			d.Set(DataStoreSettings, []map[string]interface{}{dsSettingsMap})
 
+		}
+	}
 	return result, err
 }
 

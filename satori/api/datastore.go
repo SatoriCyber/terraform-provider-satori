@@ -34,9 +34,18 @@ type DataStoreOutput struct {
 }
 
 type DataStoreSettings struct {
-	DeploymentType   string `json:"deploymentType,omitempty"`
-	AwsHostedZoneId  string `json:"awsHostedZoneId,omitempty"`
-	AwsServerRoleArn string `json:"awsServiceRoleArn,omitempty"`
+	DeploymentType        string                `json:"deploymentType,omitempty"`
+	AwsHostedZoneId       string                `json:"awsHostedZoneId,omitempty"`
+	AwsServerRoleArn      string                `json:"awsServiceRoleArn,omitempty"`
+	DatabricksAccountId   string                `json:"accountId,omitempty"`
+	DatabricksWarehouseId string                `json:"warehouseId,omitempty"`
+	Credentials           *DataStoreCredentials `json:"credentials,omitempty"`
+}
+
+type DataStoreCredentials struct {
+	Type     string `json:"type,omitempty"`         // One AWS_SERVICE_PRINCIPAL_TOKEN type is supported for terraform
+	ClientId string `json:"clientId,omitempty"`     // for AWS_SERVICE_PRINCIPAL_TOKEN
+	Password string `json:"clientSecret,omitempty"` // for AWS_SERVICE_PRINCIPAL_TOKEN
 }
 
 type UnassociatedQueriesCategory struct {
