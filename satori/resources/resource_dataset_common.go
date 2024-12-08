@@ -167,6 +167,9 @@ func resourceToDataset(d *schema.ResourceData) (*api.DataSet, error) {
 		owners := v.([]interface{})
 		outOwners := make([]string, len(owners))
 		for i, owner := range owners {
+			if owner == nil {
+				return nil, fmt.Errorf("owner can't be empty or null")
+			}
 			outOwners[i] = owner.(string)
 		}
 		out.OwnersIds = outOwners
@@ -185,7 +188,13 @@ func resourceToDataset(d *schema.ResourceData) (*api.DataSet, error) {
 	out.ExcludeLocations = *excludeLocationOutput
 
 	out.CustomPolicy = *resourceToCustomPolicy(d)
-	out.SecurityPolicies = *resourceToSecurityPolicies(d)
+
+	securityPolicies, err := resourceToSecurityPolicies(d)
+	if err != nil {
+		return nil, err
+	}
+	out.SecurityPolicies = *securityPolicies
+
 	out.PermissionsEnabled = (*resourceToAccessControl(d)).AccessControlEnabled
 
 	return &out, nil
@@ -221,7 +230,10 @@ func resourceToDatasetLocation(inElement map[string]interface{}, d *schema.Resou
 		inLocations := inElement[RelationalLocation].([]interface{})
 		if len(inLocations) > 0 {
 			var location api.DataSetGenericLocation
-			resourceToGenericLocation(&location, inLocations, RelationalLocationType)
+			err := resourceToGenericLocation(&location, inLocations, RelationalLocationType)
+			if err != nil {
+				return nil, err
+			}
 			outElement.Location = &location
 		}
 	} else if len(inElement[Location].([]interface{})) > 0 { // new field
@@ -231,8 +243,9 @@ func resourceToDatasetLocation(inElement map[string]interface{}, d *schema.Resou
 			err := resourceToLocation(&location, inLocations, false)
 			if err != nil {
 				return nil, err
+			} else {
+				outElement.Location = &location
 			}
-			outElement.Location = &location
 		}
 	}
 	return &outElement, nil
@@ -271,7 +284,7 @@ func resourceToLocation(location *api.DataSetGenericLocation, locationElem []int
 	if err != nil {
 		return err
 	}
-
+	log.Printf("resourceToLocation: %s", inLocationElem)
 	if len(inLocationElem[RelationalLocation].([]interface{})) > 0 {
 		inLocations := inLocationElem[RelationalLocation].([]interface{})
 		if len(inLocations) > 0 {
@@ -279,7 +292,10 @@ func resourceToLocation(location *api.DataSetGenericLocation, locationElem []int
 			if isTableType {
 				locationType = RelationalTableLocationType
 			}
-			resourceToGenericLocation(location, inLocations, locationType)
+			err := resourceToGenericLocation(location, inLocations, locationType)
+			if err != nil {
+				return fmt.Errorf("%s in %s", err.Error(), RelationalLocation)
+			}
 		}
 	} else if len(inLocationElem[MySqlLocation].([]interface{})) > 0 {
 		inLocations := inLocationElem[MySqlLocation].([]interface{})
@@ -288,7 +304,10 @@ func resourceToLocation(location *api.DataSetGenericLocation, locationElem []int
 			if isTableType {
 				locationType = MySqlTableLocationType
 			}
-			resourceToGenericLocation(location, inLocations, locationType)
+			err := resourceToGenericLocation(location, inLocations, locationType)
+			if err != nil {
+				return fmt.Errorf("%s in %s", err.Error(), MySqlLocation)
+			}
 		}
 	} else if len(inLocationElem[AthenaLocation].([]interface{})) > 0 {
 		inLocations := inLocationElem[AthenaLocation].([]interface{})
@@ -297,7 +316,10 @@ func resourceToLocation(location *api.DataSetGenericLocation, locationElem []int
 			if isTableType {
 				locationType = AthenaTableLocationType
 			}
-			resourceToGenericLocation(location, inLocations, locationType)
+			err := resourceToGenericLocation(location, inLocations, locationType)
+			if err != nil {
+				return fmt.Errorf("%s in %s", err.Error(), AthenaLocation)
+			}
 		}
 	} else if len(inLocationElem[MongoLocation].([]interface{})) > 0 {
 		inLocations := inLocationElem[MongoLocation].([]interface{})
@@ -306,7 +328,10 @@ func resourceToLocation(location *api.DataSetGenericLocation, locationElem []int
 			if isTableType {
 				locationType = MongoTableLocationType
 			}
-			resourceToGenericLocation(location, inLocations, locationType)
+			err := resourceToGenericLocation(location, inLocations, locationType)
+			if err != nil {
+				return fmt.Errorf("%s in %s", err.Error(), MongoLocation)
+			}
 		}
 	} else if len(inLocationElem[S3Location].([]interface{})) > 0 {
 		inLocations := inLocationElem[S3Location].([]interface{})
@@ -315,7 +340,10 @@ func resourceToLocation(location *api.DataSetGenericLocation, locationElem []int
 			if isTableType {
 				locationType = S3TableLocationType
 			}
-			resourceToGenericLocation(location, inLocations, locationType)
+			err := resourceToGenericLocation(location, inLocations, locationType)
+			if err != nil {
+				return fmt.Errorf("%s in %s", err.Error(), S3Location)
+			}
 		}
 	}
 	return nil
@@ -347,8 +375,14 @@ func checkThatOnlyOneLocationTypeExists(inLocationElem map[string]interface{}) e
 	return nil
 }
 
-func resourceToGenericLocation(location *api.DataSetGenericLocation, inLocations []interface{}, locationType string) {
+func resourceToGenericLocation(location *api.DataSetGenericLocation, inLocations []interface{}, locationType string) error {
 	location.Type = locationType
+
+	if inLocations == nil || inLocations[0] == nil {
+		log.Printf("inLocations is nil: %s", inLocations)
+		return fmt.Errorf("at least one location has contain value")
+	}
+
 	inLocation := inLocations[0].(map[string]interface{})
 	log.Printf("In location: %s", inLocation)
 
@@ -407,6 +441,7 @@ func resourceToGenericLocation(location *api.DataSetGenericLocation, inLocations
 		}
 	}
 	log.Printf("Out location: %s", location)
+	return nil
 }
 
 func getDataSet(c *api.Client, d *schema.ResourceData) (*api.DataSetOutput, error) {

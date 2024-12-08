@@ -186,7 +186,8 @@ func resourceToClassifier(d *schema.ResourceData) (*api.TaxonomyClassifier, erro
 		}
 		if _, ok := d.GetOk("custom_config.0.values"); ok {
 			var values api.TaxonomyClassifierValues
-			values.Values = getStringListProp("custom_config.0.values", d)
+			valuesConfig, _ := getStringListProp("custom_config.0.values", d)
+			values.Values = valuesConfig
 			values.CaseInsensitive = caseInsensitive
 			out.Config.Values = &values
 		} else if v, ok := d.GetOk("custom_config.0.value_pattern"); ok {
@@ -199,9 +200,11 @@ func resourceToClassifier(d *schema.ResourceData) (*api.TaxonomyClassifier, erro
 		}
 	}
 
-	out.Config.AdditionalCategories = *getStringListProp("additional_satori_categories", d)
+	additionalSatoiCategories, _ := getStringListProp("additional_satori_categories", d)
+	out.Config.AdditionalCategories = *additionalSatoiCategories
 
-	out.Scope.DatasetIds = *getStringListProp("scope.0.datasets", d)
+	scopeDataset, _ := getStringListProp("scope.0.datasets", d)
+	out.Scope.DatasetIds = *scopeDataset
 	locationOutput, err := resourceToLocations(d, "scope.0.include_location", false)
 	if err != nil {
 		return nil, err

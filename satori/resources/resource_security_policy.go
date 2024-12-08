@@ -485,7 +485,10 @@ func resourceToRowLevelSecurityRule(raw interface{}, rules *[]api.RowLevelSecuri
 
 	if len(filter[RLSRuleFilterLocationPrefix].([]interface{})) > 0 { // deprecated field
 		locationPrefix := filter[RLSRuleFilterLocationPrefix].([]interface{})
-		resourceToGenericLocation(&location, locationPrefix, RelationalTableLocationType)
+		err := resourceToGenericLocation(&location, locationPrefix, RelationalTableLocationType)
+		if err != nil {
+			return err
+		}
 	} else if len(filter[Location].([]interface{})) > 0 { // new field
 		locationField := filter[Location].([]interface{})
 		err := resourceToLocation(&location, locationField, true)

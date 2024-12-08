@@ -1,8 +1,10 @@
 package resources
 
 import (
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
+	"log"
 	"regexp"
 	"sort"
 	"strings"
@@ -123,17 +125,21 @@ func setMapProp(in *map[string]interface{}, prop string, d *schema.ResourceData)
 	return nil
 }
 
-func getStringListProp(prop string, d *schema.ResourceData) *[]string {
+func getStringListProp(prop string, d *schema.ResourceData) (*[]string, error) {
 	if raw, ok := d.GetOk(prop); ok {
 		in := raw.([]interface{})
 		list := make([]string, len(in))
 		for i, v := range in {
+			log.Printf("getStringListProp, v=: %s", v)
+			if v == nil {
+				return nil, fmt.Errorf("can't be empty")
+			}
 			list[i] = v.(string)
 		}
-		return &list
+		return &list, nil
 	}
 	list := make([]string, 0)
-	return &list
+	return &list, nil
 }
 
 func getDatasetLocationResource() *schema.Resource {
