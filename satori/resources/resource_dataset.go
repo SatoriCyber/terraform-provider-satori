@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
@@ -107,10 +108,14 @@ func resourceToAccessControl(d *schema.ResourceData) *api.AccessControl {
 	return &out
 }
 
-func resourceToSecurityPolicies(d *schema.ResourceData) *api.SecurityPolicies {
+func resourceToSecurityPolicies(d *schema.ResourceData) (*api.SecurityPolicies, error) {
 	out := api.SecurityPolicies{}
-	out.Ids = *getStringListProp("security_policies", d)
-	return &out
+	ids, err := getStringListProp("security_policies", d)
+	if err != nil {
+		return nil, fmt.Errorf("%s %s", "values in security_policies:", err.Error())
+	}
+	out.Ids = *ids
+	return &out, nil
 }
 
 func resourceDataSetRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
