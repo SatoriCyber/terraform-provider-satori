@@ -3,8 +3,9 @@ package api
 const DataSetApiPrefix = "/api/v1/dataset"
 
 type DataSetLocation struct {
-	DataStoreId string                  `json:"dataStoreId"`
-	Location    *DataSetGenericLocation `json:"location,omitempty"`
+	DataStoreId  string                  `json:"dataStoreId"`
+	Location     *DataSetGenericLocation `json:"location,omitempty"`
+	LocationPath []LocationPath          `json:"locationPath,omitempty"`
 }
 
 // DataSetGenericLocation
@@ -24,6 +25,11 @@ type DataSetGenericLocation struct {
 	Collection *string `json:"collection,omitempty"`
 	Bucket     *string `json:"bucket,omitempty"`
 	ObjectKey  *string `json:"objectKey,omitempty"`
+}
+
+type LocationPath struct {
+	Name string `json:"name"`
+	Type string `json:"type,omitempty"`
 }
 
 type DataSet struct {

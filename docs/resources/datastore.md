@@ -184,6 +184,10 @@ Required:
 
 ## Example Usage
 
+### Example Usage
+
+### Snowflake Example
+
 ```terraform
 locals {
   dataaccess_controller_id = "<assigned dataaccess_controller_id>"
@@ -297,13 +301,16 @@ output "datastore_created_id" {
   value = satori_datastore.datastore0.id
 }
 ```
+
+### BigQuery Example
+
 ```terraform
 locals {
   dataaccess_controller_id = "<assigned dataaccess_controller_id>"
 }
 
 resource "satori_datastore" "datastore0" {
-  name = "exampleDatastore"
+  name = "exampleDatastoreBigQuery"
 
   dataaccess_controller_id = local.dataaccess_controller_id
   # data source specific connection settings
@@ -365,6 +372,9 @@ output "datastore_created_id" {
   value = satori_datastore.datastore0.id
 }
 ```
+
+### PostgreSQL Example
+
 ```terraform
 locals {
   dataaccess_controller_id = "<assigned dataaccess_controller_id>"
@@ -440,6 +450,9 @@ output "datastore_created_id" {
   value = satori_datastore.datastore0.id
 }
 ```
+
+### Databricks Example
+
 ```terraform
 locals {
   dataaccess_controller_id = "<assigned dataaccess_controller_id>"

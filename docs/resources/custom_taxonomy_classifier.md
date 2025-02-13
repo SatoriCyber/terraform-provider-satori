@@ -76,8 +76,10 @@ Required:
 
 Optional:
 
-- **location** (Block List, Max: 1) Location for a data store. Can include only one location type field from the above: relational_location, mysql_location, athena_location, mongo_location and s3_location . Conflicts with 'relational_location' field. (see [below for nested schema](#nestedblock--scope--include_location--location))
-- **relational_location** (Block List, Max: 1, Deprecated) Location for a relational data store. Conflicts with 'location' field. The 'relational_location' field has been deprecated. Please use the 'location' field instead. (see [below for nested schema](#nestedblock--scope--include_location--relational_location))
+- **location** (Block List, Max: 1, Deprecated) Location for a data store. Can include only one location type field from the above: relational_location, mysql_location, athena_location, mongo_location and s3_location . Conflicts with 'location_path', 'location_parts' and 'location_parts_full' fields. The 'location' field has been deprecated. Please use the 'location_path', `location_parts` or `location_parts_full` fields instead. (see [below for nested schema](#nestedblock--scope--include_location--location))
+- **location_parts** (List of String) The part separated location path in the data store. Includes an array of path parts when part types are defined with default definitions. For example ['a', 'b', 'c'] in Snowflake data store will path to table 'a' under schema 'b' under database 'a'. Conflicts with 'location', 'location_path', and 'location_parts_full' fields
+- **location_parts_full** (Block List) The full location path definition in the data store. Includes an array of objects with path name and path type. Can be used when the path type should be defined explicitly and not as defined by default. For example [{name= 'a', type= 'DATABASE'},{name= 'b', type= 'SCHEMA'},{name= 'view.c', type= 'VIEW'}]. Conflicts with 'location', 'location_path', and 'location_parts' fields. (see [below for nested schema](#nestedblock--scope--include_location--location_parts_full))
+- **location_path** (String) The short presentation of the location path in the data store. Includes `.` separated string when part types are defined with default definitions. For example 'a.b.c' in Snowflake data store will path to table 'a' under schema 'b' under database 'a'.  Conflicts with 'location', 'location_parts', and 'location_parts_full' fields.
 
 <a id="nestedblock--scope--include_location--location"></a>
 ### Nested Schema for `scope.include_location.location`
@@ -153,16 +155,12 @@ Optional:
 
 
 
-<a id="nestedblock--scope--include_location--relational_location"></a>
-### Nested Schema for `scope.include_location.relational_location`
+<a id="nestedblock--scope--include_location--location_parts_full"></a>
+### Nested Schema for `scope.include_location.location_parts_full`
 
 Required:
 
-- **db** (String) Database name.
-
-Optional:
-
-- **schema** (String) Schema name.
-- **table** (String) Table name.
+- **name** (String) The name of the location part.
+- **type** (String) The type of the location part. Optional values: TABLE, COLUMN, SEMANTIC_MODEL, REPORT, DASHBOARD, DATABASE, SCHEMA, JSON_PATH, WAREHOUSE, ENDPOINT, TYPE, FIELD, EXTERNAL_LOCATION, CATALOG, BUCKET, OBJECT, COLLECTION, VIEW, etc
 
 

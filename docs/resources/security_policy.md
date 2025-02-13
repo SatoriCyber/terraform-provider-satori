@@ -99,13 +99,7 @@ resource "satori_security_policy" "security_policy" {
                             name: '33'
                           filterName: Filter 1
                         EOT
-          location {
-            relational_location {
-              db     = "db2"
-              schema = "schema2"
-              table  = "table"
-            }
-          }
+          location_path = "db2.schema2.table"
         }
       }
       rule {
@@ -146,11 +140,7 @@ and:
         path: $.a['b']
       filterName: Filter 1
   EOT
-          location_prefix { // usage of the deprecated field 'location_prefix'
-            db     = "db2"
-            schema = "schema2"
-            table  = "table1"
-          }
+          location_parts = ["db2", "schema2", "table1"]
         }
       }
       mapping {
@@ -394,8 +384,10 @@ Required:
 Optional:
 
 - **advanced** (Boolean) Describes if logic yaml contains complex configuration. Defaults to `true`.
-- **location** (Block List) Location to be included in the rule. (see [below for nested schema](#nestedblock--profile--row_level_security--rule--id--location))
-- **location_prefix** (Block List, Deprecated) Location to to be included in the rule. The 'location_prefix' field has been deprecated. Please use the 'location' field instead. (see [below for nested schema](#nestedblock--profile--row_level_security--rule--id--location_prefix))
+- **location** (Block List, Deprecated) Location to be included in the rule. The 'location' field has been deprecated. Please use the 'location_path', `location_parts` or `location_parts_full` fields instead. (see [below for nested schema](#nestedblock--profile--row_level_security--rule--id--location))
+- **location_parts** (List of String) The part separated location path in the data store. Includes an array of path parts when part types are defined with default definitions. For example ['a', 'b', 'c'] in Snowflake data store will path to table 'a' under schema 'b' under database 'a'. Conflicts with 'location', 'location_path', and 'location_parts_full' fields
+- **location_parts_full** (Block List) The full location path definition in the data store. Includes an array of objects with path name and path type. Can be used when the path type should be defined explicitly and not as defined by default. For example [{name= 'a', type= 'DATABASE'},{name= 'b', type= 'SCHEMA'},{name= 'view.c', type= 'VIEW'}]. Conflicts with 'location', 'location_path', and 'location_parts' fields. (see [below for nested schema](#nestedblock--profile--row_level_security--rule--id--location_parts_full))
+- **location_path** (String) The short presentation of the location path in the data store. Includes `.` separated string when part types are defined with default definitions. For example 'a.b.c' in Snowflake data store will path to table 'a' under schema 'b' under database 'a'.  Conflicts with 'location', 'location_parts', and 'location_parts_full' fields.
 
 <a id="nestedblock--profile--row_level_security--rule--id--location"></a>
 ### Nested Schema for `profile.row_level_security.rule.id.location`
@@ -471,14 +463,10 @@ Optional:
 
 
 
-<a id="nestedblock--profile--row_level_security--rule--id--location_prefix"></a>
-### Nested Schema for `profile.row_level_security.rule.id.location_prefix`
+<a id="nestedblock--profile--row_level_security--rule--id--location_parts_full"></a>
+### Nested Schema for `profile.row_level_security.rule.id.location_parts_full`
 
 Required:
 
-- **db** (String) Database name.
-
-Optional:
-
-- **schema** (String) Schema name.
-- **table** (String) Table name.
+- **name** (String) The name of the location part.
+- **type** (String) The type of the location part. Optional values: TABLE, COLUMN, SEMANTIC_MODEL, REPORT, DASHBOARD, DATABASE, SCHEMA, JSON_PATH, WAREHOUSE, ENDPOINT, TYPE, FIELD, EXTERNAL_LOCATION, CATALOG, BUCKET, OBJECT, COLLECTION, VIEW, etc

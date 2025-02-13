@@ -2,9 +2,11 @@ package resources
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
 	"log"
 )
@@ -29,8 +31,7 @@ var (
 	RLSRule                            = "rule"
 	RLSRuleFilter                      = "filter"
 	RLSRuleFilterDatastoreId           = "datastore_id"
-	RLSRuleFilterLocationPrefix        = "location_prefix"
-	RLSRuleFilterLocationPrefixV2      = "location"
+	RLSRuleFilterLocationPrefix        = "location" // deprecated , This is the deprecated field and should be removed
 	RLSRuleFilterAdvanced              = "advanced"
 	RLSRuleFilterLogicYaml             = "logic_yaml"
 	RLSMapping                         = "mapping"
@@ -238,15 +239,47 @@ func resourceRowLevelSecurityRule() *schema.Schema {
 							RLSRuleFilterLocationPrefix: {
 								Type:        schema.TypeList,
 								Optional:    true,
-								Description: "Location to to be included in the rule.",
-								Deprecated:  "The 'location_prefix' field has been deprecated. Please use the 'location' field instead.",
-								Elem:        getRelationalLocationResource(),
-							},
-							RLSRuleFilterLocationPrefixV2: {
-								Type:        schema.TypeList,
-								Optional:    true,
+								Deprecated:  "The 'location' field has been deprecated. Please use the 'location_path', `location_parts` or `location_parts_full` fields instead.",
 								Description: "Location to be included in the rule.",
 								Elem:        getLocationResource(),
+							},
+							LocationPath: {
+								Type:             schema.TypeString,
+								Optional:         true,
+								Description:      "The short presentation of the location path in the data store. Includes `.` separated string when part types are defined with default definitions. For example 'a.b.c' in Snowflake data store will path to table 'a' under schema 'b' under database 'a'.  Conflicts with 'location', 'location_parts', and 'location_parts_full' fields.",
+								ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsNotWhiteSpace),
+							},
+							LocationParts: {
+								Type:        schema.TypeList,
+								Optional:    true,
+								MinItems:    1,
+								Description: "The part separated location path in the data store. Includes an array of path parts when part types are defined with default definitions. For example ['a', 'b', 'c'] in Snowflake data store will path to table 'a' under schema 'b' under database 'a'. Conflicts with 'location', 'location_path', and 'location_parts_full' fields",
+								Elem: &schema.Schema{
+									Type:             schema.TypeString,
+									ValidateDiagFunc: StringIsNotWhiteSpaceInArray,
+								},
+							},
+							LocationPartsFull: {
+								Type:        schema.TypeList,
+								Optional:    true,
+								Description: "The full location path definition in the data store. Includes an array of objects with path name and path type. Can be used when the path type should be defined explicitly and not as defined by default. For example [{name= 'a', type= 'DATABASE'},{name= 'b', type= 'SCHEMA'},{name= 'view.c', type= 'VIEW'}]. Conflicts with 'location', 'location_path', and 'location_parts' fields.",
+								MinItems:    1,
+								Elem: &schema.Resource{
+									Schema: map[string]*schema.Schema{
+										"name": {
+											Type:             schema.TypeString,
+											Required:         true,
+											Description:      "The name of the location part.",
+											ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsNotWhiteSpace),
+										},
+										"type": {
+											Type:             schema.TypeString,
+											Required:         true,
+											Description:      "The type of the location part. Optional values: TABLE, COLUMN, SEMANTIC_MODEL, REPORT, DASHBOARD, DATABASE, SCHEMA, JSON_PATH, WAREHOUSE, ENDPOINT, TYPE, FIELD, EXTERNAL_LOCATION, CATALOG, BUCKET, OBJECT, COLLECTION, VIEW, etc",
+											ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsNotWhiteSpace),
+										},
+									},
+								},
 							},
 							RLSRuleFilterAdvanced: {
 								Type:        schema.TypeBool,
@@ -476,28 +509,63 @@ func resourceToRowLevelSecurityRule(raw interface{}, rules *[]api.RowLevelSecuri
 	outElement.RuleFilter.LogicYaml = logicYaml
 	outElement.RuleFilter.Advanced = advanced
 
-	var location api.DataSetGenericLocation
+	//var location api.DataSetGenericLocation
 
-	err := checkThatOnlyOneLocationFormatExists(filter, RLSRuleFilterLocationPrefix, Location, false)
+	err := checkThatOnlyOneLocationFormatExists(filter, Location, LocationPath, LocationParts, LocationPartsFull, false)
 	if err != nil {
 		return err
 	}
 
-	if len(filter[RLSRuleFilterLocationPrefix].([]interface{})) > 0 { // deprecated field
-		locationPrefix := filter[RLSRuleFilterLocationPrefix].([]interface{})
-		err := resourceToGenericLocation(&location, locationPrefix, RelationalTableLocationType)
+	filterPrint, _ := json.Marshal(filter)
+	log.Printf("resourceToRowLevelSecurityRule: The filter presentation `%s`, length: %s", filterPrint)
+
+	if len(filter[Location].([]interface{})) > 0 { // deprecated field
+		inLocations := filter[Location].([]interface{})
+		if len(inLocations) > 0 {
+			var location api.DataSetGenericLocation
+			err := resourceToLocation(&location, inLocations, true)
+			if err != nil {
+				return err
+			}
+			outElement.RuleFilter.LocationPrefix = &location
+		}
+	} else if len(filter[LocationParts].([]interface{})) > 0 { // new field for LocationParts
+		inLocations := filter[LocationParts].([]interface{})
+		if len(inLocations) > 0 {
+			var location []api.LocationPath
+			err := resourcePartsToLocationPath(&location, inLocations, false)
+			if err != nil {
+				return err
+			}
+			outElement.RuleFilter.LocationPath = location
+		}
+	} else if len(filter[LocationPartsFull].([]interface{})) > 0 { // new field for LocationPartsFull
+		inLocations := filter[LocationPartsFull].([]interface{})
+		if len(inLocations) > 0 {
+			var location []api.LocationPath
+			err := resourcePartsFullToLocationPath(&location, inLocations, false)
+			if err != nil {
+				return err
+			}
+			outElement.RuleFilter.LocationPath = location
+		}
+	} else if filter[LocationPath] != nil && len(filter[LocationPath].(string)) > 0 { // new string field, ignore if empty
+		// terraform value will be always not nil, so we need to check the length and consider it as does not exist if empty
+		inLocationStr := filter[LocationPath].(string)
+
+		var location []api.LocationPath
+		log.Printf("resourceToRowLevelSecurityRule: found %s location path with length %d", inLocationStr, len(inLocationStr))
+		err := resourceStrToLocationPath(&location, inLocationStr, false)
 		if err != nil {
 			return err
 		}
-	} else if len(filter[Location].([]interface{})) > 0 { // new field
-		locationField := filter[Location].([]interface{})
-		err := resourceToLocation(&location, locationField, true)
-		if err != nil {
-			return err
-		}
+		outElement.RuleFilter.LocationPath = location
+	} else {
+		return fmt.Errorf("resourceToRowLevelSecurityRule: location type is not defined")
 	}
 
-	outElement.RuleFilter.LocationPrefix = &location
+	outElementPrint, _ := json.Marshal(outElement)
+	log.Printf("resourceToRowLevelSecurityRule: The outElement presentation `%s`, length: %s", outElementPrint)
 
 	(*rules)[i] = outElement
 
@@ -636,19 +704,26 @@ func rowLevelSecurityToResource(security *api.RowLevelSecurityProfile, d *schema
 		ruleFilter[0][RLSRuleFilterDatastoreId] = v.RuleFilter.DataStoreId
 		ruleFilter[0][RLSRuleFilterAdvanced] = v.RuleFilter.Advanced
 
-		// Checks if the state already contains the deprecated field, if so, convert the output to the deprecated format,
-		// otherwise convert to the new format
-		if _, ok := d.GetOk(fmt.Sprintf("%s.%d.%s.%d.%s", "profile.0.row_level_security.0.rule", i, RLSRuleFilter, 0, RLSRuleFilterLocationPrefix)); ok { // deprecated field
-			locationPrefix := make([]map[string]interface{}, 1)
-			locationPrefix[0] = make(map[string]interface{})
+		prefixFieldName := "profile.0.row_level_security.0.rule"
 
-			locationPrefix[0][Db] = v.RuleFilter.LocationPrefix.Db
-			locationPrefix[0][Schema] = v.RuleFilter.LocationPrefix.Schema
-			locationPrefix[0][Table] = v.RuleFilter.LocationPrefix.Table
-
-			ruleFilter[0][RLSRuleFilterLocationPrefix] = locationPrefix
-		} else { // new field
+		if v.RuleFilter.LocationPrefix != nil {
+			// Checks if the state already contains the deprecated field, if so, convert the output to the deprecated format,
+			// otherwise convert to the new format
+			log.Printf("rowLevelSecurityToResource: found old `location` deprecated format at, %s.%d.%s.%d.%s", prefixFieldName, i, RLSRuleFilter, 0, RLSRuleFilterLocationPrefix)
 			ruleFilter[0][Location] = []map[string]interface{}{locationToResource(v.RuleFilter.LocationPrefix)}
+		} else if v.RuleFilter.LocationPath != nil { // new field format
+			if configuredLocationPath, ok := d.GetOk(fmt.Sprintf("%s.%d.%s.%d.%s", prefixFieldName, i, RLSRuleFilter, 0, LocationPath)); ok { // new LocationPath was configured
+				log.Printf("rowLevelSecurityToResource: new format for %s was found, value: %s", LocationPath, configuredLocationPath)
+				ruleFilter[0][LocationPath] = locationPathToLocationPathResource(v.RuleFilter.LocationPath)
+			} else if configuredLocationPath, ok := d.GetOk(fmt.Sprintf("%s.%d.%s.%d.%s", prefixFieldName, i, RLSRuleFilter, 0, LocationParts)); ok { // new LocationPath was configured
+				log.Printf("rowLevelSecurityToResource: new format for %s was found, value: %s", LocationParts, configuredLocationPath)
+				ruleFilter[0][LocationParts] = locationPathToLocationPartsResource(v.RuleFilter.LocationPath)
+			} else if configuredLocationPath, ok := d.GetOk(fmt.Sprintf("%s.%d.%s.%d.%s", prefixFieldName, i, RLSRuleFilter, 0, LocationPartsFull)); ok { // new LocationPath was configured
+				log.Printf("rowLevelSecurityToResource: new format for %s was found, value: %s", LocationPartsFull, configuredLocationPath)
+				ruleFilter[0][LocationPartsFull] = locationPathToLocationPartsFullResource(v.RuleFilter.LocationPath)
+			} else {
+				log.Printf("got an unknown format for locationPath")
+			}
 		}
 
 		rules[i][RLSRuleFilter] = ruleFilter

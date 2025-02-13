@@ -3,7 +3,7 @@ locals {
 }
 
 resource "satori_datastore" "datastore0" {
-  name = "exampleDatastore"
+  name = "exampleDatastoreBigQuery"
 
   dataaccess_controller_id = local.dataaccess_controller_id
   # data source specific connection settings
