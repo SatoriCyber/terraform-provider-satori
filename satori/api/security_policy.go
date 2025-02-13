@@ -53,7 +53,8 @@ type MaskingRule struct {
 // ///////////////////
 type RowLevelSecurityRuleFilter struct {
 	DataStoreId    string                  `json:"dataStoreId"`
-	LocationPrefix *DataSetGenericLocation `json:"locationPrefix"`
+	LocationPrefix *DataSetGenericLocation `json:"locationPrefix,omitempty"`
+	LocationPath   []LocationPath          `json:"locationPath,omitempty"`
 	LogicYaml      string                  `json:"logicYaml"`
 	Advanced       bool                    `json:"advanced"`
 }

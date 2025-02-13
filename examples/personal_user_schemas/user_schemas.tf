@@ -31,12 +31,7 @@ resource "satori_dataset" "dataset_for_personal_schema" {
 
     include_location {
       datastore = local.datastore_id
-      location {
-        relational_location {
-          db = local.database_name
-          schema = each.value.schema
-        }
-      }
+      location_parts = [local.database_name, each.value.schema] // S3 example
     }      
   }
 

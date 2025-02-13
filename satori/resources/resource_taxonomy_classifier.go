@@ -225,8 +225,9 @@ func resourceClassifierCreate(ctx context.Context, d *schema.ResourceData, m int
 	}
 
 	result, err := c.CreateTaxonomyClassifier(input)
+
 	if err != nil {
-		diag.FromErr(err)
+		return diag.FromErr(err)
 	}
 
 	d.SetId(result.Id)
@@ -303,7 +304,7 @@ func resourceClassifierRead(ctx context.Context, d *schema.ResourceData, m inter
 		scope["datasets"] = result.Scope.DatasetIds
 	}
 	if len(result.Scope.IncludeLocations) > 0 {
-		scope["include_location"] = locationsToResource(&result.Scope.IncludeLocations, d, "scope.0.include_location", RelationalLocation)
+		scope["include_location"] = locationsToResource(&result.Scope.IncludeLocations, d, "scope.0.include_location", Location)
 	}
 	if err := setMapProp(&scope, "scope", d); err != nil {
 		return diag.FromErr(err)

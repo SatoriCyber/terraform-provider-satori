@@ -28,75 +28,54 @@ resource "satori_dataset" "dataset1" {
     name = "satori_dataset terraform test"
     description = "from satori terraform provider"
     #the service account must also be an owner to be able to modify settings beyond definition
-    owners = [ "522fb8ab-8d7b-4498-b39d-6911e2839253", data.satori_user.data_steward1.id ]
+    owners = ["522fb8ab-8d7b-4498-b39d-6911e2839253", data.satori_user.data_steward1.id]
 
 
     approvers {
-        # Currently can be only IdP groups
-        type = "GROUP"
-        id   = "788680b7-461d-493a-a3d6-86e71fd01ff2"
+      # Currently can be only IdP groups
+      type = "GROUP"
+      id   = "788680b7-461d-493a-a3d6-86e71fd01ff2"
     }
 
     approvers {
-        type = "USER"
-        id   = "3d174db4-4526-4469-2fda-46d0dd2a7f7d"
+      type = "USER"
+      id   = "3d174db4-4526-4469-2fda-46d0dd2a7f7d"
     }
 
     approvers {
-            type = "USER"
-            id   = data.satori_user.data_steward1.id
-        }
+      type = "USER"
+      id   = data.satori_user.data_steward1.id
+    }
 
     include_location {
       datastore = "12345678-95cf-474f-a1d6-d5084810dd95"
     }
 
     include_location {
-      datastore = "80f33ff5-95cf-474f-a1d6-d5084810dd95"
-      location {
-        relational_location {
-          db = "db1"
-        }
-      }
+      datastore     = "80f33ff5-95cf-474f-a1d6-d5084810dd95"
+      location_path = "db1"
     }
 
     include_location {
       datastore = "80f33ff5-95cf-474f-a1d6-d5084810dd95"
-      location {
-        relational_location {
-          db = "db2"
-          schema = "schema1"
-        }
-      }
+      location_parts = ["db2", "schema1"]
     }
 
     include_location {
-      datastore = "80f33ff5-95cf-474f-a1d6-d5084810dd95"
-      location {
-        relational_location {
-          db = "db2"
-          schema = "schema2"
-          table = "table"
-        }
-      }
+      datastore     = "80f33ff5-95cf-474f-a1d6-d5084810dd95"
+      location_path = "db2.schema2.table"
     }
 
     exclude_location {
       datastore = "80f33ff5-95cf-474f-a1d6-d5084810dd95"
-      location {
-        relational_location {
-          db = "db2"
-          schema = "schema1"
-          table = "tableX"
-        }
-      }
+      location_parts = ["db2", "schema1", "tableX"]
     }
   }
 
   access_control_settings {
     enable_access_control = false
-    enable_user_requests = false
-    enable_self_service = false
+    enable_user_requests  = false
+    enable_self_service   = false
   }
 
   custom_policy {
@@ -106,7 +85,7 @@ resource "satori_dataset" "dataset1" {
     tags_yaml = file("${path.module}/tags.yaml")
   }
 
-  security_policies = [ "56412aff-6ecf-4eff-9b96-2e0f6ec36c42" ]
+  security_policies = ["56412aff-6ecf-4eff-9b96-2e0f6ec36c42"]
 }
 
 // Example with different location types
@@ -115,58 +94,71 @@ resource "satori_dataset" "dataset2" {
     name = "satori_dataset terraform test"
     description = "from satori terraform provider"
     #the service account must also be an owner to be able to modify settings beyond definition
-    owners = [ "522fb8ab-8d7b-4498-b39d-6911e2839253", data.satori_user.data_steward1.id ]
+    owners = ["522fb8ab-8d7b-4498-b39d-6911e2839253", data.satori_user.data_steward1.id]
 
     include_location {
       datastore = "12345678-95cf-474f-a1d6-d5084810dd95"
     }
 
     include_location {
-      datastore = "80f33ff5-95cf-474f-a1d6-d5084810dd95"
-      location {
-        relational_location {
-          db = "db1"
-          schema = "schema1"
-        }
-      }
+      datastore     = "80f33ff5-95cf-474f-a1d6-d5084810dd95"
+      location_path = "db2.schema1"
     }
 
     include_location {
+      // MongoDB example
+      datastore     = "3go33ff5-95cf-474f-a1d6-d5084810dd5k"
+      location_path = "db1.collection1"
+    }
+
+    include_location {
+      // MongoDB example
       datastore = "3go33ff5-95cf-474f-a1d6-d5084810dd5k"
-      location {
-        mongo_location {
-          db = "db1"
-          collection = "collection1"
-        }
+      location_parts = ["db1", "collection1"]
+    }
+
+    include_location {
+      // MongoDB example
+      datastore = "3go33ff5-95cf-474f-a1d6-d5084810dd5k"
+      location_parts_full {
+        name = "db1"
+        type = "DATABASE"
+      }
+      location_parts_full {
+        name = "collection1"
+        type = "COLLECTION"
       }
     }
 
     include_location {
       datastore = "8kl43ff5-95cf-474f-a1d6-d508481049lw"
-      location {
-        s3_location {
-          bucket = "bucket1"
-          object_key = "a/b/c"
-        }
+      // S3 example
+      location_parts = ["bucket1", "a/b/c"] // S3 example
+    }
+
+    include_location {
+      datastore = "8kl43ff5-95cf-474f-a1d6-d508481049lw"
+      // S3 example
+      location_parts_full {
+        name = "bucket1"
+        type = "BUCKET"
+      }
+      location_parts_full {
+        name = "a/b/c"
+        type = "OBJECT"
       }
     }
 
     exclude_location {
-      datastore = "80f33ff5-95cf-474f-a1d6-d5084810dd95"
-      location {
-        relational_location {
-          db = "db1"
-          schema = "schema1"
-          table = "tableX"
-        }
-      }
+      datastore     = "80f33ff5-95cf-474f-a1d6-d5084810dd95"
+      location_path = "db1.schema1.tableX"
     }
   }
 
   access_control_settings {
     enable_access_control = false
-    enable_user_requests = false
-    enable_self_service = false
+    enable_user_requests  = false
+    enable_self_service   = false
   }
 
   custom_policy {
@@ -176,59 +168,61 @@ resource "satori_dataset" "dataset2" {
     tags_yaml = file("${path.module}/tags.yaml")
   }
 
-  security_policies = [ "56412aff-6ecf-4eff-9b96-2e0f6ec36c42" ]
+  security_policies = ["56412aff-6ecf-4eff-9b96-2e0f6ec36c42"]
 }
 
-// Example with deprecated usage of relational_location field
+// Example with deprecated usage of location field (use location_path, location_parts or location_parts_full instead)
 resource "satori_dataset" "dataset3" {
   definition {
     name = "satori_dataset terraform test"
     description = "from satori terraform provider"
     #the service account must also be an owner to be able to modify settings beyond definition
-    owners = [ "522fb8ab-8d7b-4498-b39d-6911e2839253", data.satori_user.data_steward1.id ]
-
-    include_location {
-      datastore = "12345678-95cf-474f-a1d6-d5084810dd95"
-    }
+    owners = ["522fb8ab-8d7b-4498-b39d-6911e2839253", data.satori_user.data_steward1.id]
 
     include_location {
       datastore = "80f33ff5-95cf-474f-a1d6-d5084810dd95"
-      relational_location {
-        db = "db1"
+      location {
+        relational_location {
+          db = "db1"
+        }
       }
     }
 
     include_location {
       datastore = "80f33ff5-95cf-474f-a1d6-d5084810dd95"
-      relational_location {
-        db = "db2"
-        schema = "schema1"
+      location {
+        relational_location {
+          db     = "db2"
+          schema = "schema1"
+        }
       }
     }
 
     include_location {
       datastore = "80f33ff5-95cf-474f-a1d6-d5084810dd95"
-      relational_location {
-        db = "db2"
-        schema = "schema2"
-        table = "table"
+      location {
+        relational_location {
+          db     = "db2"
+          schema = "schema2"
+          table  = "table"
+        }
       }
     }
 
     exclude_location {
       datastore = "80f33ff5-95cf-474f-a1d6-d5084810dd95"
       relational_location {
-        db = "db2"
+        db     = "db2"
         schema = "schema1"
-        table = "tableX"
+        table  = "tableX"
       }
     }
   }
 
   access_control_settings {
     enable_access_control = false
-    enable_user_requests = false
-    enable_self_service = false
+    enable_user_requests  = false
+    enable_self_service   = false
   }
 
   custom_policy {
@@ -238,7 +232,7 @@ resource "satori_dataset" "dataset3" {
     tags_yaml = file("${path.module}/tags.yaml")
   }
 
-  security_policies = [ "56412aff-6ecf-4eff-9b96-2e0f6ec36c42" ]
+  security_policies = ["56412aff-6ecf-4eff-9b96-2e0f6ec36c42"]
 }
 ```
 
@@ -301,8 +295,10 @@ Required:
 
 Optional:
 
-- **location** (Block List, Max: 1) Location for a data store. Can include only one location type field from the above: relational_location, mysql_location, athena_location, mongo_location and s3_location . Conflicts with 'relational_location' field. (see [below for nested schema](#nestedblock--definition--exclude_location--location))
-- **relational_location** (Block List, Max: 1, Deprecated) Location for a relational data store. Conflicts with 'location' field. The 'relational_location' field has been deprecated. Please use the 'location' field instead. (see [below for nested schema](#nestedblock--definition--exclude_location--relational_location))
+- **location** (Block List, Max: 1, Deprecated) Location for a data store. Can include only one location type field from the above: relational_location, mysql_location, athena_location, mongo_location and s3_location . Conflicts with 'location_path', 'location_parts' and 'location_parts_full' fields. The 'location' field has been deprecated. Please use the 'location_path', `location_parts` or `location_parts_full` fields instead. (see [below for nested schema](#nestedblock--definition--exclude_location--location))
+- **location_parts** (List of String) The part separated location path in the data store. Includes an array of path parts when part types are defined with default definitions. For example ['a', 'b', 'c'] in Snowflake data store will path to table 'a' under schema 'b' under database 'a'. Conflicts with 'location', 'location_path', and 'location_parts_full' fields
+- **location_parts_full** (Block List) The full location path definition in the data store. Includes an array of objects with path name and path type. Can be used when the path type should be defined explicitly and not as defined by default. For example [{name= 'a', type= 'DATABASE'},{name= 'b', type= 'SCHEMA'},{name= 'view.c', type= 'VIEW'}]. Conflicts with 'location', 'location_path', and 'location_parts' fields. (see [below for nested schema](#nestedblock--definition--exclude_location--location_parts_full))
+- **location_path** (String) The short presentation of the location path in the data store. Includes `.` separated string when part types are defined with default definitions. For example 'a.b.c' in Snowflake data store will path to table 'a' under schema 'b' under database 'a'.  Conflicts with 'location', 'location_parts', and 'location_parts_full' fields.
 
 <a id="nestedblock--definition--exclude_location--location"></a>
 ### Nested Schema for `definition.exclude_location.location`
@@ -378,17 +374,13 @@ Optional:
 
 
 
-<a id="nestedblock--definition--exclude_location--relational_location"></a>
-### Nested Schema for `definition.exclude_location.relational_location`
+<a id="nestedblock--definition--exclude_location--location_parts_full"></a>
+### Nested Schema for `definition.exclude_location.location_parts_full`
 
 Required:
 
-- **db** (String) Database name.
-
-Optional:
-
-- **schema** (String) Schema name.
-- **table** (String) Table name.
+- **name** (String) The name of the location part.
+- **type** (String) The type of the location part. Optional values: TABLE, COLUMN, SEMANTIC_MODEL, REPORT, DASHBOARD, DATABASE, SCHEMA, JSON_PATH, WAREHOUSE, ENDPOINT, TYPE, FIELD, EXTERNAL_LOCATION, CATALOG, BUCKET, OBJECT, COLLECTION, VIEW, etc
 
 
 
@@ -401,8 +393,10 @@ Required:
 
 Optional:
 
-- **location** (Block List, Max: 1) Location for a data store. Can include only one location type field from the above: relational_location, mysql_location, athena_location, mongo_location and s3_location . Conflicts with 'relational_location' field. (see [below for nested schema](#nestedblock--definition--include_location--location))
-- **relational_location** (Block List, Max: 1, Deprecated) Location for a relational data store. Conflicts with 'location' field. The 'relational_location' field has been deprecated. Please use the 'location' field instead. (see [below for nested schema](#nestedblock--definition--include_location--relational_location))
+- **location** (Block List, Max: 1, Deprecated) Location for a data store. Can include only one location type field from the above: relational_location, mysql_location, athena_location, mongo_location and s3_location . Conflicts with 'location_path', 'location_parts' and 'location_parts_full' fields. The 'location' field has been deprecated. Please use the 'location_path', `location_parts` or `location_parts_full` fields instead. (see [below for nested schema](#nestedblock--definition--include_location--location))
+- **location_parts** (List of String) The part separated location path in the data store. Includes an array of path parts when part types are defined with default definitions. For example ['a', 'b', 'c'] in Snowflake data store will path to table 'a' under schema 'b' under database 'a'. Conflicts with 'location', 'location_path', and 'location_parts_full' fields
+- **location_parts_full** (Block List) The full location path definition in the data store. Includes an array of objects with path name and path type. Can be used when the path type should be defined explicitly and not as defined by default. For example [{name= 'a', type= 'DATABASE'},{name= 'b', type= 'SCHEMA'},{name= 'view.c', type= 'VIEW'}]. Conflicts with 'location', 'location_path', and 'location_parts' fields. (see [below for nested schema](#nestedblock--definition--include_location--location_parts_full))
+- **location_path** (String) The short presentation of the location path in the data store. Includes `.` separated string when part types are defined with default definitions. For example 'a.b.c' in Snowflake data store will path to table 'a' under schema 'b' under database 'a'.  Conflicts with 'location', 'location_parts', and 'location_parts_full' fields.
 
 <a id="nestedblock--definition--include_location--location"></a>
 ### Nested Schema for `definition.include_location.location`
@@ -478,17 +472,13 @@ Optional:
 
 
 
-<a id="nestedblock--definition--include_location--relational_location"></a>
-### Nested Schema for `definition.include_location.relational_location`
+<a id="nestedblock--definition--include_location--location_parts_full"></a>
+### Nested Schema for `definition.include_location.location_parts_full`
 
 Required:
 
-- **db** (String) Database name.
-
-Optional:
-
-- **schema** (String) Schema name.
-- **table** (String) Table name.
+- **name** (String) The name of the location part.
+- **type** (String) The type of the location part. Optional values: TABLE, COLUMN, SEMANTIC_MODEL, REPORT, DASHBOARD, DATABASE, SCHEMA, JSON_PATH, WAREHOUSE, ENDPOINT, TYPE, FIELD, EXTERNAL_LOCATION, CATALOG, BUCKET, OBJECT, COLLECTION, VIEW, etc
 
 
 

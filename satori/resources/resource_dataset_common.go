@@ -2,38 +2,43 @@ package resources
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
 	"log"
+	"strings"
 )
 
 var (
-	RelationalLocation          = "relational_location"
-	MySqlLocation               = "mysql_location"
-	AthenaLocation              = "athena_location"
-	MongoLocation               = "mongo_location"
-	S3Location                  = "s3_location"
-	RelationalLocationType      = "RELATIONAL_LOCATION"
-	MySqlLocationType           = "MYSQL_LOCATION"
-	AthenaLocationType          = "ATHENA_LOCATION"
-	MongoLocationType           = "MONGO_LOCATION"
-	S3LocationType              = "S3_LOCATION"
-	RelationalTableLocationType = "RELATIONAL_TABLE_LOCATION"
-	MySqlTableLocationType      = "MYSQL_TABLE_LOCATION"
-	AthenaTableLocationType     = "ATHENA_TABLE_LOCATION"
-	MongoTableLocationType      = "MONGO_TABLE_LOCATION"
-	S3TableLocationType         = "S3_TABLE_LOCATION"
-	Db                          = "db"
-	Schema                      = "schema"
-	Table                       = "table"
-	Catalog                     = "catalog"
-	Collection                  = "collection"
-	Bucket                      = "bucket"
-	ObjectKey                   = "object_key"
-	Location                    = "location"
+	RelationalLocation          = "relational_location"       // deprecated
+	MySqlLocation               = "mysql_location"            // deprecated
+	AthenaLocation              = "athena_location"           // deprecated
+	MongoLocation               = "mongo_location"            // deprecated
+	S3Location                  = "s3_location"               // deprecated
+	RelationalLocationType      = "RELATIONAL_LOCATION"       // deprecated
+	MySqlLocationType           = "MYSQL_LOCATION"            // deprecated
+	AthenaLocationType          = "ATHENA_LOCATION"           // deprecated
+	MongoLocationType           = "MONGO_LOCATION"            // deprecated
+	S3LocationType              = "S3_LOCATION"               // deprecated
+	RelationalTableLocationType = "RELATIONAL_TABLE_LOCATION" // deprecated
+	MySqlTableLocationType      = "MYSQL_TABLE_LOCATION"      // deprecated
+	AthenaTableLocationType     = "ATHENA_TABLE_LOCATION"     // deprecated
+	MongoTableLocationType      = "MONGO_TABLE_LOCATION"      // deprecated
+	S3TableLocationType         = "S3_TABLE_LOCATION"         // deprecated
+	Db                          = "db"                        // deprecated
+	Schema                      = "schema"                    // deprecated
+	Table                       = "table"                     // deprecated
+	Catalog                     = "catalog"                   // deprecated
+	Collection                  = "collection"                // deprecated
+	Bucket                      = "bucket"                    // deprecated
+	ObjectKey                   = "object_key"                // deprecated
+	Location                    = "location"                  // deprecated
+	LocationPath                = "location_path"
+	LocationParts               = "location_parts"
+	LocationPartsFull           = "location_parts_full"
 )
 
 func getDatasetDataPolicyIdSchema() *schema.Schema {
@@ -221,61 +226,114 @@ func resourceToDatasetLocation(inElement map[string]interface{}, d *schema.Resou
 	outElement := api.DataSetLocation{}
 	outElement.DataStoreId = inElement["datastore"].(string)
 
-	err := checkThatOnlyOneLocationFormatExists(inElement, RelationalLocation, Location, forceLocation)
+	err := checkThatOnlyOneLocationFormatExists(inElement, Location, LocationPath, LocationParts, LocationPartsFull, forceLocation)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(inElement[RelationalLocation].([]interface{})) > 0 { // deprecated field
-		inLocations := inElement[RelationalLocation].([]interface{})
-		if len(inLocations) > 0 {
-			var location api.DataSetGenericLocation
-			err := resourceToGenericLocation(&location, inLocations, RelationalLocationType)
-			if err != nil {
-				return nil, err
-			}
-			outElement.Location = &location
-		}
-	} else if len(inElement[Location].([]interface{})) > 0 { // new field
+	inElementPrint, _ := json.Marshal(inElement)
+	log.Printf("The inElement presentation `%s`, length: %s", inElementPrint)
+
+	if len(inElement[Location].([]interface{})) > 0 { // deprecated field
 		inLocations := inElement[Location].([]interface{})
 		if len(inLocations) > 0 {
 			var location api.DataSetGenericLocation
 			err := resourceToLocation(&location, inLocations, false)
 			if err != nil {
 				return nil, err
-			} else {
-				outElement.Location = &location
 			}
+			outElement.Location = &location
 		}
+	} else if len(inElement[LocationParts].([]interface{})) > 0 { // new field for LocationParts
+		inLocations := inElement[LocationParts].([]interface{})
+		if len(inLocations) > 0 {
+			var location []api.LocationPath
+			err := resourcePartsToLocationPath(&location, inLocations, false)
+			if err != nil {
+				return nil, err
+			}
+			outElement.LocationPath = location
+		}
+	} else if len(inElement[LocationPartsFull].([]interface{})) > 0 { // new field for LocationPartsFull
+		inLocations := inElement[LocationPartsFull].([]interface{})
+		if len(inLocations) > 0 {
+			var location []api.LocationPath
+			err := resourcePartsFullToLocationPath(&location, inLocations, false)
+			if err != nil {
+				return nil, err
+			}
+			outElement.LocationPath = location
+		}
+	} else if inElement[LocationPath] != nil && len(inElement[LocationPath].(string)) > 0 { // new string field, ignore if empty
+		// terraform value will be always not nil, so we need to check the length and consider it as does not exist if empty
+		inLocationStr := inElement[LocationPath].(string)
+
+		var location []api.LocationPath
+		log.Printf("found %s location path with length %d", inLocationStr, len(inLocationStr))
+		err := resourceStrToLocationPath(&location, inLocationStr, false)
+		if err != nil {
+			return nil, err
+		}
+		outElement.LocationPath = location
 	}
 	return &outElement, nil
 }
 
-func checkThatOnlyOneLocationFormatExists(inElement map[string]interface{}, deprecatedField string, newField string, forceLocation bool) error {
-	if len(inElement[deprecatedField].([]interface{})) > 0 && len(inElement[newField].([]interface{})) > 0 {
-		return fmt.Errorf("can not include both fields '%s' and '%s'", deprecatedField, newField)
+func checkThatOnlyOneLocationFormatExists(inElement map[string]interface{},
+	deprecatedField string,
+	newField1 string,
+	newField2 string,
+	newField3 string,
+	forceLocation bool) error {
+
+	log.Printf("checkThatOnlyOneLocationFormatExists started.")
+
+	hasDeprecatedField := inElement[deprecatedField] != nil && len(inElement[deprecatedField].([]interface{})) > 0
+	// this is a string field
+	hasNewField1 := inElement[newField1] != nil && len(inElement[newField1].(string)) > 0
+	hasNewField2 := inElement[newField2] != nil && len(inElement[newField2].([]interface{})) > 0
+	hasNewField3 := inElement[newField3] != nil && len(inElement[newField3].([]interface{})) > 0
+
+	trueCount := 0
+	if hasDeprecatedField {
+		trueCount++
 	}
-	if forceLocation && len(inElement[deprecatedField].([]interface{})) == 0 && len(inElement[newField].([]interface{})) == 0 {
-		return fmt.Errorf("has to include '%s' field", newField)
+	if hasNewField1 {
+		trueCount++
 	}
+	if hasNewField2 {
+		trueCount++
+	}
+	if hasNewField3 {
+		trueCount++
+	}
+
+	if trueCount > 2 {
+		return fmt.Errorf("can not include more than 1 field of '%s', '%s', '%s' or '%s'", deprecatedField, newField1, newField3, newField3)
+	}
+
+	if forceLocation && len(inElement[deprecatedField].([]interface{})) == 0 && len(inElement[newField1].([]interface{})) == 0 && len(inElement[newField2].([]interface{})) == 0 && len(inElement[newField3].([]interface{})) == 0 {
+		return fmt.Errorf("has to include '%s' or '%s' or '%s' field", newField1, newField2, newField3)
+	}
+	log.Printf("checkThatOnlyOneLocationFormatExists ended.")
 	return nil
 }
 
 /*
-*
-The input is for example:
-[
+   *
+   The input is for example:
+   [
 
-	{
-	  relational_location: [
-	    {
-	      db: "db",
-	      schema: "schema"
-	    }
-	  ]
-	}
+   	{
+   	  relational_location: [
+   	    {
+   	      db: "db",
+   	      schema: "schema"
+   	    }
+   	  ]
+   	}
 
-]
+   ]
 */
 func resourceToLocation(location *api.DataSetGenericLocation, locationElem []interface{}, isTableType bool) error {
 	inLocationElem := locationElem[0].(map[string]interface{})
@@ -346,6 +404,49 @@ func resourceToLocation(location *api.DataSetGenericLocation, locationElem []int
 			}
 		}
 	}
+	return nil
+}
+
+func resourceStrToLocationPath(location *[]api.LocationPath, locationElem string, isTableType bool) error {
+	log.Printf("resourcePartsToLocationPath: got %s", locationElem)
+	path := strings.Split(locationElem, `.`)
+	for _, element := range path {
+		locationPath := api.LocationPath{Name: element}
+		*location = append(*location, locationPath)
+	}
+	return nil
+}
+
+func resourcePartsToLocationPath(location *[]api.LocationPath, locationElem []interface{}, isTableType bool) error {
+	log.Printf("resourcePartsToLocationPath: got %s", locationElem)
+	for _, element := range locationElem {
+		locationPath := api.LocationPath{Name: element.(string)}
+		*location = append(*location, locationPath)
+	}
+	log.Printf("resourcePartsToLocationPath: returned %s", LocationPath)
+	return nil
+}
+
+func resourcePartsFullToLocationPath(location *[]api.LocationPath, locationElem []interface{}, isTableType bool) error {
+	log.Printf("resourcePartsFullToLocationPath: got locationElem: %s", locationElem)
+	for _, element := range locationElem {
+		log.Printf("resourcePartsFullToLocationPath: element: %s", element)
+		part := element.(map[string]interface{})
+		log.Printf("resourcePartsFullToLocationPath: part: %s", part)
+		if len(part) > 0 {
+			name := part["name"].(string)
+			typeStr := part["type"].(string)
+			log.Printf("resourcePartsFullToLocationPath: part name: %s", name)
+			log.Printf("resourcePartsFullToLocationPath: part type: %s", typeStr)
+			//locationPath := api.LocationPath{Name: name}
+			locationPath := api.LocationPath{}
+			locationPath.Name = name
+			locationPath.Type = typeStr
+			log.Printf("resourcePartsFullToLocationPath: locationPath: %s", locationPath)
+			*location = append(*location, locationPath)
+		}
+	}
+	log.Printf("Out location: %s", location)
 	return nil
 }
 
@@ -461,8 +562,8 @@ func getDataSet(c *api.Client, d *schema.ResourceData) (*api.DataSetOutput, erro
 
 	definition["approvers"] = approversToResource(&result.Approvers)
 
-	definition["include_location"] = locationsToResource(&result.IncludeLocations, d, "definition.0.include_location", RelationalLocation)
-	definition["exclude_location"] = locationsToResource(&result.ExcludeLocations, d, "definition.0.exclude_location", RelationalLocation)
+	definition["include_location"] = locationsToResource(&result.IncludeLocations, d, "definition.0.include_location", Location)
+	definition["exclude_location"] = locationsToResource(&result.ExcludeLocations, d, "definition.0.exclude_location", Location)
 
 	if err := d.Set("definition", []map[string]interface{}{definition}); err != nil {
 		return nil, err
@@ -482,23 +583,24 @@ func locationsToResource(in *[]api.DataSetLocation, d *schema.ResourceData, pref
 		if v.Location != nil {
 			// Checks if the state already contains the deprecated field, if so, convert the output to the deprecated format,
 			// otherwise convert to the new format
+			log.Printf("locationsToResource: for old deprecated format, %s.%d.%s - %s", prefixFieldName, i, deprecatedFieldName, v.Location)
 			if _, ok := d.GetOk(fmt.Sprintf("%s.%d.%s", prefixFieldName, i, deprecatedFieldName)); ok { // deprecated field format
-				if v.Location != nil && v.Location.Type == RelationalLocationType {
-					location := make(map[string]string, 3)
-					if v.Location.Db != nil {
-						location[Db] = *v.Location.Db
-						if v.Location.Schema != nil {
-							location[Schema] = *v.Location.Schema
-							if v.Location.Table != nil {
-								location[Table] = *v.Location.Table
-							}
-						}
-					}
-					outElement[RelationalLocation] = []map[string]string{location}
-				}
-			} else { // new field format
 				outElement[Location] = []map[string]interface{}{locationToResource(v.Location)}
 			}
+		} else if v.LocationPath != nil { // new field format
+			if configuredLocationPath, ok := d.GetOk(fmt.Sprintf("%s.%d.%s", prefixFieldName, i, LocationPath)); ok { // new LocationPath was configured
+				log.Printf("locationsToResource: new format for %s was found: %s", LocationPath, configuredLocationPath)
+				outElement[LocationPath] = locationPathToLocationPathResource(v.LocationPath)
+			} else if configuredLocationPath, ok := d.GetOk(fmt.Sprintf("%s.%d.%s", prefixFieldName, i, LocationParts)); ok { // new LocationPath was configured
+				log.Printf("locationsToResource: new format for %s was found: %s", LocationParts, configuredLocationPath)
+				outElement[LocationParts] = locationPathToLocationPartsResource(v.LocationPath)
+			} else if configuredLocationPath, ok := d.GetOk(fmt.Sprintf("%s.%d.%s", prefixFieldName, i, LocationPartsFull)); ok { // new LocationPath was configured
+				log.Printf("locationsToResource: new format for %s was found: %s", LocationPartsFull, configuredLocationPath)
+				outElement[LocationPartsFull] = locationPathToLocationPartsFullResource(v.LocationPath)
+			} else {
+				log.Printf("got an unknown format for locationPath")
+			}
+
 		}
 		out[i] = outElement
 	}
@@ -506,6 +608,8 @@ func locationsToResource(in *[]api.DataSetLocation, d *schema.ResourceData, pref
 }
 
 func locationToResource(genericLocation *api.DataSetGenericLocation) map[string]interface{} {
+	log.Printf("locationToResource started")
+
 	locationWrapper := make(map[string]interface{}, 1)
 	if genericLocation.Type == RelationalLocationType || genericLocation.Type == RelationalTableLocationType {
 		location := make(map[string]string, 3)
@@ -562,8 +666,48 @@ func locationToResource(genericLocation *api.DataSetGenericLocation) map[string]
 	return locationWrapper
 }
 
+func locationPathToLocationPathResource(genericLocation []api.LocationPath) string {
+	log.Printf("locationPathToLocationPathResource started")
+
+	locationParts := []string{}
+	for _, u := range genericLocation {
+		locationParts = append(locationParts, u.Name)
+	}
+	locationJoinedPath := strings.Join(locationParts, ".")
+	log.Printf("locationPathToLocationPathResource found %s: ", locationJoinedPath)
+	return locationJoinedPath
+}
+
+func locationPathToLocationPartsResource(genericLocation []api.LocationPath) []string {
+	log.Printf("locationPathToLocationPartsResource started")
+	locationParts := []string{}
+	for _, u := range genericLocation {
+		locationParts = append(locationParts, u.Name)
+	}
+	log.Printf("locationPathToLocationPartsResource found %s: ", locationParts)
+	return locationParts
+}
+
+func locationPathToLocationPartsFullResource(genericLocation []api.LocationPath) []interface{} {
+	log.Printf("locationPathToLocationPartsFullResource started")
+
+	elementNumber := len(genericLocation)
+	log.Printf("locationPathToLocationPartsFullResource, fournd %d elements", elementNumber)
+
+	locationParts := make([]interface{}, elementNumber)
+	for i, u := range genericLocation {
+		locationParts[i] = make(map[string]interface{}, 2)
+		locationParts[i].(map[string]interface{})[Name] = u.Name
+		locationParts[i].(map[string]interface{})[Type] = u.Type
+	}
+	log.Printf("locationPathToLocationPartsFullResource found %s: ", locationParts)
+	return locationParts
+}
+
 func updateDataSet(d *schema.ResourceData, c *api.Client) (*api.DataSetOutput, error) {
 	input, err := resourceToDataset(d)
+	inputJson, err := json.Marshal(input)
+	log.Printf("updateDataSet: %s", inputJson)
 	if err != nil {
 		return nil, err
 	}

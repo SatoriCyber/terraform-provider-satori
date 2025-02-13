@@ -3,6 +3,7 @@ package resources
 import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
 	"log"
 	"regexp"
@@ -150,43 +151,93 @@ func getDatasetLocationResource() *schema.Resource {
 				Required:    true,
 				Description: "Data store ID.",
 			},
-			RelationalLocation: &schema.Schema{
-				Type:        schema.TypeList,
-				Optional:    true,
-				MaxItems:    1,
-				Deprecated:  "The 'relational_location' field has been deprecated. Please use the 'location' field instead.",
-				Description: "Location for a relational data store. Conflicts with 'location' field.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						Db: &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Database name.",
-						},
-						Schema: &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Schema name.",
-						},
-						Table: &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Table name.",
-						},
-					},
-				},
-			},
 			Location: {
 				Type:        schema.TypeList,
 				Optional:    true,
 				MaxItems:    1,
 				MinItems:    1,
-				Description: "Location for a data store. Can include only one location type field from the above: relational_location, mysql_location, athena_location, mongo_location and s3_location . Conflicts with 'relational_location' field.",
+				Deprecated:  "The 'location' field has been deprecated. Please use the 'location_path', `location_parts` or `location_parts_full` fields instead.",
+				Description: "Location for a data store. Can include only one location type field from the above: relational_location, mysql_location, athena_location, mongo_location and s3_location . Conflicts with 'location_path', 'location_parts' and 'location_parts_full' fields.",
 				Elem:        getLocationResource(),
+			},
+			LocationPath: {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "The short presentation of the location path in the data store. Includes `.` separated string when part types are defined with default definitions. For example 'a.b.c' in Snowflake data store will path to table 'a' under schema 'b' under database 'a'.  Conflicts with 'location', 'location_parts', and 'location_parts_full' fields.",
+				ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsNotWhiteSpace),
+			},
+			LocationParts: {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MinItems:    1,
+				Description: "The part separated location path in the data store. Includes an array of path parts when part types are defined with default definitions. For example ['a', 'b', 'c'] in Snowflake data store will path to table 'a' under schema 'b' under database 'a'. Conflicts with 'location', 'location_path', and 'location_parts_full' fields",
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					ValidateDiagFunc: StringIsNotWhiteSpaceInArray,
+				},
+			},
+			LocationPartsFull: {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "The full location path definition in the data store. Includes an array of objects with path name and path type. Can be used when the path type should be defined explicitly and not as defined by default. For example [{name= 'a', type= 'DATABASE'},{name= 'b', type= 'SCHEMA'},{name= 'view.c', type= 'VIEW'}]. Conflicts with 'location', 'location_path', and 'location_parts' fields.",
+				MinItems:    1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:             schema.TypeString,
+							Required:         true,
+							Description:      "The name of the location part.",
+							ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsNotWhiteSpace),
+						},
+						"type": {
+							Type:             schema.TypeString,
+							Required:         true,
+							Description:      "The type of the location part. Optional values: TABLE, COLUMN, SEMANTIC_MODEL, REPORT, DASHBOARD, DATABASE, SCHEMA, JSON_PATH, WAREHOUSE, ENDPOINT, TYPE, FIELD, EXTERNAL_LOCATION, CATALOG, BUCKET, OBJECT, COLLECTION, VIEW, etc",
+							ValidateDiagFunc: validation.ToDiagFunc(validation.StringIsNotWhiteSpace),
+						},
+					},
+				},
 			},
 		},
 	}
 }
+
+//func StringIsNotWhiteSpaceInArray(v interface{}, p cty.Path) diag.Diagnostics {
+//	value, ok := v.(string)
+//
+//	var diags diag.Diagnostics
+//
+//	if !ok {
+//		diag := diag.Diagnostic{
+//			Severity:      diag.Error,
+//			Summary:       "Wrong value type",
+//			Detail:        fmt.Sprintf("expected type of %s to be string", p),
+//			AttributePath: p,
+//		}
+//		diags = append(diags, diag)
+//	} else {
+//
+//		if strings.TrimSpace(value) == "" {
+//			errorMessage := fmt.Sprintf("value is expected to not be an empty string or whitespace.")
+//
+//			attr, okIndexStepCasting := p[len(p)-1].(cty.IndexStep)
+//			if okIndexStepCasting && attr.Key.AsBigFloat() != nil {
+//				index := attr.Key.AsBigFloat().String()
+//				errorMessage = fmt.Sprintf("value at index %s is expected to not be an empty string or whitespace.", index)
+//			}
+//
+//			diag := diag.Diagnostic{
+//				Severity:      diag.Error,
+//				Summary:       "Empty string is not allowed",
+//				Detail:        errorMessage,
+//				AttributePath: p,
+//			}
+//			diags = append(diags, diag)
+//		}
+//	}
+//
+//	return diags
+//}
 
 func getLocationResource() *schema.Resource {
 	return &schema.Resource{
@@ -300,28 +351,6 @@ func getLocationResource() *schema.Resource {
 						},
 					},
 				},
-			},
-		},
-	}
-}
-
-func getRelationalLocationResource() *schema.Resource {
-	return &schema.Resource{
-		Schema: map[string]*schema.Schema{
-			"db": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Database name.",
-			},
-			"schema": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Schema name.",
-			},
-			"table": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Table name.",
 			},
 		},
 	}
