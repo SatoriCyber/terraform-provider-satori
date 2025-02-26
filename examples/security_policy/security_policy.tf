@@ -18,6 +18,9 @@ resource "satori_security_policy" "security_policy" {
           type = "APPLY_MASKING_PROFILE" # optional
           masking_profile_id = satori_masking_profile.masking_profile.id # as reference of previously created masking profile
         }
+        conditional_masking {
+            where_condition = "country = 'US'"
+        }
       }
       rule {
         id          = "1"
