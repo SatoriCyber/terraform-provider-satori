@@ -153,7 +153,7 @@ func resourceRowLevelSecurityMappingFilter() *schema.Schema {
                     RLSMappingValuesType: {
                       Type:        schema.TypeString,
                       Required:    true,
-                      Description: "Values type. Allowed options: STRING, NUMERIC, CEL, SQL, ANY_VALUE, ALL_OTHER_VALUES",
+                      Description: "Values type. Allowed options: STRING, NUMERIC, CEL, SQL, ANY_VALUE, ALL_OTHER_VALUES.",
                       ValidateFunc: func(v interface{}, key string) (warns []string, errs []error) {
                         value := v.(string)
                         if value != "STRING" && value != "NUMERIC" && value != "CEL" && value != "SQL" && value != "ANY_VALUE" && value != "ALL_OTHER_VALUES" {
@@ -187,11 +187,11 @@ func resourceRowLevelSecurityMappingFilter() *schema.Schema {
               RLSMappingValuesType: {
                 Type:        schema.TypeString,
                 Required:    true,
-                Description: "Default values type. Allowed options: STRING, NUMERIC, CEL, SQL, ANY_VALUE, ALL_OTHER_VALUES",
+                Description: "Default values type. Allowed options: STRING, NUMERIC, CEL, SQL, NO_VALUE, ALL_OTHER_VALUES.",
                 ValidateFunc: func(v interface{}, key string) (warns []string, errs []error) {
                   value := v.(string)
-                  if value != "STRING" && value != "NUMERIC" && value != "CEL" && value != "SQL" && value != "ANY_VALUE" && value != "ALL_OTHER_VALUES" {
-                    errs = append(errs, fmt.Errorf("%q must be one of 'STRING, NUMERIC, CEL, SQL, ANY_VALUE or ALL_OTHER_VALUES' but got: %q", key, value))
+                  if value != "STRING" && value != "NUMERIC" && value != "CEL" && value != "SQL" && value != "NO_VALUE" && value != "ALL_OTHER_VALUES" {
+                    errs = append(errs, fmt.Errorf("%q must be one of 'STRING, NUMERIC, CEL, SQL, NO_VALUE or ALL_OTHER_VALUES' but got: %q", key, value))
                   }
                   return
                 },
@@ -379,12 +379,12 @@ func resourceMaskingProfile() *schema.Schema {
                 MinItems:    1,
                 MaxItems:    1,
                 Optional:    true,
-                Description: "Conditional masking.",
+                Description: "Conditional masking. Only supported in the Databricks and Snowflake Native Integrations.",
                 Elem: &schema.Resource{
                   Schema: map[string]*schema.Schema{
                     MaskingRuleWhereCondition: {
                       Type:        schema.TypeString,
-                      Optional:    true,
+                      Required:    true,
                       Description: "Where condition.",
                     },
                   },

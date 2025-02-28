@@ -35,9 +35,6 @@ resource "satori_security_policy" "security_policy" {
           type = "APPLY_MASKING_PROFILE" # optional
           masking_profile_id = satori_masking_profile.masking_profile.id # as reference of previously created masking profile
         }
-        conditional_masking {
-          where_condition = "country = 'US'"
-        }
       }
       rule {
         id          = "1"
@@ -85,6 +82,25 @@ resource "satori_security_policy" "security_policy" {
         action {
           # type = "APPLY_MASKING_PROFILE"
           masking_profile_id = satori_masking_profile.masking_profile.id
+        }
+      }
+      rule {
+        id          = "5"
+        description = "rule 5"
+        active      = true
+        criteria {
+          condition = "IS_NOT"
+          identity {
+            type     = "GROUP"
+            group_id = satori_directory_group.group3.id
+          }
+        }
+        action {
+          # type = "APPLY_MASKING_PROFILE"
+          masking_profile_id = satori_masking_profile.masking_profile.id
+        }
+        conditional_masking {
+          where_condition = "country = 'US'"
         }
       }
     }
@@ -187,6 +203,46 @@ and:
         }
       }
       mapping {
+        name = "Filter 3"
+        filter {
+          criteria {
+            condition = "IS_NOT"
+            identity {
+              type     = "GROUP"
+              group_id = satori_directory_group.group3.id
+            }
+          }
+          values {
+            type  = "CEL"
+            value = ["names.isSorted()"]
+          }
+        }
+        defaults {
+          type  = "NO_VALUE"
+          value = []
+        }
+      }
+      mapping {
+        name = "Filter 4"
+        filter {
+          criteria {
+            condition = "IS_NOT"
+            identity {
+              type     = "GROUP"
+              group_id = satori_directory_group.group3.id
+            }
+          }
+          values {
+            type  = "SQL"
+            value = ["> 5"]
+          }
+        }
+        defaults {
+          type  = "NO_VALUE"
+          value = []
+        }
+      }
+      mapping {
         name = "with space"
         filter {
           criteria {
@@ -255,7 +311,7 @@ Required:
 
 Optional:
 
-- **conditional_masking** (Block List, Max: 1) Conditional masking. (see [below for nested schema](#nestedblock--profile--masking--rule--conditional_masking))
+- **conditional_masking** (Block List, Max: 1) Conditional masking. Only supported in the Databricks and Snowflake Native Integrations. (see [below for nested schema](#nestedblock--profile--masking--rule--conditional_masking))
 
 <a id="nestedblock--profile--masking--rule--action"></a>
 ### Nested Schema for `profile.masking.rule.conditional_masking`
@@ -297,7 +353,7 @@ Can not be changed after creation.
 <a id="nestedblock--profile--masking--rule--conditional_masking"></a>
 ### Nested Schema for `profile.masking.rule.conditional_masking`
 
-Optional:
+Required:
 
 - **where_condition** (String) Where condition.
 
@@ -330,7 +386,7 @@ Required:
 
 Required:
 
-- **type** (String) Default values type. Allowed options: STRING, NUMERIC, CEL, SQL, ANY_VALUE, ALL_OTHER_VALUES
+- **type** (String) Default values type. Allowed options: STRING, NUMERIC, CEL, SQL, NO_VALUE, ALL_OTHER_VALUES.
 - **value** (List of String) List of values, when NO_VALUE or ALL_OTHER_VALUES are defined, the list has to be empty
 
 
@@ -372,7 +428,7 @@ Can not be changed after creation.
 
 Required:
 
-- **type** (String) Values type. Allowed options: STRING, NUMERIC, CEL, SQL, ANY_VALUE, ALL_OTHER_VALUES
+- **type** (String) Values type. Allowed options: STRING, NUMERIC, CEL, SQL, ANY_VALUE, ALL_OTHER_VALUES.
 - **value** (List of String) List of values, when ANY_VALUE or ALL_OTHER_VALUES are defined, the list has to be empty
 
 
