@@ -39,10 +39,11 @@ type DataSet struct {
 	IncludeLocations []DataSetLocation `json:"includeLocations"`
 	ExcludeLocations []DataSetLocation `json:"excludeLocations"`
 	// data policy
-	PermissionsEnabled bool               `json:"permissionsEnabled"`
-	CustomPolicy       CustomPolicy       `json:"customPolicy"`
-	SecurityPolicies   SecurityPolicies   `json:"defaultSecurityPolicies"`
-	Approvers          []ApproverIdentity `json:"approvers"`
+	PermissionsEnabled          bool               `json:"permissionsEnabled"`
+	CustomAccessRequestsEnabled bool               `json:"customAccessRequestsEnabled"`
+	CustomPolicy                CustomPolicy       `json:"customPolicy"`
+	SecurityPolicies            SecurityPolicies   `json:"defaultSecurityPolicies"`
+	Approvers                   []ApproverIdentity `json:"approvers"`
 }
 
 type DataSetOutput struct {

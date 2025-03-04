@@ -260,6 +260,7 @@ resource "satori_dataset" "dataset3" {
 Optional:
 
 - **enable_access_control** (Boolean) Enforce access control to this dataset. Defaults to `false`.
+- **enable_custom_access_requests** (Boolean) Enable users to request access to a dataset without selecting a predefined access rule. Defaults to `true`.
 
 
 <a id="nestedblock--definition"></a>

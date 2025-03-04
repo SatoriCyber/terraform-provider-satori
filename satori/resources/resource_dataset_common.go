@@ -201,6 +201,7 @@ func resourceToDataset(d *schema.ResourceData) (*api.DataSet, error) {
 	out.SecurityPolicies = *securityPolicies
 
 	out.PermissionsEnabled = (*resourceToAccessControl(d)).AccessControlEnabled
+	out.CustomAccessRequestsEnabled = (*resourceToAccessControl(d)).CustomAccessRequestsEnabled
 
 	return &out, nil
 }
@@ -320,20 +321,20 @@ func checkThatOnlyOneLocationFormatExists(inElement map[string]interface{},
 }
 
 /*
-   *
-   The input is for example:
-   [
+*
+The input is for example:
+[
 
-   	{
-   	  relational_location: [
-   	    {
-   	      db: "db",
-   	      schema: "schema"
-   	    }
-   	  ]
-   	}
+	{
+	  relational_location: [
+	    {
+	      db: "db",
+	      schema: "schema"
+	    }
+	  ]
+	}
 
-   ]
+]
 */
 func resourceToLocation(location *api.DataSetGenericLocation, locationElem []interface{}, isTableType bool) error {
 	inLocationElem := locationElem[0].(map[string]interface{})

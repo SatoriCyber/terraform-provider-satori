@@ -34,6 +34,12 @@ func ResourceDataSet() *schema.Resource {
 							Default:     false,
 							Description: "Enforce access control to this dataset.",
 						},
+						"enable_custom_access_requests": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     true,
+							Description: "Enable users to request access to a dataset without selecting a predefined access rule.",
+						},
 					},
 				},
 			},
@@ -105,6 +111,7 @@ func resourceToCustomPolicy(d *schema.ResourceData) *api.CustomPolicy {
 func resourceToAccessControl(d *schema.ResourceData) *api.AccessControl {
 	out := api.AccessControl{}
 	out.AccessControlEnabled = d.Get("access_control_settings.0.enable_access_control").(bool)
+	out.CustomAccessRequestsEnabled = d.Get("access_control_settings.0.enable_custom_access_requests").(bool)
 	return &out
 }
 
@@ -141,6 +148,7 @@ func resourceDataSetRead(ctx context.Context, d *schema.ResourceData, m interfac
 
 	resultAccessControl := api.AccessControl{}
 	resultAccessControl.AccessControlEnabled = result.PermissionsEnabled
+	resultAccessControl.CustomAccessRequestsEnabled = result.CustomAccessRequestsEnabled
 
 	if err := d.Set("access_control_settings", []map[string]interface{}{*accessControlToResource(&resultAccessControl)}); err != nil {
 		return diag.FromErr(err)
@@ -174,6 +182,7 @@ func customPolicyToResource(in *api.CustomPolicy) *map[string]interface{} {
 func accessControlToResource(in *api.AccessControl) *map[string]interface{} {
 	out := make(map[string]interface{})
 	out["enable_access_control"] = in.AccessControlEnabled
+	out["enable_custom_access_requests"] = in.CustomAccessRequestsEnabled
 	return &out
 }
 
