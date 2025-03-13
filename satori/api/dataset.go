@@ -3,9 +3,9 @@ package api
 const DataSetApiPrefix = "/api/v1/dataset"
 
 type DataSetLocation struct {
-	DataStoreId  string                  `json:"dataStoreId"`
-	Location     *DataSetGenericLocation `json:"location,omitempty"`
-	LocationPath []LocationPath          `json:"locationPath,omitempty"`
+  DataStoreId  string                  `json:"dataStoreId"`
+  Location     *DataSetGenericLocation `json:"location,omitempty"`
+  LocationPath []LocationPath          `json:"locationPath,omitempty"`
 }
 
 // DataSetGenericLocation
@@ -17,56 +17,57 @@ type DataSetLocation struct {
 // S3 - Bucket, ObjectKey
 // /**
 type DataSetGenericLocation struct {
-	Type       string  `json:"type"`
-	Db         *string `json:"db,omitempty"`
-	Schema     *string `json:"schema,omitempty"`
-	Table      *string `json:"table,omitempty"`
-	Catalog    *string `json:"catalog,omitempty"`
-	Collection *string `json:"collection,omitempty"`
-	Bucket     *string `json:"bucket,omitempty"`
-	ObjectKey  *string `json:"objectKey,omitempty"`
+  Type       string  `json:"type"`
+  Db         *string `json:"db,omitempty"`
+  Schema     *string `json:"schema,omitempty"`
+  Table      *string `json:"table,omitempty"`
+  Catalog    *string `json:"catalog,omitempty"`
+  Collection *string `json:"collection,omitempty"`
+  Bucket     *string `json:"bucket,omitempty"`
+  ObjectKey  *string `json:"objectKey,omitempty"`
 }
 
 type LocationPath struct {
-	Name string `json:"name"`
-	Type string `json:"type,omitempty"`
+  Name string `json:"name"`
+  Type string `json:"type,omitempty"`
 }
 
 type DataSet struct {
-	Name             string            `json:"name"`
-	Description      string            `json:"description"`
-	OwnersIds        []string          `json:"ownersIds"`
-	IncludeLocations []DataSetLocation `json:"includeLocations"`
-	ExcludeLocations []DataSetLocation `json:"excludeLocations"`
-	// data policy
-	PermissionsEnabled bool               `json:"permissionsEnabled"`
-	CustomPolicy       CustomPolicy       `json:"customPolicy"`
-	SecurityPolicies   SecurityPolicies   `json:"defaultSecurityPolicies"`
-	Approvers          []ApproverIdentity `json:"approvers"`
+  Name             string            `json:"name"`
+  Description      string            `json:"description"`
+  OwnersIds        []string          `json:"ownersIds"`
+  IncludeLocations []DataSetLocation `json:"includeLocations"`
+  ExcludeLocations []DataSetLocation `json:"excludeLocations"`
+  // data policy
+  PermissionsEnabled          bool               `json:"permissionsEnabled"`
+  CustomAccessRequestsEnabled *bool              `json:"customAccessRequestsEnabled"`
+  CustomPolicy                CustomPolicy       `json:"customPolicy"`
+  SecurityPolicies            SecurityPolicies   `json:"defaultSecurityPolicies"`
+  Approvers                   []ApproverIdentity `json:"approvers"`
 }
 
 type DataSetOutput struct {
-	DataSet
-	Id           string `json:"id"`
-	DataPolicyId string `json:"dataPolicyId"`
+  DataSet
+  Id           string `json:"id"`
+  DataPolicyId string `json:"dataPolicyId"`
 }
 
 func (c *Client) CreateDataSet(input *DataSet) (*DataSetOutput, error) {
-	output := DataSetOutput{}
-	return &output, c.postJsonForAccount(DataSetApiPrefix, input, &output)
+  output := DataSetOutput{}
+  return &output, c.postJsonForAccount(DataSetApiPrefix, input, &output)
 }
 
 func (c *Client) UpdateDataSet(id string, input *DataSet) (*DataSetOutput, error) {
-	output := DataSetOutput{}
-	return &output, c.putJson(DataSetApiPrefix, "", id, input, &output)
+  output := DataSetOutput{}
+  return &output, c.putJson(DataSetApiPrefix, "", id, input, &output)
 }
 
 func (c *Client) GetDataSet(id string) (*DataSetOutput, error, int) {
-	output := DataSetOutput{}
-	err, statusCode := c.getJsonById(DataSetApiPrefix, "", id, &output)
-	return &output, err, statusCode
+  output := DataSetOutput{}
+  err, statusCode := c.getJsonById(DataSetApiPrefix, "", id, &output)
+  return &output, err, statusCode
 }
 
 func (c *Client) DeleteDataSet(id string) error {
-	return c.delete(DataSetApiPrefix, id)
+  return c.delete(DataSetApiPrefix, id)
 }

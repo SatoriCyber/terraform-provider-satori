@@ -3,7 +3,8 @@ package api
 const CustomPolicyDefaultPriority int = 100
 
 type AccessControl struct {
-	AccessControlEnabled bool `json:"permissionsEnabled"`
+	AccessControlEnabled        bool  `json:"permissionsEnabled"`
+	CustomAccessRequestsEnabled *bool `json:"customAccessRequestsEnabled"`
 }
 
 type CustomPolicy struct {
