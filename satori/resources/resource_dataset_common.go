@@ -287,13 +287,6 @@ func checkThatOnlyOneLocationFormatExists(inElement map[string]interface{},
 	newField3 string,
 	forceLocation bool) error {
 
-	log.Printf("checkThatOnlyOneLocationFormatExists started.")
-	log.Printf("checkThatOnlyOneLocationFormatExists inElement %s", inElement)
-	log.Printf("checkThatOnlyOneLocationFormatExists newField1 %s", newField1)
-	log.Printf("checkThatOnlyOneLocationFormatExists newField2 %s", newField2)
-	log.Printf("checkThatOnlyOneLocationFormatExists newField3 %s", newField3)
-	log.Printf("checkThatOnlyOneLocationFormatExists deprecatedField %s", deprecatedField)
-
 	hasDeprecatedField := inElement[deprecatedField] != nil && len(inElement[deprecatedField].([]interface{})) > 0
 	// this is a string field
 	hasNewField1 := inElement[newField1] != nil && len(inElement[newField1].(string)) > 0
