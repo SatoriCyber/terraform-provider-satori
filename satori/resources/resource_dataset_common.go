@@ -288,6 +288,11 @@ func checkThatOnlyOneLocationFormatExists(inElement map[string]interface{},
 	forceLocation bool) error {
 
 	log.Printf("checkThatOnlyOneLocationFormatExists started.")
+	log.Printf("checkThatOnlyOneLocationFormatExists inElement %s", inElement)
+	log.Printf("checkThatOnlyOneLocationFormatExists newField1 %s", newField1)
+	log.Printf("checkThatOnlyOneLocationFormatExists newField2 %s", newField2)
+	log.Printf("checkThatOnlyOneLocationFormatExists newField3 %s", newField3)
+	log.Printf("checkThatOnlyOneLocationFormatExists deprecatedField %s", deprecatedField)
 
 	hasDeprecatedField := inElement[deprecatedField] != nil && len(inElement[deprecatedField].([]interface{})) > 0
 	// this is a string field
@@ -313,7 +318,8 @@ func checkThatOnlyOneLocationFormatExists(inElement map[string]interface{},
 		return fmt.Errorf("can not include more than 1 field of '%s', '%s', '%s' or '%s'", deprecatedField, newField1, newField3, newField3)
 	}
 
-	if forceLocation && len(inElement[deprecatedField].([]interface{})) == 0 && len(inElement[newField1].([]interface{})) == 0 && len(inElement[newField2].([]interface{})) == 0 && len(inElement[newField3].([]interface{})) == 0 {
+	// well, the newField1 is represented as string...
+	if forceLocation && len(inElement[deprecatedField].([]interface{})) == 0 && len(inElement[newField1].(string)) == 0 && len(inElement[newField2].([]interface{})) == 0 && len(inElement[newField3].([]interface{})) == 0 {
 		return fmt.Errorf("has to include '%s' or '%s' or '%s' field", newField1, newField2, newField3)
 	}
 	log.Printf("checkThatOnlyOneLocationFormatExists ended.")
