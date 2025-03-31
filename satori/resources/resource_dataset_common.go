@@ -287,6 +287,8 @@ func checkThatOnlyOneLocationFormatExists(inElement map[string]interface{},
 	newField3 string,
 	forceLocation bool) error {
 
+	log.Printf("checkThatOnlyOneLocationFormatExists started.")
+
 	hasDeprecatedField := inElement[deprecatedField] != nil && len(inElement[deprecatedField].([]interface{})) > 0
 	// this is a string field
 	hasNewField1 := inElement[newField1] != nil && len(inElement[newField1].(string)) > 0
