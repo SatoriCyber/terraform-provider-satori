@@ -178,7 +178,7 @@ func resourceToClassifier(d *schema.ResourceData) (*api.TaxonomyClassifier, erro
 		}
 		if v, ok := d.GetOk("custom_config.0.field_name_pattern"); ok {
 			value := v.(string)
-			out.Config.SatoriBaseClassifierId = &value
+			out.Config.FieldNamePattern = &value
 		}
 		caseInsensitive := false
 		if v, ok := d.GetOk("custom_config.0.value_case_sensitive"); ok {
