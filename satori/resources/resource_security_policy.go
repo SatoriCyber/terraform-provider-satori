@@ -647,14 +647,14 @@ func resourceSecurityPolicyCreate(ctx context.Context, d *schema.ResourceData, m
 
 	input, err := resourceToSecurityPolicy(d)
 	if err != nil {
-		log.Printf("Recieved error in security policy create: %s", err)
+		log.Printf("Recieved an error in security policy mapping: %s", err)
 		return diag.FromErr(err)
 	}
 
 	result, err := c.CreateSecurityPolicy(input)
 	if err != nil {
-		log.Printf("Recieved error in security policy create: %s", err)
-		diag.FromErr(err)
+		log.Printf("Recieved an error in security policy create: %s", err)
+		return diag.FromErr(err)
 	} else {
 		d.SetId(result.Id)
 	}

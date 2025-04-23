@@ -70,6 +70,9 @@ func ResourceTaxonomyClassifier() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "Field name pattern.",
+							ConflictsWith: []string{
+								"custom_config.0.value_case_sensitive",
+							},
 						},
 						"field_type": &schema.Schema{
 							Type:        schema.TypeString,
@@ -98,7 +101,7 @@ func ResourceTaxonomyClassifier() *schema.Resource {
 						"value_case_sensitive": &schema.Schema{
 							Type:        schema.TypeBool,
 							Optional:    true,
-							Description: "Should value match be case sensitive.",
+							Description: "Should value match be case sensitive. Relevant for `values` and `value_pattern` only, in other cases ignored.",
 							Default:     true,
 						},
 					},
@@ -181,9 +184,8 @@ func resourceToClassifier(d *schema.ResourceData) (*api.TaxonomyClassifier, erro
 			out.Config.FieldNamePattern = &value
 		}
 		caseInsensitive := false
-		if v, ok := d.GetOk("custom_config.0.value_case_sensitive"); ok {
-			caseInsensitive = !v.(bool)
-		}
+		caseInsensitive = !d.Get("custom_config.0.value_case_sensitive").(bool)
+
 		if _, ok := d.GetOk("custom_config.0.values"); ok {
 			var values api.TaxonomyClassifierValues
 			valuesConfig, _ := getStringListProp("custom_config.0.values", d)
@@ -279,6 +281,7 @@ func resourceClassifierRead(ctx context.Context, d *schema.ResourceData, m inter
 	customConfig := make(map[string]interface{})
 	if result.Config.FieldNamePattern != nil {
 		customConfig["field_name_pattern"] = *result.Config.FieldNamePattern
+		customConfig["value_case_sensitive"] = true // just to keep default state as it is not relevant for field_name_pattern field
 	}
 	if result.Config.FieldType != nil {
 		customConfig["field_type"] = *result.Config.FieldType
@@ -289,6 +292,7 @@ func resourceClassifierRead(ctx context.Context, d *schema.ResourceData, m inter
 		} else {
 			customConfig["values"] = *result.Config.Values.Values
 		}
+		// pay attention that API defines IN-SENSITIVE but terraform defines a negation of it
 		customConfig["value_case_sensitive"] = !result.Config.Values.CaseInsensitive
 	}
 	if err := setMapProp(&customConfig, "custom_config", d); err != nil {

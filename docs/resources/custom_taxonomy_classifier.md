@@ -45,7 +45,7 @@ Required:
 Optional:
 
 - **field_name_pattern** (String) Field name pattern.
-- **value_case_sensitive** (Boolean) Should value match be case sensitive. Defaults to `true`.
+- **value_case_sensitive** (Boolean) Should value match be case sensitive. Relevant for `values` and `value_pattern` only, in other cases ignored. Defaults to `true`.
 - **value_pattern** (String) Value pattern.
 - **values** (List of String) List of possible field values.
 

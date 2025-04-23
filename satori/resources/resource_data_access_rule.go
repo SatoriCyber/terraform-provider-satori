@@ -120,11 +120,11 @@ func resourceDataAccessPermissionRead(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if err := dataAccessUnusedTimeLimitToResource(&result.UnusedTimeLimit, d); err != nil {
-		diag.FromErr(err)
+		return diag.FromErr(err)
 	}
 
 	if err := dataAccessSecurityPoliciesToResource(result.SecurityPolicies, d); err != nil {
-		diag.FromErr(err)
+		return diag.FromErr(err)
 	}
 
 	return diags

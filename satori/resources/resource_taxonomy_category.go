@@ -80,7 +80,7 @@ func resourceCategoryCreate(ctx context.Context, d *schema.ResourceData, m inter
 
 	result, err := c.CreateTaxonomyCategory(input)
 	if err != nil {
-		diag.FromErr(err)
+		return diag.FromErr(err)
 	}
 
 	d.SetId(result.Id)

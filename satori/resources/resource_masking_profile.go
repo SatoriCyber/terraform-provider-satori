@@ -117,7 +117,7 @@ func resourceMaskingProfileCreate(ctx context.Context, d *schema.ResourceData, m
 	result, err := c.CreateMaskingProfile(input)
 	if err != nil {
 		log.Printf("Recieved error in masking profile create: %s", err)
-		diag.FromErr(err)
+		return diag.FromErr(err)
 	} else {
 		d.SetId(result.Id)
 	}
