@@ -172,17 +172,17 @@ func resourceDataAccessRequestRuleRead(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if err := dataAccessUnusedTimeLimitToResource(&result.UnusedTimeLimit, d); err != nil {
-		diag.FromErr(err)
+		return diag.FromErr(err)
 	}
 
 	if err := dataAccessSecurityPoliciesToResource(result.SecurityPolicies, d); err != nil {
-		diag.FromErr(err)
+		return diag.FromErr(err)
 	}
 
 	resourceDataApprovers := approversToResource(&result.Approvers)
 
 	if err = d.Set("approvers", resourceDataApprovers); err != nil {
-		diag.FromErr(err)
+		return diag.FromErr(err)
 	}
 
 	return diags
