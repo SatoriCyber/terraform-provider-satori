@@ -842,10 +842,13 @@ func maskingToResource(masking *api.MaskingSecurityProfile) interface{} {
 
     rules[i][RuleCriteria] = criteria
 
-    conditionalMasking := make([]map[string]interface{}, 1)
-    conditionalMasking[0] = make(map[string]interface{})
-    conditionalMasking[0][MaskingRuleWhereCondition] = v.ConditionalMasking.WhereCondition
-    rules[i][MaskingRuleConditionMasking] = conditionalMasking
+    if v.ConditionalMasking.WhereCondition != "" {
+      conditionalMasking := make([]map[string]interface{}, 1)
+      conditionalMasking[0] = make(map[string]interface{})
+      conditionalMasking[0][MaskingRuleWhereCondition] = v.ConditionalMasking.WhereCondition
+      rules[i][MaskingRuleConditionMasking] = conditionalMasking
+    }
+
   }
   out[0][MaskingRule] = rules
   return out
