@@ -67,6 +67,25 @@ resource "satori_security_policy" "security_policy" {
           masking_profile_id = satori_masking_profile.masking_profile.id
         }
       }
+      rule {
+        id          = "5"
+        description = "rule 5"
+        active      = true
+        criteria {
+          condition = "IS_NOT"
+          identity {
+            type     = "GROUP"
+            group_id = satori_directory_group.group3.id
+          }
+        }
+        action {
+          # type = "APPLY_MASKING_PROFILE"
+          masking_profile_id = satori_masking_profile.masking_profile.id
+        }
+        conditional_masking {
+          where_condition = "country = 'US'"
+        }
+      }
     }
     row_level_security {
       active = false
@@ -159,6 +178,46 @@ and:
           values {
             type  = "STRING"
             value = ["a", "b"]
+          }
+        }
+        defaults {
+          type  = "NO_VALUE"
+          value = []
+        }
+      }
+      mapping {
+        name = "Filter 3"
+        filter {
+          criteria {
+            condition = "IS_NOT"
+            identity {
+              type     = "GROUP"
+              group_id = satori_directory_group.group3.id
+            }
+          }
+          values {
+            type  = "CEL"
+            value = ["names.isSorted()"]
+          }
+        }
+        defaults {
+          type  = "NO_VALUE"
+          value = []
+        }
+      }
+      mapping {
+        name = "Filter 4"
+        filter {
+          criteria {
+            condition = "IS_NOT"
+            identity {
+              type     = "GROUP"
+              group_id = satori_directory_group.group3.id
+            }
+          }
+          values {
+            type  = "SQL"
+            value = ["> 5"]
           }
         }
         defaults {
