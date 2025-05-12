@@ -40,12 +40,17 @@ type MaskingAction struct {
 	Type             string `json:"type"`
 }
 
+type ConditionalMasking struct {
+	WhereCondition string `json:"whereCondition"`
+}
+
 type MaskingRule struct {
 	Id                 string             `json:"id"`
 	Active             bool               `json:"active"`
 	Description        string             `json:"description"`
 	DataFilterCriteria DataFilterCriteria `json:"criteria"`
 	MaskingAction      MaskingAction      `json:"maskingAction"`
+	ConditionalMasking ConditionalMasking `json:"condition"`
 }
 
 // ///////////////////
@@ -72,12 +77,12 @@ type RowLevelSecurityMapDataFilter struct {
 }
 
 type DataFilterValues struct {
-	Type   string    `json:"type"` //   STRING, NUMERIC, ANY_VALUE, ALL_OTHER_VALUES
+	Type   string    `json:"type"` //   STRING, NUMERIC, CEL, SQL, ANY_VALUE, ALL_OTHER_VALUES
 	Values *[]string `json:"values"`
 }
 
 type DataFilterDefaultValues struct {
-	Type   string    `json:"type"` //   STRING, NUMERIC, NO_VALUE, ALL_OTHER_VALUES
+	Type   string    `json:"type"` //   STRING, NUMERIC, CEL, SQL, NO_VALUE, ALL_OTHER_VALUES
 	Values *[]string `json:"values,omitempty"`
 }
 

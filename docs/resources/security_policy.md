@@ -84,6 +84,25 @@ resource "satori_security_policy" "security_policy" {
           masking_profile_id = satori_masking_profile.masking_profile.id
         }
       }
+      rule {
+        id          = "5"
+        description = "rule 5"
+        active      = true
+        criteria {
+          condition = "IS_NOT"
+          identity {
+            type     = "GROUP"
+            group_id = satori_directory_group.group3.id
+          }
+        }
+        action {
+          # type = "APPLY_MASKING_PROFILE"
+          masking_profile_id = satori_masking_profile.masking_profile.id
+        }
+        conditional_masking {
+          where_condition = "country = 'US'"
+        }
+      }
     }
     row_level_security {
       active = false
@@ -184,6 +203,46 @@ and:
         }
       }
       mapping {
+        name = "Filter 3"
+        filter {
+          criteria {
+            condition = "IS_NOT"
+            identity {
+              type     = "GROUP"
+              group_id = satori_directory_group.group3.id
+            }
+          }
+          values {
+            type  = "CEL"
+            value = ["names.isSorted()"]
+          }
+        }
+        defaults {
+          type  = "NO_VALUE"
+          value = []
+        }
+      }
+      mapping {
+        name = "Filter 4"
+        filter {
+          criteria {
+            condition = "IS_NOT"
+            identity {
+              type     = "GROUP"
+              group_id = satori_directory_group.group3.id
+            }
+          }
+          values {
+            type  = "SQL"
+            value = ["> 5"]
+          }
+        }
+        defaults {
+          type  = "NO_VALUE"
+          value = []
+        }
+      }
+      mapping {
         name = "with space"
         filter {
           criteria {
@@ -250,8 +309,12 @@ Required:
 - **description** (String) Rule description.
 - **id** (String) Rule id, has to be unique.
 
+Optional:
+
+- **conditional_masking** (Block List, Max: 1) Conditional masking. Only supported in the Databricks and Snowflake Native Integrations. (see [below for nested schema](#nestedblock--profile--masking--rule--conditional_masking))
+
 <a id="nestedblock--profile--masking--rule--action"></a>
-### Nested Schema for `profile.masking.rule.id`
+### Nested Schema for `profile.masking.rule.conditional_masking`
 
 Required:
 
@@ -263,15 +326,15 @@ Optional:
 
 
 <a id="nestedblock--profile--masking--rule--criteria"></a>
-### Nested Schema for `profile.masking.rule.id`
+### Nested Schema for `profile.masking.rule.conditional_masking`
 
 Required:
 
 - **condition** (String) Identity condition, for example IS_NOT, IS, etc.
-- **identity** (Block List, Min: 1, Max: 1) Identity to apply the rule for. (see [below for nested schema](#nestedblock--profile--masking--rule--id--identity))
+- **identity** (Block List, Min: 1, Max: 1) Identity to apply the rule for. (see [below for nested schema](#nestedblock--profile--masking--rule--conditional_masking--identity))
 
-<a id="nestedblock--profile--masking--rule--id--identity"></a>
-### Nested Schema for `profile.masking.rule.id.identity`
+<a id="nestedblock--profile--masking--rule--conditional_masking--identity"></a>
+### Nested Schema for `profile.masking.rule.conditional_masking.identity`
 
 Required:
 
@@ -285,6 +348,14 @@ Can not be changed after creation.
 - **name** (String) User/group name for identity types of USER and IDP_GROUP or a custom expression based on attributes of the identity for CEL identity type.
 Can not be changed after creation.
 
+
+
+<a id="nestedblock--profile--masking--rule--conditional_masking"></a>
+### Nested Schema for `profile.masking.rule.conditional_masking`
+
+Required:
+
+- **where_condition** (String) Where condition.
 
 
 
@@ -315,7 +386,7 @@ Required:
 
 Required:
 
-- **type** (String) Default values type
+- **type** (String) Default values type. Allowed options: STRING, NUMERIC, CEL, SQL, NO_VALUE, ALL_OTHER_VALUES.
 - **value** (List of String) List of values, when NO_VALUE or ALL_OTHER_VALUES are defined, the list has to be empty
 
 
@@ -357,7 +428,7 @@ Can not be changed after creation.
 
 Required:
 
-- **type** (String) Values type.
+- **type** (String) Values type. Allowed options: STRING, NUMERIC, CEL, SQL, ANY_VALUE, ALL_OTHER_VALUES.
 - **value** (List of String) List of values, when ANY_VALUE or ALL_OTHER_VALUES are defined, the list has to be empty
 
 
