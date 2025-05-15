@@ -63,6 +63,19 @@ func NewProvider(version string) *schema.Provider {
 				Optional: true,
 				Default:  api.HostURL,
 			},
+			"reuse_jwt": &schema.Schema{
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+				Description: "Terraform provider generates a JWT token on each run. " +
+					"For frequent terraform runs, this option allows token storage in the file system and reusing it if valid. " +
+					"The usage of this option should be carefully considered as it may lead to token leak.",
+			},
+			"jwt_folder_path": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Allows to override the default file system folder where the JWT token is stored. Relevant if `reuse_jwt` is set to true.",
+			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"satori_datastore":                  resources.ResourceDataStore(),
@@ -96,12 +109,14 @@ func providerConfigure(version string, p *schema.Provider) func(context.Context,
 		verifyTls := d.Get("verify_tls").(bool)
 		url := d.Get("url").(string)
 		accountId := d.Get("satori_account").(string)
+		reuseJwt := d.Get("reuse_jwt").(bool)
+		jwtPath := d.Get("jwt_folder_path").(string)
 
 		userAgent := p.UserAgent("terraform-provider-satori", version)
 
 		var diags diag.Diagnostics
 
-		c, err := api.NewClient(&url, &userAgent, &accountId, &username, &password, verifyTls)
+		c, err := api.NewClient(&url, &userAgent, &accountId, &username, &password, verifyTls, reuseJwt, jwtPath)
 		if err != nil {
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Error,
