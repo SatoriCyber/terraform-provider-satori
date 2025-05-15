@@ -4,9 +4,12 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"github.com/golang-jwt/jwt/v4"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -31,10 +34,34 @@ type AuthResponse struct {
 	Token string `json:"token"`
 }
 
-func NewClient(host, userAgent, accountId, username, password *string, verifyTls bool) (*Client, error) {
+const satoriJwtFileName = "satori_jwt.txt"
+
+func NewClient(host, userAgent, accountId, username, password *string, verifyTls bool, reuseJwt bool, jwtPath string) (*Client, error) {
+
+	log.Printf("Creating a new client")
 
 	if !verifyTls {
 		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	}
+
+	jwtToken := ""
+
+	if reuseJwt {
+		jwtContent, err := loadJwtFromFile(jwtPath) //jwtPath is expected to be a directory or undefined
+		if err != nil {
+			// do nothing, just create a new JWT
+			log.Printf("Failed to load file, creating a new token (%v)", err)
+		} else {
+			err := validateJwt(jwtContent)
+			if err != nil {
+				log.Printf("JWT validation error: %s , creating a new token", err)
+				// JWT is not valid, create new one
+			} else {
+				// assign loaded JWT to client
+				log.Printf("JWT validated and will be used")
+				jwtToken = jwtContent
+			}
+		}
 	}
 
 	c := Client{
@@ -48,8 +75,9 @@ func NewClient(host, userAgent, accountId, username, password *string, verifyTls
 		c.HostURL = *host
 	}
 
-	if (username != nil) && (password != nil) {
+	if (jwtToken == "") && (username != nil) && (password != nil) {
 		// form request body
+		log.Printf("Authenticating and creating a new token")
 		rb, err := json.Marshal(AuthStruct{
 			Username: *username,
 			Password: *password,
@@ -78,9 +106,89 @@ func NewClient(host, userAgent, accountId, username, password *string, verifyTls
 		}
 
 		c.Token = ar.Token
+
+		if reuseJwt {
+			err := storeJwtToFile(jwtPath, ar.Token)
+			if err != nil {
+				log.Printf("JWT was not stored, %v", err)
+			} else {
+				log.Printf("JWT stored for future usage...")
+			}
+		}
+	} else if jwtToken != "" {
+		log.Printf("Reuse loaded JWT")
+		c.Token = jwtToken
 	}
 
 	return &c, nil
+}
+
+func storeJwtToFile(predefinedPath string, token string) error {
+	var filePath string
+
+	if predefinedPath != "" {
+		filePath = filepath.Join(predefinedPath, satoriJwtFileName)
+	} else {
+		tmpDir := os.TempDir()
+		filePath = filepath.Join(tmpDir, satoriJwtFileName)
+	}
+
+	file, err := os.Create(filePath)
+	if err != nil {
+		return fmt.Errorf("failed to create file: %w", err)
+	}
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			log.Printf("failed to close file: %v", err)
+		}
+	}(file)
+
+	_, err = file.WriteString(token)
+	if err != nil {
+		return fmt.Errorf("failed to write to file: %w", err)
+	}
+
+	log.Printf("JWT written to: %s", filePath)
+	return nil
+}
+
+func loadJwtFromFile(predefinedPath string) (string, error) {
+	var filePath string
+
+	if predefinedPath != "" {
+		filePath = filepath.Join(predefinedPath, satoriJwtFileName)
+	} else {
+		tmpDir := os.TempDir()
+		filePath = filepath.Join(tmpDir, satoriJwtFileName)
+	}
+	log.Printf("Loading JWT from: %s", filePath)
+
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to read file: %w", err)
+	}
+
+	return string(data), nil
+}
+
+func validateJwt(tokenString string) error {
+	// Define the claims structure
+	claims := &jwt.RegisteredClaims{}
+
+	// Parse the token without validating the signature
+	_, _, err := jwt.NewParser().ParseUnverified(tokenString, claims)
+	if err != nil {
+		return fmt.Errorf("failed to parse token: %w", err)
+	}
+
+	// Validate expiration for 10 minutes from now
+	if claims.ExpiresAt != nil && claims.ExpiresAt.Before(time.Now().Add(10*time.Minute)) {
+		return fmt.Errorf("token is expired or will expire soon")
+	}
+
+	log.Printf("Token is valid for  usage")
+	return nil
 }
 
 func (c *Client) doRequest(req *http.Request) ([]byte, error, int) {
