@@ -5,6 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
+	"log"
 )
 
 var (
@@ -151,7 +152,7 @@ func resourceToDataStore(d *schema.ResourceData) (*api.DataStore, error) {
 		return nil, err
 	}
 
-	satoriAuthSettingsToResource, err := SatoriAuthSettingsToResource(d.Get(SatoriAuthSettings).([]interface{}))
+	satoriAuthSettingsToResource, err := SatoriAuthSettingsToResource(d, d.Get(SatoriAuthSettings).([]interface{}))
 	if err != nil {
 		return nil, err
 	}
@@ -223,7 +224,7 @@ func getDataStore(c *api.Client, d *schema.ResourceData) (*api.DataStoreOutput, 
 		d.Set(NetworkPolicy, []map[string]interface{}{npMap})
 	}
 
-	sasMap, err := GetSatoriAuthSettingsDatastoreOutput(result, err)
+	sasMap, err := GetSatoriAuthSettingsDatastoreOutput(d, result, err)
 	if err != nil {
 		return nil, err
 	}
@@ -263,7 +264,46 @@ func updateDataStore(d *schema.ResourceData, c *api.Client) (*api.DataStoreOutpu
 		return nil, err
 	}
 	result, err := c.UpdateDataStore(d.Id(), input)
+	if err != nil {
+		// Handle the error and restore the configuration
+		restoreConfiguration(d)
+	}
+
 	return result, err
+}
+
+// This is a tricky part of the terraform state management:
+// - Returning an error diagnostic does not stop the state from being updated.
+// - see more info here: https://developer.hashicorp.com/terraform/plugin/framework/diagnostics#how-errors-affect-state
+// Therefore, in error scenario (like timeout or server error, and case the password is changed, we need to restore the configuration,
+// otherwise the password will be not be detected as `changed` next time the `terraform plan` is called.
+//
+// At this point we have to restore the password to the old value only while all other properties are updated from backend response.
+func restoreConfiguration(d *schema.ResourceData) {
+	log.Printf("Failed to update the data store resource, restoring configuration in the state...")
+	passwordResourcePath := "satori_auth_settings.0.credentials.0.password"
+	if d.HasChange(passwordResourcePath) {
+		oldV, _ := d.GetChange(passwordResourcePath)
+		log.Printf("The password has changed from state, overriding it with the old value")
+		satoriAuthSettingsInterface := d.Get("satori_auth_settings").([]interface{})
+		//log.Printf("Current state of satori_auth_settings is: %v", satoriAuthSettingsInterface)
+		if len(satoriAuthSettingsInterface) != 0 {
+			satori_auth_setting := satoriAuthSettingsInterface[0].(map[string]interface{})
+			credentialsMap := satori_auth_setting[Credentials].([]interface{})
+			//log.Printf("Current state of credentialsMap is: %v", credentialsMap)
+			if len(credentialsMap) > 0 { // found credentials object
+				credentials := credentialsMap[0].(map[string]interface{})
+				credentials[Password] = oldV.(string)
+			}
+			//log.Printf("After the change, state of satori_auth_settings is: %v", satoriAuthSettingsInterface)
+			// push config to state
+			if err := d.Set("satori_auth_settings", satoriAuthSettingsInterface); err != nil {
+				log.Printf("Failed to set satori_auth_settings: %v", err)
+			}
+		}
+	} else {
+		log.Printf("The password hasn't change from state, no need to restore it")
+	}
 }
 
 func resourceDataStoreDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
