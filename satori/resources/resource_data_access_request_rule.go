@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
 )
@@ -16,6 +17,16 @@ func ResourceDataAccessRequestRule() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		CustomizeDiff: customdiff.All(
+			// Validate that 'type' cannot be changed
+			customdiff.ValidateChange(identityTypePath, validateIdentityTypeChange),
+
+			// Validate that 'name' cannot be changed
+			customdiff.ValidateChange(identityNamePath, validateIdentityNameChange),
+
+			// Validate that 'group_id' cannot be changed
+			customdiff.ValidateChange(identityGroupIdPath, validateIdentityGroupIdChange),
+		),
 		Description: "Request rules configuration.",
 		Schema: map[string]*schema.Schema{
 			"parent_data_policy": resourceDataAccessParent(),

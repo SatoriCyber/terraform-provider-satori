@@ -1,11 +1,19 @@
 package resources
 
 import (
+	"context"
 	"fmt"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
+	"log"
+)
+
+var (
+	identityNamePath    = "identity.0.name"
+	identityTypePath    = "identity.0.type"
+	identityGroupIdPath = "identity.0.group_id"
 )
 
 func resourceDataAccessParent() *schema.Schema {
@@ -123,6 +131,38 @@ func resourceDataAccessSecurityPolicies() *schema.Schema {
 			Type: schema.TypeString,
 		},
 	}
+}
+
+func validateAttributeChange(ctx context.Context, old, new, meta interface{}, attrPath string, attrFriendlyPath string) error {
+	log.Printf("Validating %s change from %v to %v", attrPath, old, new)
+
+	oldStr, oldOk := old.(string)
+	newStr, newOk := new.(string)
+
+	if !oldOk {
+		return fmt.Errorf("%s old value is not a string, got: %T", attrFriendlyPath, old)
+	}
+	if !newOk {
+		return fmt.Errorf("%s new value is not a string, got: %T", attrFriendlyPath, new)
+	}
+	// Only validate if the resource already exists (old value is not empty)
+	if oldStr != "" && oldStr != newStr {
+		return fmt.Errorf("%s cannot be changed after creation (current: %s, attempted: %s)",
+			attrFriendlyPath, oldStr, newStr)
+	}
+	return nil
+}
+
+func validateIdentityTypeChange(ctx context.Context, old, new, meta interface{}) error {
+	return validateAttributeChange(ctx, old, new, meta, identityTypePath, "identity.type")
+}
+
+func validateIdentityNameChange(ctx context.Context, old, new, meta interface{}) error {
+	return validateAttributeChange(ctx, old, new, meta, identityNamePath, "identity.name")
+}
+
+func validateIdentityGroupIdChange(ctx context.Context, old, new, meta interface{}) error {
+	return validateAttributeChange(ctx, old, new, meta, identityGroupIdPath, "identity.group_id")
 }
 
 func resourceToIdentity(resourceIdentity map[string]interface{}) *api.DataAccessIdentity {
