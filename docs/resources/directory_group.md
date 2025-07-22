@@ -62,25 +62,28 @@ resource "satori_directory_group" "empty_group" {
 
 ### Required
 
-- **name** (String) Group name.
+- `name` (String) Group name.
 
 ### Optional
 
-- **description** (String) Group description.
-- **id** (String) The ID of this resource.
-- **member** (Block List) Group members. (see [below for nested schema](#nestedblock--member))
+- `description` (String) Group description.
+- `member` (Block List) Group members. (see [below for nested schema](#nestedblock--member))
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 <a id="nestedblock--member"></a>
 ### Nested Schema for `member`
 
 Required:
 
-- **type** (String) Member type, valid types are: USERNAME, IDP_GROUP, DB_ROLE, DIRECTORY_GROUP.
+- `type` (String) Member type, valid types are: USERNAME, IDP_GROUP, DB_ROLE, DIRECTORY_GROUP.
 
 Optional:
 
-- **data_store_type** (String) Data store type for member of type DB_ROLE, valid types are: SNOWFLAKE, REDSHIFT, BIGQUERY, POSTGRESQL, ATHENA, MSSQL, SYNAPSE
-- **email** (String) Member email available for types: USERNAME.
-- **group_id** (String) Directory group ID for member of type DIRECTORY_GROUP.
-- **identity_provider** (String) Identity provider type for member of type IDP_GROUP, valid identity providers are: OKTA, AZURE, ONELOGIN
-- **name** (String) Member name for types: USERNAME, IDP_GROUP and DB_ROLE.
+- `data_store_type` (String) Data store type for member of type DB_ROLE, valid types are: SNOWFLAKE, REDSHIFT, BIGQUERY, POSTGRESQL, ATHENA, MSSQL, SYNAPSE
+- `email` (String) Member email available for types: USERNAME.
+- `group_id` (String) Directory group ID for member of type DIRECTORY_GROUP.
+- `identity_provider` (String) Identity provider type for member of type IDP_GROUP, valid identity providers are: OKTA, AZURE, ONELOGIN
+- `name` (String) Member name for types: USERNAME, IDP_GROUP and DB_ROLE.

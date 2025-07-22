@@ -17,37 +17,37 @@ Custom taxonomy classifier.
 
 ### Required
 
-- **name** (String) Classifier name.
-- **type** (String) Classifier type, valid types are: NON_AUTOMATIC, CUSTOM, SATORI_BASED.
+- `name` (String) Classifier name.
+- `type` (String) Classifier type, valid types are: NON_AUTOMATIC, CUSTOM, SATORI_BASED.
 
 ### Optional
 
-- **additional_satori_categories** (List of String) List of additional Satori taxonomy category IDs.
+- `additional_satori_categories` (List of String) List of additional Satori taxonomy category IDs.
 See https://satoricyber.com/docs/taxonomy/standard-categories for a list of possible values.
-- **custom_config** (Block List, Max: 1) Configuration for CUSTOM classifier type. (see [below for nested schema](#nestedblock--custom_config))
-- **description** (String) Classifier description.
-- **id** (String) The ID of this resource.
-- **parent_category** (String) Parent category ID.
-- **satori_based_config** (Block List, Max: 1) Configuration for SATORI_BASED classifier type. (see [below for nested schema](#nestedblock--satori_based_config))
-- **scope** (Block List, Max: 1) Scope of relevant locations. (see [below for nested schema](#nestedblock--scope))
+- `custom_config` (Block List, Max: 1) Configuration for CUSTOM classifier type. (see [below for nested schema](#nestedblock--custom_config))
+- `description` (String) Classifier description.
+- `parent_category` (String) Parent category ID.
+- `satori_based_config` (Block List, Max: 1) Configuration for SATORI_BASED classifier type. (see [below for nested schema](#nestedblock--satori_based_config))
+- `scope` (Block List, Max: 1) Scope of relevant locations. (see [below for nested schema](#nestedblock--scope))
 
 ### Read-Only
 
-- **tag** (String) Classifier tag.
+- `id` (String) The ID of this resource.
+- `tag` (String) Classifier tag.
 
 <a id="nestedblock--custom_config"></a>
 ### Nested Schema for `custom_config`
 
 Required:
 
-- **field_type** (String) Field type, valid types are: ANY, TEXT, NUMERIC, DATE.
+- `field_type` (String) Field type, valid types are: ANY, TEXT, NUMERIC, DATE.
 
 Optional:
 
-- **field_name_pattern** (String) Field name pattern.
-- **value_case_sensitive** (Boolean) Should value match be case sensitive. Relevant for `values` and `value_pattern` only, in other cases ignored. Defaults to `true`.
-- **value_pattern** (String) Value pattern.
-- **values** (List of String) List of possible field values.
+- `field_name_pattern` (String) Field name pattern.
+- `value_case_sensitive` (Boolean) Should value match be case sensitive. Relevant for `values` and `value_pattern` only, in other cases ignored. Defaults to `true`.
+- `value_pattern` (String) Value pattern.
+- `values` (List of String) List of possible field values.
 
 
 <a id="nestedblock--satori_based_config"></a>
@@ -55,7 +55,7 @@ Optional:
 
 Required:
 
-- **satori_base_classifier** (String) Base Satori classifier ID.
+- `satori_base_classifier` (String) Base Satori classifier ID.
 See https://satoricyber.com/docs/taxonomy/standard-classifiers for a list of possible values.
 
 
@@ -64,82 +64,82 @@ See https://satoricyber.com/docs/taxonomy/standard-classifiers for a list of pos
 
 Optional:
 
-- **datasets** (List of String) IDs of datasets to include in the scope.
-- **include_location** (Block List) Location to include in the scope. (see [below for nested schema](#nestedblock--scope--include_location))
+- `datasets` (List of String) IDs of datasets to include in the scope.
+- `include_location` (Block List) Location to include in the scope. (see [below for nested schema](#nestedblock--scope--include_location))
 
 <a id="nestedblock--scope--include_location"></a>
 ### Nested Schema for `scope.include_location`
 
 Required:
 
-- **datastore** (String) Data store ID.
+- `datastore` (String) Data store ID.
 
 Optional:
 
-- **location** (Block List, Max: 1, Deprecated) Location for a data store. Can include only one location type field from the above: relational_location, mysql_location, athena_location, mongo_location and s3_location . Conflicts with 'location_path', 'location_parts' and 'location_parts_full' fields. The 'location' field has been deprecated. Please use the 'location_path', `location_parts` or `location_parts_full` fields instead. (see [below for nested schema](#nestedblock--scope--include_location--location))
-- **location_parts** (List of String) The part separated location path in the data store. Includes an array of path parts when part types are defined with default definitions. For example ['a', 'b', 'c'] in Snowflake data store will path to table 'a' under schema 'b' under database 'a'. Conflicts with 'location', 'location_path', and 'location_parts_full' fields
-- **location_parts_full** (Block List) The full location path definition in the data store. Includes an array of objects with path name and path type. Can be used when the path type should be defined explicitly and not as defined by default. For example [{name= 'a', type= 'DATABASE'},{name= 'b', type= 'SCHEMA'},{name= 'view.c', type= 'VIEW'}]. Conflicts with 'location', 'location_path', and 'location_parts' fields. (see [below for nested schema](#nestedblock--scope--include_location--location_parts_full))
-- **location_path** (String) The short presentation of the location path in the data store. Includes `.` separated string when part types are defined with default definitions. For example 'a.b.c' in Snowflake data store will path to table 'a' under schema 'b' under database 'a'.  Conflicts with 'location', 'location_parts', and 'location_parts_full' fields.
+- `location` (Block List, Max: 1, Deprecated) Location for a data store. Can include only one location type field from the above: relational_location, mysql_location, athena_location, mongo_location and s3_location . Conflicts with 'location_path', 'location_parts' and 'location_parts_full' fields. The 'location' field has been deprecated. Please use the 'location_path', `location_parts` or `location_parts_full` fields instead. (see [below for nested schema](#nestedblock--scope--include_location--location))
+- `location_parts` (List of String) The part separated location path in the data store. Includes an array of path parts when part types are defined with default definitions. For example ['a', 'b', 'c'] in Snowflake data store will path to table 'a' under schema 'b' under database 'a'. Conflicts with 'location', 'location_path', and 'location_parts_full' fields
+- `location_parts_full` (Block List) The full location path definition in the data store. Includes an array of objects with path name and path type. Can be used when the path type should be defined explicitly and not as defined by default. For example [{name= 'a', type= 'DATABASE'},{name= 'b', type= 'SCHEMA'},{name= 'view.c', type= 'VIEW'}]. Conflicts with 'location', 'location_path', and 'location_parts' fields. (see [below for nested schema](#nestedblock--scope--include_location--location_parts_full))
+- `location_path` (String) The short presentation of the location path in the data store. Includes `.` separated string when part types are defined with default definitions. For example 'a.b.c' in Snowflake data store will path to table 'a' under schema 'b' under database 'a'.  Conflicts with 'location', 'location_parts', and 'location_parts_full' fields.
 
 <a id="nestedblock--scope--include_location--location"></a>
 ### Nested Schema for `scope.include_location.location`
 
 Optional:
 
-- **athena_location** (Block List, Max: 1) Location for Athena data store. (see [below for nested schema](#nestedblock--scope--include_location--location--athena_location))
-- **mongo_location** (Block List, Max: 1) Location for MongoDB data store. (see [below for nested schema](#nestedblock--scope--include_location--location--mongo_location))
-- **mysql_location** (Block List, Max: 1) Location for MySql and MariaDB data stores. (see [below for nested schema](#nestedblock--scope--include_location--location--mysql_location))
-- **relational_location** (Block List, Max: 1) Location for a relational data store. (see [below for nested schema](#nestedblock--scope--include_location--location--relational_location))
-- **s3_location** (Block List, Max: 1) Location for S3 data store. (see [below for nested schema](#nestedblock--scope--include_location--location--s3_location))
+- `athena_location` (Block List, Max: 1) Location for Athena data store. (see [below for nested schema](#nestedblock--scope--include_location--location--athena_location))
+- `mongo_location` (Block List, Max: 1) Location for MongoDB data store. (see [below for nested schema](#nestedblock--scope--include_location--location--mongo_location))
+- `mysql_location` (Block List, Max: 1) Location for MySql and MariaDB data stores. (see [below for nested schema](#nestedblock--scope--include_location--location--mysql_location))
+- `relational_location` (Block List, Max: 1) Location for a relational data store. (see [below for nested schema](#nestedblock--scope--include_location--location--relational_location))
+- `s3_location` (Block List, Max: 1) Location for S3 data store. (see [below for nested schema](#nestedblock--scope--include_location--location--s3_location))
 
 <a id="nestedblock--scope--include_location--location--athena_location"></a>
-### Nested Schema for `scope.include_location.location.s3_location`
+### Nested Schema for `scope.include_location.location.athena_location`
 
 Required:
 
-- **catalog** (String) Catalog name.
+- `catalog` (String) Catalog name.
 
 Optional:
 
-- **db** (String) Database name.
-- **table** (String) Table name.
+- `db` (String) Database name.
+- `table` (String) Table name.
 
 
 <a id="nestedblock--scope--include_location--location--mongo_location"></a>
-### Nested Schema for `scope.include_location.location.s3_location`
+### Nested Schema for `scope.include_location.location.mongo_location`
 
 Required:
 
-- **db** (String) Database name.
+- `db` (String) Database name.
 
 Optional:
 
-- **collection** (String) Collection name.
+- `collection` (String) Collection name.
 
 
 <a id="nestedblock--scope--include_location--location--mysql_location"></a>
-### Nested Schema for `scope.include_location.location.s3_location`
+### Nested Schema for `scope.include_location.location.mysql_location`
 
 Required:
 
-- **db** (String) Database name.
+- `db` (String) Database name.
 
 Optional:
 
-- **table** (String) Table name.
+- `table` (String) Table name.
 
 
 <a id="nestedblock--scope--include_location--location--relational_location"></a>
-### Nested Schema for `scope.include_location.location.s3_location`
+### Nested Schema for `scope.include_location.location.relational_location`
 
 Required:
 
-- **db** (String) Database name.
+- `db` (String) Database name.
 
 Optional:
 
-- **schema** (String) Schema name.
-- **table** (String) Table name.
+- `schema` (String) Schema name.
+- `table` (String) Table name.
 
 
 <a id="nestedblock--scope--include_location--location--s3_location"></a>
@@ -147,11 +147,11 @@ Optional:
 
 Required:
 
-- **bucket** (String) Bucket name.
+- `bucket` (String) Bucket name.
 
 Optional:
 
-- **object_key** (String) Object Key name.
+- `object_key` (String) Object Key name.
 
 
 
@@ -160,7 +160,5 @@ Optional:
 
 Required:
 
-- **name** (String) The name of the location part.
-- **type** (String) The type of the location part. Optional values: TABLE, COLUMN, SEMANTIC_MODEL, REPORT, DASHBOARD, DATABASE, SCHEMA, JSON_PATH, WAREHOUSE, ENDPOINT, TYPE, FIELD, EXTERNAL_LOCATION, CATALOG, BUCKET, OBJECT, COLLECTION, VIEW, etc
-
-
+- `name` (String) The name of the location part.
+- `type` (String) The type of the location part. Optional values: TABLE, COLUMN, SEMANTIC_MODEL, REPORT, DASHBOARD, DATABASE, SCHEMA, JSON_PATH, WAREHOUSE, ENDPOINT, TYPE, FIELD, EXTERNAL_LOCATION, CATALOG, BUCKET, OBJECT, COLLECTION, VIEW, etc

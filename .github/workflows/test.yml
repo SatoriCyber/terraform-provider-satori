@@ -26,7 +26,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2.1.3
         with:
-          go-version: '1.16'
+          go-version: '1.24.5'
         id: go
 
       - name: Check out code into the Go module directory
@@ -57,7 +57,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v2.1.3
         with:
-          go-version: '1.16'
+          go-version: '1.24.5'
         id: go
 
       - name: Check out code into the Go module directory

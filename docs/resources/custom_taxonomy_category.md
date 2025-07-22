@@ -65,15 +65,15 @@ resource "satori_custom_taxonomy_classifier" "cls3" {
 
 ### Required
 
-- **color** (String) Category color.
-- **name** (String) Category name.
+- `color` (String) Category color.
+- `name` (String) Category name.
 
 ### Optional
 
-- **description** (String) Category description.
-- **id** (String) The ID of this resource.
-- **parent_category** (String) Parent category ID.
+- `description` (String) Category description.
+- `parent_category` (String) Parent category ID.
 
 ### Read-Only
 
-- **tag** (String) Category tag.
+- `id` (String) The ID of this resource.
+- `tag` (String) Category tag.

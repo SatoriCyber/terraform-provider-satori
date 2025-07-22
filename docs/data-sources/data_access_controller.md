@@ -130,14 +130,14 @@ output "datastore_created_id" {
 
 ### Required
 
-- **type** (String) DAC's type. The available values are: PRIVATE, PRIVATE_MANAGED or PUBLIC.
+- `type` (String) DAC's type. The available values are: PRIVATE, PRIVATE_MANAGED or PUBLIC.
 
 ### Optional
 
-- **cloud_provider** (String) DAC's cloud provider.
-- **id** (String) DAC's ID.
-- **region** (String) DAC's region.
+- `cloud_provider` (String) DAC's cloud provider.
+- `id` (String) DAC's ID.
+- `region` (String) DAC's region.
 
 ### Read-Only
 
-- **ips** (List of String) DAC's IPs list.
+- `ips` (List of String) DAC's IPs list.

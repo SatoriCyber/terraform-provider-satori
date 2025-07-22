@@ -29,16 +29,16 @@ provider "satori" {
 
 ### Required
 
-- **satori_account** (String) Your Satori account ID.
+- `satori_account` (String) Your Satori account ID.
 
 ### Optional
 
-- **jwt_folder_path** (String) Allows to override the default file system folder where the JWT token is stored. Relevant if `reuse_jwt` is set to true.
-- **reuse_jwt** (Boolean) Terraform provider generates a JWT token on each run. For frequent terraform runs, this option allows token storage in the file system and reusing it if valid. The usage of this option should be carefully considered as it may lead to token leak. Defaults to `false`.
-- **service_account** (String) Service account ID with administrative privileges. Can be specified with the `SATORI_SA` environment variable.
-- **service_account_key** (String, Sensitive) Service account key. Can be specified with the `SATORI_SA_KEY` environment variable.
-- **url** (String) Defaults to `https://app.satoricyber.com`.
-- **verify_tls** (Boolean) Defaults to `true`.
+- `jwt_folder_path` (String) Allows to override the default file system folder where the JWT token is stored. Relevant if `reuse_jwt` is set to true.
+- `reuse_jwt` (Boolean) Terraform provider generates a JWT token on each run. For frequent terraform runs, this option allows token storage in the file system and reusing it if valid. The usage of this option should be carefully considered as it may lead to token leak. Defaults to `false`.
+- `service_account` (String) Service account ID with administrative privileges. Can be specified with the `SATORI_SA` environment variable.
+- `service_account_key` (String, Sensitive) Service account key. Can be specified with the `SATORI_SA_KEY` environment variable.
+- `url` (String) Defaults to `https://app.satoricyber.com`.
+- `verify_tls` (Boolean) Defaults to `true`.
 
 ## Resource Dependency Notes
 
