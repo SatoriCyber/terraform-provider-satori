@@ -235,8 +235,8 @@ resource "satori_dataset" "dataset3" {
 
 ### Required
 
-- **email** (String) User's email address.
+- `email` (String) User's email address.
 
 ### Read-Only
 
-- **id** (String) User's ID.
+- `id` (String) User's ID.

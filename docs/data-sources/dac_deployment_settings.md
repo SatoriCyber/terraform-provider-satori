@@ -29,8 +29,8 @@ data "satori_dac_deployment_settings" "deployment_settings" {
 
 ### Required
 
-- **id** (String) DAC's id.
+- `id` (String) DAC's id.
 
 ### Read-Only
 
-- **service_account** (String) The DAC's deployments service account
+- `service_account` (String) The DAC's deployments service account

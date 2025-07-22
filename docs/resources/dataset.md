@@ -241,26 +241,26 @@ resource "satori_dataset" "dataset3" {
 
 ### Required
 
-- **access_control_settings** (Block List, Min: 1, Max: 1) Dataset access controls. (see [below for nested schema](#nestedblock--access_control_settings))
-- **definition** (Block List, Min: 1, Max: 1) Parameters for dataset definition. (see [below for nested schema](#nestedblock--definition))
+- `access_control_settings` (Block List, Min: 1, Max: 1) Dataset access controls. (see [below for nested schema](#nestedblock--access_control_settings))
+- `definition` (Block List, Min: 1, Max: 1) Parameters for dataset definition. (see [below for nested schema](#nestedblock--definition))
 
 ### Optional
 
-- **custom_policy** (Block List, Max: 1) Dataset custom policy. (see [below for nested schema](#nestedblock--custom_policy))
-- **id** (String) The ID of this resource.
-- **security_policies** (List of String) IDs of security policies to apply to this dataset.
+- `custom_policy` (Block List, Max: 1) Dataset custom policy. (see [below for nested schema](#nestedblock--custom_policy))
+- `security_policies` (List of String) IDs of security policies to apply to this dataset.
 
 ### Read-Only
 
-- **data_policy_id** (String) Parent ID for dataset permissions.
+- `data_policy_id` (String) Parent ID for dataset permissions.
+- `id` (String) The ID of this resource.
 
 <a id="nestedblock--access_control_settings"></a>
 ### Nested Schema for `access_control_settings`
 
 Optional:
 
-- **enable_access_control** (Boolean) Enforce access control to this dataset. Defaults to `false`.
-- **enable_custom_access_requests** (List of Boolean) Enable users to request access to a dataset without selecting a predefined access rule.
+- `enable_access_control` (Boolean) Enforce access control to this dataset. Defaults to `false`.
+- `enable_custom_access_requests` (List of Boolean) Enable users to request access to a dataset without selecting a predefined access rule.
 
 
 <a id="nestedblock--definition"></a>
@@ -268,23 +268,23 @@ Optional:
 
 Required:
 
-- **name** (String) Dataset name.
+- `name` (String) Dataset name.
 
 Optional:
 
-- **approvers** (Block List) Identities of Satori users/groups that will be set as dataset approvers. (see [below for nested schema](#nestedblock--definition--approvers))
-- **description** (String) Dataset description.
-- **exclude_location** (Block List) Location to exclude from dataset. (see [below for nested schema](#nestedblock--definition--exclude_location))
-- **include_location** (Block List) Location to include in dataset. (see [below for nested schema](#nestedblock--definition--include_location))
-- **owners** (List of String) IDs of Satori users that will be set as dataset owners.
+- `approvers` (Block List) Identities of Satori users/groups that will be set as dataset approvers. (see [below for nested schema](#nestedblock--definition--approvers))
+- `description` (String) Dataset description.
+- `exclude_location` (Block List) Location to exclude from dataset. (see [below for nested schema](#nestedblock--definition--exclude_location))
+- `include_location` (Block List) Location to include in dataset. (see [below for nested schema](#nestedblock--definition--include_location))
+- `owners` (List of String) IDs of Satori users that will be set as dataset owners.
 
 <a id="nestedblock--definition--approvers"></a>
 ### Nested Schema for `definition.approvers`
 
 Required:
 
-- **id** (String) The ID of the approver entity
-- **type** (String) Approver type, can be either `GROUP` (IdP Group alone) or `USER`
+- `id` (String) The ID of the approver entity
+- `type` (String) Approver type, can be either `GROUP` (IdP Group alone) or `USER`
 
 
 <a id="nestedblock--definition--exclude_location"></a>
@@ -292,74 +292,74 @@ Required:
 
 Required:
 
-- **datastore** (String) Data store ID.
+- `datastore` (String) Data store ID.
 
 Optional:
 
-- **location** (Block List, Max: 1, Deprecated) Location for a data store. Can include only one location type field from the above: relational_location, mysql_location, athena_location, mongo_location and s3_location . Conflicts with 'location_path', 'location_parts' and 'location_parts_full' fields. The 'location' field has been deprecated. Please use the 'location_path', `location_parts` or `location_parts_full` fields instead. (see [below for nested schema](#nestedblock--definition--exclude_location--location))
-- **location_parts** (List of String) The part separated location path in the data store. Includes an array of path parts when part types are defined with default definitions. For example ['a', 'b', 'c'] in Snowflake data store will path to table 'a' under schema 'b' under database 'a'. Conflicts with 'location', 'location_path', and 'location_parts_full' fields
-- **location_parts_full** (Block List) The full location path definition in the data store. Includes an array of objects with path name and path type. Can be used when the path type should be defined explicitly and not as defined by default. For example [{name= 'a', type= 'DATABASE'},{name= 'b', type= 'SCHEMA'},{name= 'view.c', type= 'VIEW'}]. Conflicts with 'location', 'location_path', and 'location_parts' fields. (see [below for nested schema](#nestedblock--definition--exclude_location--location_parts_full))
-- **location_path** (String) The short presentation of the location path in the data store. Includes `.` separated string when part types are defined with default definitions. For example 'a.b.c' in Snowflake data store will path to table 'a' under schema 'b' under database 'a'.  Conflicts with 'location', 'location_parts', and 'location_parts_full' fields.
+- `location` (Block List, Max: 1, Deprecated) Location for a data store. Can include only one location type field from the above: relational_location, mysql_location, athena_location, mongo_location and s3_location . Conflicts with 'location_path', 'location_parts' and 'location_parts_full' fields. The 'location' field has been deprecated. Please use the 'location_path', `location_parts` or `location_parts_full` fields instead. (see [below for nested schema](#nestedblock--definition--exclude_location--location))
+- `location_parts` (List of String) The part separated location path in the data store. Includes an array of path parts when part types are defined with default definitions. For example ['a', 'b', 'c'] in Snowflake data store will path to table 'a' under schema 'b' under database 'a'. Conflicts with 'location', 'location_path', and 'location_parts_full' fields
+- `location_parts_full` (Block List) The full location path definition in the data store. Includes an array of objects with path name and path type. Can be used when the path type should be defined explicitly and not as defined by default. For example [{name= 'a', type= 'DATABASE'},{name= 'b', type= 'SCHEMA'},{name= 'view.c', type= 'VIEW'}]. Conflicts with 'location', 'location_path', and 'location_parts' fields. (see [below for nested schema](#nestedblock--definition--exclude_location--location_parts_full))
+- `location_path` (String) The short presentation of the location path in the data store. Includes `.` separated string when part types are defined with default definitions. For example 'a.b.c' in Snowflake data store will path to table 'a' under schema 'b' under database 'a'.  Conflicts with 'location', 'location_parts', and 'location_parts_full' fields.
 
 <a id="nestedblock--definition--exclude_location--location"></a>
 ### Nested Schema for `definition.exclude_location.location`
 
 Optional:
 
-- **athena_location** (Block List, Max: 1) Location for Athena data store. (see [below for nested schema](#nestedblock--definition--exclude_location--location--athena_location))
-- **mongo_location** (Block List, Max: 1) Location for MongoDB data store. (see [below for nested schema](#nestedblock--definition--exclude_location--location--mongo_location))
-- **mysql_location** (Block List, Max: 1) Location for MySql and MariaDB data stores. (see [below for nested schema](#nestedblock--definition--exclude_location--location--mysql_location))
-- **relational_location** (Block List, Max: 1) Location for a relational data store. (see [below for nested schema](#nestedblock--definition--exclude_location--location--relational_location))
-- **s3_location** (Block List, Max: 1) Location for S3 data store. (see [below for nested schema](#nestedblock--definition--exclude_location--location--s3_location))
+- `athena_location` (Block List, Max: 1) Location for Athena data store. (see [below for nested schema](#nestedblock--definition--exclude_location--location--athena_location))
+- `mongo_location` (Block List, Max: 1) Location for MongoDB data store. (see [below for nested schema](#nestedblock--definition--exclude_location--location--mongo_location))
+- `mysql_location` (Block List, Max: 1) Location for MySql and MariaDB data stores. (see [below for nested schema](#nestedblock--definition--exclude_location--location--mysql_location))
+- `relational_location` (Block List, Max: 1) Location for a relational data store. (see [below for nested schema](#nestedblock--definition--exclude_location--location--relational_location))
+- `s3_location` (Block List, Max: 1) Location for S3 data store. (see [below for nested schema](#nestedblock--definition--exclude_location--location--s3_location))
 
 <a id="nestedblock--definition--exclude_location--location--athena_location"></a>
-### Nested Schema for `definition.exclude_location.location.s3_location`
+### Nested Schema for `definition.exclude_location.location.athena_location`
 
 Required:
 
-- **catalog** (String) Catalog name.
+- `catalog` (String) Catalog name.
 
 Optional:
 
-- **db** (String) Database name.
-- **table** (String) Table name.
+- `db` (String) Database name.
+- `table` (String) Table name.
 
 
 <a id="nestedblock--definition--exclude_location--location--mongo_location"></a>
-### Nested Schema for `definition.exclude_location.location.s3_location`
+### Nested Schema for `definition.exclude_location.location.mongo_location`
 
 Required:
 
-- **db** (String) Database name.
+- `db` (String) Database name.
 
 Optional:
 
-- **collection** (String) Collection name.
+- `collection` (String) Collection name.
 
 
 <a id="nestedblock--definition--exclude_location--location--mysql_location"></a>
-### Nested Schema for `definition.exclude_location.location.s3_location`
+### Nested Schema for `definition.exclude_location.location.mysql_location`
 
 Required:
 
-- **db** (String) Database name.
+- `db` (String) Database name.
 
 Optional:
 
-- **table** (String) Table name.
+- `table` (String) Table name.
 
 
 <a id="nestedblock--definition--exclude_location--location--relational_location"></a>
-### Nested Schema for `definition.exclude_location.location.s3_location`
+### Nested Schema for `definition.exclude_location.location.relational_location`
 
 Required:
 
-- **db** (String) Database name.
+- `db` (String) Database name.
 
 Optional:
 
-- **schema** (String) Schema name.
-- **table** (String) Table name.
+- `schema` (String) Schema name.
+- `table` (String) Table name.
 
 
 <a id="nestedblock--definition--exclude_location--location--s3_location"></a>
@@ -367,11 +367,11 @@ Optional:
 
 Required:
 
-- **bucket** (String) Bucket name.
+- `bucket` (String) Bucket name.
 
 Optional:
 
-- **object_key** (String) Object Key name.
+- `object_key` (String) Object Key name.
 
 
 
@@ -380,8 +380,8 @@ Optional:
 
 Required:
 
-- **name** (String) The name of the location part.
-- **type** (String) The type of the location part. Optional values: TABLE, COLUMN, SEMANTIC_MODEL, REPORT, DASHBOARD, DATABASE, SCHEMA, JSON_PATH, WAREHOUSE, ENDPOINT, TYPE, FIELD, EXTERNAL_LOCATION, CATALOG, BUCKET, OBJECT, COLLECTION, VIEW, etc
+- `name` (String) The name of the location part.
+- `type` (String) The type of the location part. Optional values: TABLE, COLUMN, SEMANTIC_MODEL, REPORT, DASHBOARD, DATABASE, SCHEMA, JSON_PATH, WAREHOUSE, ENDPOINT, TYPE, FIELD, EXTERNAL_LOCATION, CATALOG, BUCKET, OBJECT, COLLECTION, VIEW, etc
 
 
 
@@ -390,74 +390,74 @@ Required:
 
 Required:
 
-- **datastore** (String) Data store ID.
+- `datastore` (String) Data store ID.
 
 Optional:
 
-- **location** (Block List, Max: 1, Deprecated) Location for a data store. Can include only one location type field from the above: relational_location, mysql_location, athena_location, mongo_location and s3_location . Conflicts with 'location_path', 'location_parts' and 'location_parts_full' fields. The 'location' field has been deprecated. Please use the 'location_path', `location_parts` or `location_parts_full` fields instead. (see [below for nested schema](#nestedblock--definition--include_location--location))
-- **location_parts** (List of String) The part separated location path in the data store. Includes an array of path parts when part types are defined with default definitions. For example ['a', 'b', 'c'] in Snowflake data store will path to table 'a' under schema 'b' under database 'a'. Conflicts with 'location', 'location_path', and 'location_parts_full' fields
-- **location_parts_full** (Block List) The full location path definition in the data store. Includes an array of objects with path name and path type. Can be used when the path type should be defined explicitly and not as defined by default. For example [{name= 'a', type= 'DATABASE'},{name= 'b', type= 'SCHEMA'},{name= 'view.c', type= 'VIEW'}]. Conflicts with 'location', 'location_path', and 'location_parts' fields. (see [below for nested schema](#nestedblock--definition--include_location--location_parts_full))
-- **location_path** (String) The short presentation of the location path in the data store. Includes `.` separated string when part types are defined with default definitions. For example 'a.b.c' in Snowflake data store will path to table 'a' under schema 'b' under database 'a'.  Conflicts with 'location', 'location_parts', and 'location_parts_full' fields.
+- `location` (Block List, Max: 1, Deprecated) Location for a data store. Can include only one location type field from the above: relational_location, mysql_location, athena_location, mongo_location and s3_location . Conflicts with 'location_path', 'location_parts' and 'location_parts_full' fields. The 'location' field has been deprecated. Please use the 'location_path', `location_parts` or `location_parts_full` fields instead. (see [below for nested schema](#nestedblock--definition--include_location--location))
+- `location_parts` (List of String) The part separated location path in the data store. Includes an array of path parts when part types are defined with default definitions. For example ['a', 'b', 'c'] in Snowflake data store will path to table 'a' under schema 'b' under database 'a'. Conflicts with 'location', 'location_path', and 'location_parts_full' fields
+- `location_parts_full` (Block List) The full location path definition in the data store. Includes an array of objects with path name and path type. Can be used when the path type should be defined explicitly and not as defined by default. For example [{name= 'a', type= 'DATABASE'},{name= 'b', type= 'SCHEMA'},{name= 'view.c', type= 'VIEW'}]. Conflicts with 'location', 'location_path', and 'location_parts' fields. (see [below for nested schema](#nestedblock--definition--include_location--location_parts_full))
+- `location_path` (String) The short presentation of the location path in the data store. Includes `.` separated string when part types are defined with default definitions. For example 'a.b.c' in Snowflake data store will path to table 'a' under schema 'b' under database 'a'.  Conflicts with 'location', 'location_parts', and 'location_parts_full' fields.
 
 <a id="nestedblock--definition--include_location--location"></a>
 ### Nested Schema for `definition.include_location.location`
 
 Optional:
 
-- **athena_location** (Block List, Max: 1) Location for Athena data store. (see [below for nested schema](#nestedblock--definition--include_location--location--athena_location))
-- **mongo_location** (Block List, Max: 1) Location for MongoDB data store. (see [below for nested schema](#nestedblock--definition--include_location--location--mongo_location))
-- **mysql_location** (Block List, Max: 1) Location for MySql and MariaDB data stores. (see [below for nested schema](#nestedblock--definition--include_location--location--mysql_location))
-- **relational_location** (Block List, Max: 1) Location for a relational data store. (see [below for nested schema](#nestedblock--definition--include_location--location--relational_location))
-- **s3_location** (Block List, Max: 1) Location for S3 data store. (see [below for nested schema](#nestedblock--definition--include_location--location--s3_location))
+- `athena_location` (Block List, Max: 1) Location for Athena data store. (see [below for nested schema](#nestedblock--definition--include_location--location--athena_location))
+- `mongo_location` (Block List, Max: 1) Location for MongoDB data store. (see [below for nested schema](#nestedblock--definition--include_location--location--mongo_location))
+- `mysql_location` (Block List, Max: 1) Location for MySql and MariaDB data stores. (see [below for nested schema](#nestedblock--definition--include_location--location--mysql_location))
+- `relational_location` (Block List, Max: 1) Location for a relational data store. (see [below for nested schema](#nestedblock--definition--include_location--location--relational_location))
+- `s3_location` (Block List, Max: 1) Location for S3 data store. (see [below for nested schema](#nestedblock--definition--include_location--location--s3_location))
 
 <a id="nestedblock--definition--include_location--location--athena_location"></a>
-### Nested Schema for `definition.include_location.location.s3_location`
+### Nested Schema for `definition.include_location.location.athena_location`
 
 Required:
 
-- **catalog** (String) Catalog name.
+- `catalog` (String) Catalog name.
 
 Optional:
 
-- **db** (String) Database name.
-- **table** (String) Table name.
+- `db` (String) Database name.
+- `table` (String) Table name.
 
 
 <a id="nestedblock--definition--include_location--location--mongo_location"></a>
-### Nested Schema for `definition.include_location.location.s3_location`
+### Nested Schema for `definition.include_location.location.mongo_location`
 
 Required:
 
-- **db** (String) Database name.
+- `db` (String) Database name.
 
 Optional:
 
-- **collection** (String) Collection name.
+- `collection` (String) Collection name.
 
 
 <a id="nestedblock--definition--include_location--location--mysql_location"></a>
-### Nested Schema for `definition.include_location.location.s3_location`
+### Nested Schema for `definition.include_location.location.mysql_location`
 
 Required:
 
-- **db** (String) Database name.
+- `db` (String) Database name.
 
 Optional:
 
-- **table** (String) Table name.
+- `table` (String) Table name.
 
 
 <a id="nestedblock--definition--include_location--location--relational_location"></a>
-### Nested Schema for `definition.include_location.location.s3_location`
+### Nested Schema for `definition.include_location.location.relational_location`
 
 Required:
 
-- **db** (String) Database name.
+- `db` (String) Database name.
 
 Optional:
 
-- **schema** (String) Schema name.
-- **table** (String) Table name.
+- `schema` (String) Schema name.
+- `table` (String) Table name.
 
 
 <a id="nestedblock--definition--include_location--location--s3_location"></a>
@@ -465,11 +465,11 @@ Optional:
 
 Required:
 
-- **bucket** (String) Bucket name.
+- `bucket` (String) Bucket name.
 
 Optional:
 
-- **object_key** (String) Object Key name.
+- `object_key` (String) Object Key name.
 
 
 
@@ -478,8 +478,8 @@ Optional:
 
 Required:
 
-- **name** (String) The name of the location part.
-- **type** (String) The type of the location part. Optional values: TABLE, COLUMN, SEMANTIC_MODEL, REPORT, DASHBOARD, DATABASE, SCHEMA, JSON_PATH, WAREHOUSE, ENDPOINT, TYPE, FIELD, EXTERNAL_LOCATION, CATALOG, BUCKET, OBJECT, COLLECTION, VIEW, etc
+- `name` (String) The name of the location part.
+- `type` (String) The type of the location part. Optional values: TABLE, COLUMN, SEMANTIC_MODEL, REPORT, DASHBOARD, DATABASE, SCHEMA, JSON_PATH, WAREHOUSE, ENDPOINT, TYPE, FIELD, EXTERNAL_LOCATION, CATALOG, BUCKET, OBJECT, COLLECTION, VIEW, etc
 
 
 
@@ -489,8 +489,8 @@ Required:
 
 Optional:
 
-- **priority** (Number) Dataset custom policy priority. Defaults to `100`.
-- **rules_yaml** (String) Custom policy rules YAML.
-- **tags_yaml** (String) Custom policy tags YAML.
+- `priority` (Number) Dataset custom policy priority. Defaults to `100`.
+- `rules_yaml` (String) Custom policy rules YAML.
+- `tags_yaml` (String) Custom policy tags YAML.
 
 ~> **Note: The dataset resource is stateful:** The dataset resource is stateful, deletion or terraform resource name change should be avoided.

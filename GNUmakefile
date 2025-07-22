@@ -13,6 +13,7 @@ ifneq ($(filter arm%,$(UNAME_P)),)
 endif
 $(info Current architecture (OS_ARCH) is $(OS_ARCH))
 LOCAL_INSTALL_DIR=~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
+$(info Installation folder (LOCAL_INSTALL_DIR) is $(LOCAL_INSTALL_DIR))
 
 default: testacc
 

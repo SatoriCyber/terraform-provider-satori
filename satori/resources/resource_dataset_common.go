@@ -233,7 +233,7 @@ func resourceToDatasetLocation(inElement map[string]interface{}, d *schema.Resou
 	}
 
 	inElementPrint, _ := json.Marshal(inElement)
-	log.Printf("The inElement presentation `%s`, length: %s", inElementPrint)
+	log.Printf("The inElement presentation `%s`", inElementPrint)
 
 	if len(inElement[Location].([]interface{})) > 0 { // deprecated field
 		inLocations := inElement[Location].([]interface{})
@@ -543,7 +543,7 @@ func resourceToGenericLocation(location *api.DataSetGenericLocation, inLocations
 			}
 		}
 	}
-	log.Printf("Out location: %s", location)
+	log.Printf("Out location: %v", location)
 	return nil
 }
 
@@ -585,7 +585,7 @@ func locationsToResource(in *[]api.DataSetLocation, d *schema.ResourceData, pref
 		if v.Location != nil {
 			// Checks if the state already contains the deprecated field, if so, convert the output to the deprecated format,
 			// otherwise convert to the new format
-			log.Printf("locationsToResource: for old deprecated format, %s.%d.%s - %s", prefixFieldName, i, deprecatedFieldName, v.Location)
+			log.Printf("locationsToResource: for old deprecated format, %s.%d.%s - %v", prefixFieldName, i, deprecatedFieldName, v.Location)
 			if _, ok := d.GetOk(fmt.Sprintf("%s.%d.%s", prefixFieldName, i, deprecatedFieldName)); ok { // deprecated field format
 				outElement[Location] = []map[string]interface{}{locationToResource(v.Location)}
 			}

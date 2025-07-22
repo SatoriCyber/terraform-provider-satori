@@ -48,23 +48,26 @@ resource "satori_masking_profile" "masking_profile" {
 
 ### Required
 
-- **condition** (Block List, Min: 1) Masking profile condition. (see [below for nested schema](#nestedblock--condition))
-- **name** (String) Masking profile name.
+- `condition` (Block List, Min: 1) Masking profile condition. (see [below for nested schema](#nestedblock--condition))
+- `name` (String) Masking profile name.
 
 ### Optional
 
-- **description** (String) Masking profile description.
-- **id** (String) The ID of this resource.
+- `description` (String) Masking profile description.
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 <a id="nestedblock--condition"></a>
 ### Nested Schema for `condition`
 
 Required:
 
-- **tag** (String) Tag.
-- **type** (String) Type. Can be one of [TRUNCATE, TRUNCATE_END, REPLACE_CHAR, REPLACE_STRING, HASH, EMAIL_PREFIX, EMAIL_SUFFIX, EMAIL_FULL, EMAIL_HASH, CREDIT_CARD_PREFIX, CREDIT_CARD_FULL, CREDIT_CARD_HASH, IP_SUFFIX, IP_FULL, IP_HASH, DATE_YEAR_ONLY, DATE_1970_AGAIN, NO_ACTION, REDACT, NUMBER_ZERO, NUMBER_ROUND, ...]
+- `tag` (String) Tag.
+- `type` (String) Type. Can be one of [TRUNCATE, TRUNCATE_END, REPLACE_CHAR, REPLACE_STRING, HASH, EMAIL_PREFIX, EMAIL_SUFFIX, EMAIL_FULL, EMAIL_HASH, CREDIT_CARD_PREFIX, CREDIT_CARD_FULL, CREDIT_CARD_HASH, IP_SUFFIX, IP_FULL, IP_HASH, DATE_YEAR_ONLY, DATE_1970_AGAIN, NO_ACTION, REDACT, NUMBER_ZERO, NUMBER_ROUND, ...]
 
 Optional:
 
-- **replacement** (String) Replacement, relevant for: REPLACE_CHAR, REPLACE_STRING.
-- **truncate** (Number) Truncate, relevant for: TRUNCATE, TRUNCATE_END.
+- `replacement` (String) Replacement, relevant for: REPLACE_CHAR, REPLACE_STRING.
+- `truncate` (Number) Truncate, relevant for: TRUNCATE, TRUNCATE_END.

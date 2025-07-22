@@ -15,55 +15,55 @@ The **satori_datastore** resource allows lifecycle management for the datastores
 
 ### Required
 
-- **dataaccess_controller_id** (String) Host FQDN name.
-- **hostname** (String) Data provider's FQDN hostname.
-- **name** (String) DataStore name.
-- **type** (String) The datastore type, for example: POSTGRESQL, SNOWFLAKE, etc. The full list is available at https://app.satoricyber.com/docs/api#post-/api/v1/datastore
+- `dataaccess_controller_id` (String) Host FQDN name.
+- `hostname` (String) Data provider's FQDN hostname.
+- `name` (String) DataStore name.
+- `type` (String) The datastore type, for example: POSTGRESQL, SNOWFLAKE, etc. The full list is available at https://app.satoricyber.com/docs/api#post-/api/v1/datastore
 
 ### Optional
 
-- **baseline_security_policy** (Block List, Max: 1) Baseline security policy. (see [below for nested schema](#nestedblock--baseline_security_policy))
-- **custom_ingress_port** (Number) Custom ingress port number description.
-- **databricks_settings** (Block List) Settings for a Databricks Data Store type (see [below for nested schema](#nestedblock--databricks_settings))
-- **datastore_settings** (Block List) Settings for a MongoDB Data Store type (see [below for nested schema](#nestedblock--datastore_settings))
-- **network_policy** (Block List) A network Policy for a Data Store (see [below for nested schema](#nestedblock--network_policy))
-- **origin_port** (Number) Port number description.
-- **project_ids** (Set of String) ProjectIds list of project IDs
-- **satori_auth_settings** (Block List, Max: 1) Sets the authentication settings for the Data Store (see [below for nested schema](#nestedblock--satori_auth_settings))
+- `baseline_security_policy` (Block List, Max: 1) Baseline security policy. (see [below for nested schema](#nestedblock--baseline_security_policy))
+- `custom_ingress_port` (Number) Custom ingress port number description.
+- `databricks_settings` (Block List) Settings for a Databricks Data Store type (see [below for nested schema](#nestedblock--databricks_settings))
+- `datastore_settings` (Block List) Settings for a MongoDB Data Store type (see [below for nested schema](#nestedblock--datastore_settings))
+- `network_policy` (Block List) A network Policy for a Data Store (see [below for nested schema](#nestedblock--network_policy))
+- `origin_port` (Number) Port number description.
+- `project_ids` (Set of String) ProjectIds list of project IDs
+- `satori_auth_settings` (Block List, Max: 1) Sets the authentication settings for the Data Store (see [below for nested schema](#nestedblock--satori_auth_settings))
 
 ### Read-Only
 
-- **id** (String) DataStore resource id.
-- **satori_hostname** (String) Satori Hostname.
+- `id` (String) DataStore resource id.
+- `satori_hostname` (String) Satori Hostname.
 
 <a id="nestedblock--baseline_security_policy"></a>
 ### Nested Schema for `baseline_security_policy`
 
 Required:
 
-- **exclusions** (Block List, Min: 1, Max: 1) Exempt users and patterns from baseline security policy (see [below for nested schema](#nestedblock--baseline_security_policy--exclusions))
-- **unassociated_queries_category** (Block List, Min: 1, Max: 1) UnassociatedQueriesCategory (see [below for nested schema](#nestedblock--baseline_security_policy--unassociated_queries_category))
-- **unsupported_queries_category** (Block List, Min: 1, Max: 1) UnsupportedQueriesCategory (see [below for nested schema](#nestedblock--baseline_security_policy--unsupported_queries_category))
+- `exclusions` (Block List, Min: 1, Max: 1) Exempt users and patterns from baseline security policy (see [below for nested schema](#nestedblock--baseline_security_policy--exclusions))
+- `unassociated_queries_category` (Block List, Min: 1, Max: 1) UnassociatedQueriesCategory (see [below for nested schema](#nestedblock--baseline_security_policy--unassociated_queries_category))
+- `unsupported_queries_category` (Block List, Min: 1, Max: 1) UnsupportedQueriesCategory (see [below for nested schema](#nestedblock--baseline_security_policy--unsupported_queries_category))
 
 Optional:
 
-- **type** (String) DataStore security policy. Defaults to `BASELINE_POLICY`.
+- `type` (String) DataStore security policy. Defaults to `BASELINE_POLICY`.
 
 <a id="nestedblock--baseline_security_policy--exclusions"></a>
 ### Nested Schema for `baseline_security_policy.exclusions`
 
 Optional:
 
-- **excluded_identities** (Block List) Exempt Users from the Baseline Security Policy (see [below for nested schema](#nestedblock--baseline_security_policy--exclusions--excluded_identities))
-- **excluded_query_patterns** (Block List) Exempt Queries from the Baseline Security Policy (see [below for nested schema](#nestedblock--baseline_security_policy--exclusions--excluded_query_patterns))
+- `excluded_identities` (Block List) Exempt Users from the Baseline Security Policy (see [below for nested schema](#nestedblock--baseline_security_policy--exclusions--excluded_identities))
+- `excluded_query_patterns` (Block List) Exempt Queries from the Baseline Security Policy (see [below for nested schema](#nestedblock--baseline_security_policy--exclusions--excluded_query_patterns))
 
 <a id="nestedblock--baseline_security_policy--exclusions--excluded_identities"></a>
 ### Nested Schema for `baseline_security_policy.exclusions.excluded_identities`
 
 Optional:
 
-- **identity** (String) Username
-- **identity_type** (String) USER type is supported
+- `identity` (String) Username
+- `identity_type` (String) USER type is supported
 
 
 <a id="nestedblock--baseline_security_policy--exclusions--excluded_query_patterns"></a>
@@ -71,7 +71,7 @@ Optional:
 
 Optional:
 
-- **pattern** (String) Query pattern
+- `pattern` (String) Query pattern
 
 
 
@@ -80,7 +80,7 @@ Optional:
 
 Optional:
 
-- **query_action** (String) Default policy action for querying locations that are not associated with a dataset, modes supported:  PASS┃REDACT┃BLOCK.
+- `query_action` (String) Default policy action for querying locations that are not associated with a dataset, modes supported:  PASS┃REDACT┃BLOCK.
 
 
 <a id="nestedblock--baseline_security_policy--unsupported_queries_category"></a>
@@ -88,7 +88,7 @@ Optional:
 
 Required:
 
-- **query_action** (String) Default policy action for unsupported queries and objects, modes supported:  PASS┃REDACT┃BLOCK
+- `query_action` (String) Default policy action for unsupported queries and objects, modes supported:  PASS┃REDACT┃BLOCK
 
 
 
@@ -97,18 +97,18 @@ Required:
 
 Required:
 
-- **account_id** (String) Account ID
-- **credentials** (Block List, Min: 1) Credentials for Databricks Data Store type (see [below for nested schema](#nestedblock--databricks_settings--credentials))
-- **warehouse_id** (String) SQL Warehouse ID
+- `account_id` (String) Account ID
+- `credentials` (Block List, Min: 1) Credentials for Databricks Data Store type (see [below for nested schema](#nestedblock--databricks_settings--credentials))
+- `warehouse_id` (String) SQL Warehouse ID
 
 <a id="nestedblock--databricks_settings--credentials"></a>
 ### Nested Schema for `databricks_settings.credentials`
 
 Required:
 
-- **client_id** (String) Application (client) ID
-- **client_secret** (String, Sensitive) Client secret value
-- **type** (String) Credentials type, user `AWS_SERVICE_PRINCIPAL_TOKEN` for AWS Service Principal Authentication
+- `client_id` (String) Application (client) ID
+- `client_secret` (String, Sensitive) Client secret value
+- `type` (String) Credentials type, user `AWS_SERVICE_PRINCIPAL_TOKEN` for AWS Service Principal Authentication
 
 
 
@@ -117,9 +117,9 @@ Required:
 
 Optional:
 
-- **aws_hosted_zone_id** (String) MongoDB AWS Hosted Zone ID, The Hosted AWS DNS Zone created for mapping MongoDB SRV records to Satori.
-- **aws_service_role_arn** (String) MongoDB AWS Service Role ARN, The IAM role ARN assumed by the DAC and used for updating records in the hosted DNS zone.
-- **deployment_type** (String) MongoDB deployment type, for now supports only mongodb+srv and mongodb deployment
+- `aws_hosted_zone_id` (String) MongoDB AWS Hosted Zone ID, The Hosted AWS DNS Zone created for mapping MongoDB SRV records to Satori.
+- `aws_service_role_arn` (String) MongoDB AWS Service Role ARN, The IAM role ARN assumed by the DAC and used for updating records in the hosted DNS zone.
+- `deployment_type` (String) MongoDB deployment type, for now supports only mongodb+srv and mongodb deployment
 
 
 <a id="nestedblock--network_policy"></a>
@@ -127,23 +127,23 @@ Optional:
 
 Optional:
 
-- **allowed_rules** (Block List) Allowed Ip Rules (see [below for nested schema](#nestedblock--network_policy--allowed_rules))
-- **blocked_rules** (Block List) Blocked Ips Rules (see [below for nested schema](#nestedblock--network_policy--blocked_rules))
+- `allowed_rules` (Block List) Allowed Ip Rules (see [below for nested schema](#nestedblock--network_policy--allowed_rules))
+- `blocked_rules` (Block List) Blocked Ips Rules (see [below for nested schema](#nestedblock--network_policy--blocked_rules))
 
 <a id="nestedblock--network_policy--allowed_rules"></a>
 ### Nested Schema for `network_policy.allowed_rules`
 
 Optional:
 
-- **ip_ranges** (Block List) Defines IP addresses or CIDR ranges allowed to access the datastore (see [below for nested schema](#nestedblock--network_policy--allowed_rules--ip_ranges))
-- **note** (String) custom description for allowed IP ranges
+- `ip_ranges` (Block List) Defines IP addresses or CIDR ranges allowed to access the datastore (see [below for nested schema](#nestedblock--network_policy--allowed_rules--ip_ranges))
+- `note` (String) custom description for allowed IP ranges
 
 <a id="nestedblock--network_policy--allowed_rules--ip_ranges"></a>
 ### Nested Schema for `network_policy.allowed_rules.ip_ranges`
 
 Required:
 
-- **ip_range** (String) Range (IP or CIDR)
+- `ip_range` (String) Range (IP or CIDR)
 
 
 
@@ -152,15 +152,15 @@ Required:
 
 Optional:
 
-- **ip_ranges** (Block List) Defines IP addresses or CIDR ranges allowed to access the datastore (see [below for nested schema](#nestedblock--network_policy--blocked_rules--ip_ranges))
-- **note** (String) custom description for blocked IP ranges
+- `ip_ranges` (Block List) Defines IP addresses or CIDR ranges allowed to access the datastore (see [below for nested schema](#nestedblock--network_policy--blocked_rules--ip_ranges))
+- `note` (String) custom description for blocked IP ranges
 
 <a id="nestedblock--network_policy--blocked_rules--ip_ranges"></a>
 ### Nested Schema for `network_policy.blocked_rules.ip_ranges`
 
 Required:
 
-- **ip_range** (String) Range (IP or CIDR)
+- `ip_range` (String) Range (IP or CIDR)
 
 
 
@@ -170,17 +170,17 @@ Required:
 
 Optional:
 
-- **credentials** (Block List, Max: 1) Root user credentials (see [below for nested schema](#nestedblock--satori_auth_settings--credentials))
-- **enable_personal_access_token** (Boolean) Enables Satori Personal Access Token authentication for this data store. to be able using personal access token for authentication on this data store - data store temporary credentials must be enabled and personal access token feature should be enabled for the current account (see Account setting page in Satori platform). Defaults to `false`.
-- **enabled** (Boolean) Enables Satori Data Store authentication. Defaults to `false`.
+- `credentials` (Block List, Max: 1) Root user credentials (see [below for nested schema](#nestedblock--satori_auth_settings--credentials))
+- `enable_personal_access_token` (Boolean) Enables Satori Personal Access Token authentication for this data store. to be able using personal access token for authentication on this data store - data store temporary credentials must be enabled and personal access token feature should be enabled for the current account (see Account setting page in Satori platform). Defaults to `false`.
+- `enabled` (Boolean) Enables Satori Data Store authentication. Defaults to `false`.
 
 <a id="nestedblock--satori_auth_settings--credentials"></a>
 ### Nested Schema for `satori_auth_settings.credentials`
 
 Required:
 
-- **password** (String, Sensitive) Password of root user. This property is sensitive, and API does not return it in output. In order to bypass terraform update, use lifecycle.ignore_changes, see example.
-- **username** (String) Username of root user
+- `password` (String, Sensitive) Password of root user. This property is sensitive, and API does not return it in output. In order to bypass terraform update, use lifecycle.ignore_changes, see example.
+- `username` (String) Username of root user
 
 ## Example Usage
 

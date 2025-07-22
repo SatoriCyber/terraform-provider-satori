@@ -74,31 +74,34 @@ resource "satori_self_service_access_rule" "self_service1_dataset_definition1" {
 
 ### Required
 
-- **access_level** (String) Access level to grant, valid values are: READ_ONLY, READ_WRITE, OWNER.
-- **identity** (Block List, Min: 1, Max: 1) Identity to apply the rule for. (see [below for nested schema](#nestedblock--identity))
-- **parent_data_policy** (String) Parent data policy ID, the data_policy_id field of a dataset.
+- `access_level` (String) Access level to grant, valid values are: READ_ONLY, READ_WRITE, OWNER.
+- `identity` (Block List, Min: 1, Max: 1) Identity to apply the rule for. (see [below for nested schema](#nestedblock--identity))
+- `parent_data_policy` (String) Parent data policy ID, the data_policy_id field of a dataset.
 
 ### Optional
 
-- **enabled** (Boolean) Enable the rule. Defaults to `true`.
-- **expire_in** (Block List, Max: 1) Rule expiration settings. (see [below for nested schema](#nestedblock--expire_in))
-- **id** (String) The ID of this resource.
-- **revoke_if_not_used_in_days** (Number) Revoke access if rule not used in the last given days. Zero = do not revoke. Max value is 180. Defaults to `0`.
-- **security_policies** (List of String) IDs of security policies to apply to this rule. Empty list for default dataset security policies. [ "none" ] list for no policies.
+- `enabled` (Boolean) Enable the rule. Defaults to `true`.
+- `expire_in` (Block List, Max: 1) Rule expiration settings. (see [below for nested schema](#nestedblock--expire_in))
+- `revoke_if_not_used_in_days` (Number) Revoke access if rule not used in the last given days. Zero = do not revoke. Max value is 180. Defaults to `0`.
+- `security_policies` (List of String) IDs of security policies to apply to this rule. Empty list for default dataset security policies. [ "none" ] list for no policies.
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 <a id="nestedblock--identity"></a>
 ### Nested Schema for `identity`
 
 Required:
 
-- **type** (String) Identity type, valid types are: USER, DB_USER, IDP_GROUP, GROUP, DATABRICKS_GROUP, DATABRICKS_SERVICE_PRINCIPAL, SNOWFLAKE_ROLE, EVERYONE.
+- `type` (String) Identity type, valid types are: USER, DB_USER, IDP_GROUP, GROUP, DATABRICKS_GROUP, DATABRICKS_SERVICE_PRINCIPAL, SNOWFLAKE_ROLE, EVERYONE.
 Can not be changed after creation.
 
 Optional:
 
-- **group_id** (String) Directory group ID for identity of type GROUP.
+- `group_id` (String) Directory group ID for identity of type GROUP.
 Can not be changed after creation.
-- **name** (String) User/group name for identity types of USER and IDP_GROUP.
+- `name` (String) User/group name for identity types of USER and IDP_GROUP.
 Can not be changed after creation.
 
 
@@ -107,5 +110,5 @@ Can not be changed after creation.
 
 Required:
 
-- **unit_type** (String) Unit type for units field, possible values are: MINUTES, HOURS, DAYS, WEEKS, MONTHS, YEARS.
-- **units** (Number) Number of units of unit_type.
+- `unit_type` (String) Unit type for units field, possible values are: MINUTES, HOURS, DAYS, WEEKS, MONTHS, YEARS.
+- `units` (Number) Number of units of unit_type.
