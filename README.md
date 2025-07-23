@@ -7,20 +7,41 @@
     <img src="https://avatars.githubusercontent.com/u/59790990" alt="Satori logo" title="Satori" height="50" />
 </a>
 
+<!-- TOC -->
+* [Terraform Provider for Satori](#terraform-provider-for-satori)
+  * [Local development](#local-development)
+    * [First time setup:](#first-time-setup)
+    * [Run the following command to build the provider](#run-the-following-command-to-build-the-provider)
+    * [Generate/update documentation](#generateupdate-documentation)
+    * [Test sample configuration](#test-sample-configuration)
+    * [Local vulnerabilities check](#local-vulnerabilities-check-)
+  * [Create a Configuration File and State for Existing Resources](#create-a-configuration-file-and-state-for-existing-resources)
+    * [Motivation:](#motivation)
+    * [Prerequisite:](#prerequisite-)
+    * [Step 1: Generate a new `main.tf` file with imported resources’ configuration](#step-1-generate-a-new-maintf-file-with-imported-resources-configuration)
+    * [Step 2: Apply the import command in-order to sync the terraform’s state](#step-2-apply-the-import-command-in-order-to-sync-the-terraforms-state)
+    * [Step 3: Setting up the files names to work against the new generated configuration file](#step-3-setting-up-the-files-names-to-work-against-the-new-generated-configuration-file)
+      * [Option 1: Updating the current `main.tf` to the proper content](#option-1-updating-the-current-maintf-to-the-proper-content)
+      * [Option 2: Updating `main.tf` to be an import file for future reference](#option-2-updating-maintf-to-be-an-import-file-for-future-reference)
+    * [Step 4: Validate the configuration file](#step-4-validate-the-configuration-file)
+<!-- TOC -->
+
 # Terraform Provider for Satori
 
-#### First time setup:
+## Local development
+
+### First time setup:
 ```shell
 make init
 ```
 
-#### Run the following command to build the provider
+### Run the following command to build the provider
 
 ```shell
 make build
 ```
 
-#### Generate/update documentation
+### Generate/update documentation
 
 Do not edit files under `docs`, they are generated from `templates` and the source code.
 To preview how the docs will look in the terraform registry, paste them here https://registry.terraform.io/tools/doc-preview
@@ -31,7 +52,7 @@ To preview how the docs will look in the terraform registry, paste them here htt
 make docs
 ```
 
-## Test sample configuration
+### Test sample configuration
 
 First, build and install the provider.
 
@@ -55,6 +76,15 @@ terraform {
     }
   }
 }
+```
+
+### Local vulnerabilities check 
+
+Run the following command to check the vulnerabilities of the provider locally.
+`govulncheck` is used to check for vulnerabilities in the Go code of the provider.
+
+```shell
+make vuln
 ```
 
 ## Create a Configuration File and State for Existing Resources

@@ -44,3 +44,7 @@ test:
 .PHONY: testacc
 testacc: build
 	TF_ACC=1 go test ./... -v $(TESTARGS) -timeout 120m
+
+.PHONY: vuln
+vuln:
+	go tool govulncheck
