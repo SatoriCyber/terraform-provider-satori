@@ -54,7 +54,7 @@ func ResourceMaskingProfile() *schema.Resource {
 						"type": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Type. Can be one of [TRUNCATE, TRUNCATE_END, REPLACE_CHAR, REPLACE_STRING, HASH, EMAIL_PREFIX, EMAIL_SUFFIX, EMAIL_FULL, EMAIL_HASH, CREDIT_CARD_PREFIX, CREDIT_CARD_FULL, CREDIT_CARD_HASH, IP_SUFFIX, IP_FULL, IP_HASH, DATE_YEAR_ONLY, DATE_1970_AGAIN, NO_ACTION, REDACT, NUMBER_ZERO, NUMBER_ROUND, ...]",
+							Description: "Type. Can be one of [TRUNCATE, TRUNCATE_END, REPLACE_CHAR, REPLACE_STRING, HASH, EMAIL_PREFIX, EMAIL_SUFFIX, EMAIL_FULL, EMAIL_HASH, CREDIT_CARD_PREFIX, CREDIT_CARD_FULL, CREDIT_CARD_HASH, IP_SUFFIX, IP_FULL, IP_HASH, DATE_YEAR_ONLY, DATE_1970_AGAIN, NO_ACTION, REDACT, NUMBER_ZERO, NUMBER_ROUND, SQL_FUNCTION, ...]",
 						},
 						"replacement": &schema.Schema{
 							Type:        schema.TypeString,
@@ -65,6 +65,11 @@ func ResourceMaskingProfile() *schema.Resource {
 							Type:        schema.TypeInt,
 							Optional:    true,
 							Description: "Truncate, relevant for: TRUNCATE, TRUNCATE_END.",
+						},
+						"sqlFunction": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "SQL function, relevant for: SQL_FUNCTION.",
 						},
 					},
 				},
@@ -90,6 +95,8 @@ func resourceToMaskingConditions(d *schema.ResourceData) *[]api.MaskingCondition
 			}
 			replacement := inElement["replacement"].(string)
 			maskConfigs[i].Replacement = &replacement
+			sqlFunction := inElement["sqlFunction"].(string)
+			maskConfigs[i].SqlFunction = &sqlFunction
 		}
 	} else {
 		maskConfigs = make([]api.MaskingCondition, 0)
@@ -139,6 +146,9 @@ func maskingConditionToResource(conditions []api.MaskingCondition) []map[string]
 		}
 		if v.Truncate > 0 {
 			out[i]["truncate"] = v.Truncate
+		}
+		if v.SqlFunction != nil {
+			out[i]["sqlFunction"] = *v.SqlFunction
 		}
 	}
 	return out
