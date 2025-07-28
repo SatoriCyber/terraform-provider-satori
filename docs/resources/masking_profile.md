@@ -43,7 +43,7 @@ resource "satori_masking_profile" "masking_profile" {
   condition {
     tag = "c12n.pii::email"
     type = "SQL_FUNCTION"
-    sqlFunction = "CASE WHEN LOWER(SPLIT_PART(data, '@', 2)) = 'google.com' THEN '***' ELSE 'AT ' || SPLIT_PART(data, '@', 2) END"
+    sql_function = "CASE WHEN LOWER(SPLIT_PART(data, '@', 2)) = 'google.com' THEN '***' ELSE 'AT ' || SPLIT_PART(data, '@', 2) END"
   }
 }
 ```
@@ -75,5 +75,5 @@ Required:
 Optional:
 
 - `replacement` (String) Replacement, relevant for: REPLACE_CHAR, REPLACE_STRING.
-- `sqlFunction` (String) SQL function, relevant for: SQL_FUNCTION.
+- `sql_function` (String) SQL function, relevant for: SQL_FUNCTION.
 - `truncate` (Number) Truncate, relevant for: TRUNCATE, TRUNCATE_END.

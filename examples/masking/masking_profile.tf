@@ -27,6 +27,6 @@ resource "satori_masking_profile" "masking_profile" {
   condition {
     tag = "c12n.pii::email"
     type = "SQL_FUNCTION"
-    sqlFunction = "CASE WHEN LOWER(SPLIT_PART(data, '@', 2)) = 'google.com' THEN '***' ELSE 'AT ' || SPLIT_PART(data, '@', 2) END"
+    sql_function = "CASE WHEN LOWER(SPLIT_PART(data, '@', 2)) = 'google.com' THEN '***' ELSE 'AT ' || SPLIT_PART(data, '@', 2) END"
   }
 }
