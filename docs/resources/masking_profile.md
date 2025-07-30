@@ -40,6 +40,11 @@ resource "satori_masking_profile" "masking_profile" {
     replacement = "a"
   }
 
+  condition {
+    tag = "c12n.pii::email"
+    type = "SQL_FUNCTION"
+    sql_function = "CASE WHEN LOWER(SPLIT_PART(data, '@', 2)) = 'google.com' THEN '***' ELSE 'AT ' || SPLIT_PART(data, '@', 2) END"
+  }
 }
 ```
 
@@ -65,9 +70,10 @@ resource "satori_masking_profile" "masking_profile" {
 Required:
 
 - `tag` (String) Tag.
-- `type` (String) Type. Can be one of [TRUNCATE, TRUNCATE_END, REPLACE_CHAR, REPLACE_STRING, HASH, EMAIL_PREFIX, EMAIL_SUFFIX, EMAIL_FULL, EMAIL_HASH, CREDIT_CARD_PREFIX, CREDIT_CARD_FULL, CREDIT_CARD_HASH, IP_SUFFIX, IP_FULL, IP_HASH, DATE_YEAR_ONLY, DATE_1970_AGAIN, NO_ACTION, REDACT, NUMBER_ZERO, NUMBER_ROUND, ...]
+- `type` (String) Type. Can be one of [TRUNCATE, TRUNCATE_END, REPLACE_CHAR, REPLACE_STRING, HASH, EMAIL_PREFIX, EMAIL_SUFFIX, EMAIL_FULL, EMAIL_HASH, CREDIT_CARD_PREFIX, CREDIT_CARD_FULL, CREDIT_CARD_HASH, IP_SUFFIX, IP_FULL, IP_HASH, DATE_YEAR_ONLY, DATE_1970_AGAIN, NO_ACTION, REDACT, NUMBER_ZERO, NUMBER_ROUND, SQL_FUNCTION, ...]
 
 Optional:
 
 - `replacement` (String) Replacement, relevant for: REPLACE_CHAR, REPLACE_STRING.
+- `sql_function` (String) SQL function, relevant for: SQL_FUNCTION.
 - `truncate` (Number) Truncate, relevant for: TRUNCATE, TRUNCATE_END.
