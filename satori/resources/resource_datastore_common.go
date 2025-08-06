@@ -2,10 +2,11 @@ package resources
 
 import (
 	"context"
+	"log"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
-	"log"
 )
 
 var (
@@ -23,6 +24,7 @@ var (
 	AwsServerRoleArn            = "aws_service_role_arn"
 	UnassociatedQueriesCategory = "unassociated_queries_category"
 	Credentials                 = "credentials"
+	CredentialsType             = "type"
 	Enabled                     = "enabled"
 	Username                    = "username"
 	Password                    = "password"

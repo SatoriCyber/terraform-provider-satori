@@ -177,10 +177,12 @@ Optional:
 <a id="nestedblock--satori_auth_settings--credentials"></a>
 ### Nested Schema for `satori_auth_settings.credentials`
 
-Required:
+Optional:
 
-- `password` (String, Sensitive) Password of root user. This property is sensitive, and API does not return it in output. In order to bypass terraform update, use lifecycle.ignore_changes, see example.
-- `username` (String) Username of root user
+- `aws_service_role_arn` (String) AWS IAM service role ARN. Required if credentials type is IAM_ROLE_CREDENTIALS
+- `password` (String, Sensitive) Password of root user. This property is sensitive, and API does not return it in output. In order to bypass terraform update, use lifecycle.ignore_changes, see example.Required if credentials type is USERNAME_PASSWORD
+- `type` (String) Credentials type. Supported values are: USERNAME_PASSWORD, IAM_ROLE_CREDENTIALSIf not specified the USERNAME_PASSWORD type will be assumed
+- `username` (String) Username of root user. Required if credentials type is USERNAME_PASSWORD
 
 ## Example Usage
 
@@ -266,6 +268,23 @@ resource "satori_datastore" "datastore_with_personal_access_token_enabled" {
     ignore_changes = [
       satori_auth_settings.0.credentials.0.password
     ]
+  }
+  network_policy {}
+}
+
+resource "satori_datastore" "datastore_with_iam_role_credentials" {
+  name                     = "example_datastore_iam_role_credentials"
+  hostname                 = "data.source.target.hostname"
+  dataaccess_controller_id = data.satori_data_access_controller.public_dac.id
+  type                     = "ATHENA"
+  project_ids              = [ "123456789123" ]
+  satori_auth_settings {
+    enabled = true
+    credentials {
+      type = "AWS_IAM_ROLE"
+      aws_service_role_arn = "arn:aws:iam::123456789123:role/SatoriServiceRole"
+    }
+    enable_personal_access_token = true
   }
   network_policy {}
 }
