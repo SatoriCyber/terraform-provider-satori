@@ -102,7 +102,6 @@ resource "satori_datastore" "datastore_with_iam_role_credentials" {
   satori_auth_settings {
     enabled = true
     credentials {
-      type = "AWS_IAM_ROLE"
       aws_service_role_arn = "arn:aws:iam::123456789123:role/SatoriServiceRole"
     }
     enable_personal_access_token = true
