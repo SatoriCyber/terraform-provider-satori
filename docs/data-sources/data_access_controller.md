@@ -93,6 +93,22 @@ resource "satori_datastore" "datastore_with_personal_access_token_enabled" {
   network_policy {}
 }
 
+resource "satori_datastore" "datastore_with_iam_role_credentials" {
+  name                     = "example_datastore_iam_role_credentials"
+  hostname                 = "data.source.target.hostname"
+  dataaccess_controller_id = data.satori_data_access_controller.public_dac.id
+  type                     = "ATHENA"
+  project_ids              = [ "123456789123" ]
+  satori_auth_settings {
+    enabled = true
+    credentials {
+      aws_service_role_arn = "arn:aws:iam::123456789123:role/SatoriServiceRole"
+    }
+    enable_personal_access_token = true
+  }
+  network_policy {}
+}
+
 resource "satori_datastore" "datastore_with_private_dac" {
   // lifecycle.ignore_changes should be used after first time creation in order to ignore password update as API does not return it.
   name                     = "exampleDatastore"

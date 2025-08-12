@@ -170,17 +170,18 @@ Required:
 
 Optional:
 
-- `credentials` (Block List, Max: 1) Root user credentials (see [below for nested schema](#nestedblock--satori_auth_settings--credentials))
+- `credentials` (Block List, Max: 1) Root user credentials. Either username and password should be defined or aws_service_role_arn. (see [below for nested schema](#nestedblock--satori_auth_settings--credentials))
 - `enable_personal_access_token` (Boolean) Enables Satori Personal Access Token authentication for this data store. to be able using personal access token for authentication on this data store - data store temporary credentials must be enabled and personal access token feature should be enabled for the current account (see Account setting page in Satori platform). Defaults to `false`.
 - `enabled` (Boolean) Enables Satori Data Store authentication. Defaults to `false`.
 
 <a id="nestedblock--satori_auth_settings--credentials"></a>
 ### Nested Schema for `satori_auth_settings.credentials`
 
-Required:
+Optional:
 
+- `aws_service_role_arn` (String) AWS IAM service role ARN.
 - `password` (String, Sensitive) Password of root user. This property is sensitive, and API does not return it in output. In order to bypass terraform update, use lifecycle.ignore_changes, see example.
-- `username` (String) Username of root user
+- `username` (String) Username of root user.
 
 ## Example Usage
 
@@ -266,6 +267,22 @@ resource "satori_datastore" "datastore_with_personal_access_token_enabled" {
     ignore_changes = [
       satori_auth_settings.0.credentials.0.password
     ]
+  }
+  network_policy {}
+}
+
+resource "satori_datastore" "datastore_with_iam_role_credentials" {
+  name                     = "example_datastore_iam_role_credentials"
+  hostname                 = "data.source.target.hostname"
+  dataaccess_controller_id = data.satori_data_access_controller.public_dac.id
+  type                     = "ATHENA"
+  project_ids              = [ "123456789123" ]
+  satori_auth_settings {
+    enabled = true
+    credentials {
+      aws_service_role_arn = "arn:aws:iam::123456789123:role/SatoriServiceRole"
+    }
+    enable_personal_access_token = true
   }
   network_policy {}
 }

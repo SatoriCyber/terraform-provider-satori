@@ -2,9 +2,12 @@ package resources
 
 import (
 	"encoding/json"
+	"errors"
+	"log"
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/satoricyber/terraform-provider-satori/satori/api"
-	"log"
 )
 
 func GetSatoriAuthSettingsDefinitions() *schema.Schema {
@@ -25,20 +28,25 @@ func GetSatoriAuthSettingsDefinitions() *schema.Schema {
 					Type:        schema.TypeList,
 					Optional:    true,
 					MaxItems:    1,
-					Description: "Root user credentials",
+					Description: "Root user credentials. Either username and password should be defined or aws_service_role_arn.",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							Username: &schema.Schema{
 								Type:        schema.TypeString,
-								Required:    true,
-								Description: "Username of root user",
+								Optional:    true,
+								Description: "Username of root user.",
 							},
 							Password: &schema.Schema{
 								Type:      schema.TypeString,
 								Sensitive: true,
-								Required:  true,
+								Optional:  true,
 								Description: "Password of root user. This property is sensitive, and API does not return it in output. " +
 									"In order to bypass terraform update, use lifecycle.ignore_changes, see example.",
+							},
+							AwsServerRoleArn: &schema.Schema{
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "AWS IAM service role ARN.",
 							},
 						}},
 				},
@@ -88,11 +96,51 @@ func SatoriAuthSettingsToResource(d *schema.ResourceData, in []interface{}) (*ap
 	mapSatoriAuthSettings := extractMapFromInterface(in)
 	if mapSatoriAuthSettings != nil {
 		tfMap := biTfApiConverter(mapSatoriAuthSettings, true)
+		tfMap = populateCredentialsType(tfMap)
 		jsonOutput, _ := json.Marshal(tfMap)
 		err := json.Unmarshal(jsonOutput, &satoriAuthSettings)
 		if err != nil {
 			return nil, err
 		}
+		err = validateCredentials(satoriAuthSettings.Credentials)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return &satoriAuthSettings, nil
+}
+
+func populateCredentialsType(tfMap map[string]interface{}) map[string]interface{} {
+	credentials, ok := tfMap[Credentials].(map[string]interface{})
+	if !ok {
+		return tfMap
+	}
+
+	hasUsername := credentials[Username] != ""
+	hasPassword := credentials[Password] != ""
+	hasAwsServerRoleArn := credentials[AwsServerRoleArn] != ""
+
+	if hasUsername && hasPassword {
+		credentials[CredentialsType] = "USERNAME_PASSWORD"
+	} else if hasAwsServerRoleArn {
+		credentials[CredentialsType] = "AWS_IAM_ROLE"
+	}
+
+	return tfMap
+}
+
+func validateCredentials(credentials api.Credentials) error {
+	hasUsername := strings.TrimSpace(credentials.Username) != ""
+	hasPassword := strings.TrimSpace(credentials.Password) != ""
+	hasAwsServerRoleArn := strings.TrimSpace(credentials.AwsServerRoleArn) != ""
+
+	if hasUsername != hasPassword {
+		return errors.New("both username and password are required")
+	}
+
+	if (hasUsername && hasPassword && hasAwsServerRoleArn) || (!hasUsername && !hasPassword && !hasAwsServerRoleArn) {
+		return errors.New("exactly one authentication method must be provided: either aws_service_role_arn or username and password")
+	}
+
+	return nil
 }
