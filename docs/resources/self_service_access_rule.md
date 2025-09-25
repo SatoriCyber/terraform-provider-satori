@@ -94,7 +94,7 @@ resource "satori_self_service_access_rule" "self_service1_dataset_definition1" {
 
 Required:
 
-- `type` (String) Identity type, valid types are: USER, DB_USER, IDP_GROUP, GROUP, DATABRICKS_GROUP, DATABRICKS_SERVICE_PRINCIPAL, SNOWFLAKE_ROLE, EVERYONE.
+- `type` (String) Identity type, valid types are: USER, DB_USER, IDP_GROUP, GROUP, DATABRICKS_GROUP, DATABRICKS_SERVICE_PRINCIPAL, SNOWFLAKE_ROLE, SNOWFLAKE_ACCOUNT_NAME, SNOWFLAKE_DATABASE_ROLE, EVERYONE.
 Can not be changed after creation.
 
 Optional:
