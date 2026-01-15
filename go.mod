@@ -3,7 +3,7 @@ module github.com/satoricyber/terraform-provider-satori
 // This specifies the Go version to use (make sure the installed version with right ARCH).
 // Please note that the version of Go used here must be compatible with the version of the Terraform SDK you are using.
 // It's recommended to use the same version of Go installed (https://go.dev/dl/)
-go 1.24.5
+go 1.25.5
 
 require (
 	github.com/golang-jwt/jwt/v5 v5.2.3
