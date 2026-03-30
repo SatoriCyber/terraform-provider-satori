@@ -69,3 +69,5 @@ terraform.rc
 terraform
 
 provider.tf
+
+dist
