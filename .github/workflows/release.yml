@@ -21,9 +21,8 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v6
-      -
-        name: Unshallow
-        run: git fetch --prune --unshallow
+        with:
+          fetch-depth: 0  # fetch full history
       -
         name: Set up Go
         uses: actions/setup-go@v6
@@ -32,14 +31,14 @@ jobs:
       -
         name: Import GPG key
         id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@v5.0.0
+        uses: crazy-max/ghaction-import-gpg@v7
         with:
           # These secrets will need to be configured for the repository:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
       -
         name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v6
+        uses: goreleaser/goreleaser-action@v7
         with:
           distribution: goreleaser
           version: "~> v2"
